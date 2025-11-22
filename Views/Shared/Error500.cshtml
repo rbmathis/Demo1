@@ -1,0 +1,56 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "500 - Internal Server Error";
+}
+
+<div class="text-center">
+    <h1 class="display-1 text-danger">500</h1>
+    <h2 class="display-4">Internal Server Error</h2>
+    <p class="lead mt-4">
+        We're sorry! Something went wrong on our end.
+    </p>
+</div>
+
+<div class="row mt-5 justify-content-center">
+    <div class="col-md-6 text-center">
+        <p>
+            An unexpected error occurred while processing your request. Our team has been notified
+            and is working to resolve the issue.
+        </p>
+        <div class="alert alert-warning mt-4" role="alert">
+            <strong>💡 What happened?</strong><br/>
+            The server encountered an internal error and was unable to complete your request.
+        </div>
+    </div>
+</div>
+
+@if (Model.ShowRequestId)
+{
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-6">
+            <div class="alert alert-info" role="alert">
+                <strong>🔍 Request ID:</strong> <code>@Model.RequestId</code><br/>
+                <small class="text-muted">Please provide this ID if you contact support.</small>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row mt-5 justify-content-center">
+    <div class="col-md-6 text-center">
+        <h4>What can you do?</h4>
+        <ul class="list-unstyled mt-3">
+            <li>🔄 Try refreshing the page</li>
+            <li>⏱️ Wait a few moments and try again</li>
+            <li>🏠 Return to the home page</li>
+        </ul>
+        <div class="d-grid gap-2 d-md-block mt-4">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                🏠 Go to Home Page
+            </a>
+            <a asp-area="" asp-controller="Home" asp-action="AboutUs" class="btn btn-outline-secondary btn-lg">
+                ℹ️ About Us
+            </a>
+        </div>
+    </div>
+</div>
