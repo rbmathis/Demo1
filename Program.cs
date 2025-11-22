@@ -1,5 +1,6 @@
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,15 +15,15 @@ builder.Services.AddApplicationInsightsTelemetry(options =>
 
 // Configure sampling percentage
 var samplingPercentage = builder.Configuration.GetValue<double?>("ApplicationInsights:SamplingPercentage") ?? 100.0;
-if (samplingPercentage < 100.0)
+builder.Services.Configure<TelemetryConfiguration>(config =>
 {
-    builder.Services.Configure<TelemetryConfiguration>(config =>
-    {
-        var builder = config.DefaultTelemetrySink.TelemetryProcessorChainBuilder;
-        builder.UseAdaptiveSampling(maxTelemetryItemsPerSecond: 5);
-        builder.Build();
-    });
-}
+    var samplingProcessorBuilder = config.DefaultTelemetrySink.TelemetryProcessorChainBuilder;
+    
+    // Use fixed-rate sampling based on the configured percentage
+    samplingProcessorBuilder.UseSampling(samplingPercentage);
+    
+    samplingProcessorBuilder.Build();
+});
 
 // Register custom telemetry initializers
 builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitializer("Demo1"));

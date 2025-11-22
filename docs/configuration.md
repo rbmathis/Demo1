@@ -66,9 +66,13 @@ Application Insights automatically captures:
 
 Custom telemetry initializers are configured in `Program.cs`:
 
-- `SamplingTelemetryInitializer`: Configures fixed sampling percentage
+- `CustomTelemetryInitializer`: Adds custom properties (like ApplicationName) to all telemetry items
 
 To add custom telemetry initializers, implement `ITelemetryInitializer` and register in `Program.cs`.
+
+### Sampling
+
+Sampling is configured using the `SamplingPercentage` setting. The SDK uses fixed-rate sampling to control the percentage of telemetry sent to Application Insights. This helps manage costs and data volume while maintaining representative data.
 
 ## HTTPS & Security
 
