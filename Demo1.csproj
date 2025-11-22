@@ -9,4 +9,9 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Demo1.xml</DocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.22.0" />
+  </ItemGroup>
+
 </Project>

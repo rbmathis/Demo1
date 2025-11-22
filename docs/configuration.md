@@ -14,12 +14,65 @@ Common settings:
 
 - `ConnectionStrings__Default` for database connections
 - `Logging__LogLevel__Default` for logging verbosity
+- `ApplicationInsights__ConnectionString` for Application Insights connection
 
 ## Secret Management
 
 - Use **User Secrets** for local development: `dotnet user-secrets init`
 - Use **Azure Key Vault** or similar in production
 - Never commit secrets to source control
+
+## Application Insights Configuration
+
+Application Insights telemetry is integrated to capture requests, dependencies, exceptions, and traces.
+
+### Connection String
+
+Set the connection string via configuration:
+
+- In `appsettings.json`: Update `ApplicationInsights:ConnectionString` (leave empty for local dev)
+- Via User Secrets: `dotnet user-secrets set "ApplicationInsights:ConnectionString" "InstrumentationKey=..."`
+- Via Environment Variable: `ApplicationInsights__ConnectionString`
+- In Azure: Set application setting `ApplicationInsights__ConnectionString` with your App Insights connection string
+
+### Sampling Configuration
+
+Control the percentage of telemetry sent to Application Insights:
+
+```json
+{
+  "ApplicationInsights": {
+    "ConnectionString": "InstrumentationKey=your-key;IngestionEndpoint=...",
+    "SamplingPercentage": 100.0
+  }
+}
+```
+
+- `SamplingPercentage`: Value between 0 and 100 (default: 100.0)
+  - 100.0 = capture all telemetry
+  - 50.0 = capture 50% of telemetry
+  - 10.0 = capture 10% of telemetry
+
+### Telemetry Captured
+
+Application Insights automatically captures:
+
+- **Requests**: HTTP requests to controllers
+- **Dependencies**: Outbound HTTP calls, database queries, etc.
+- **Exceptions**: Unhandled exceptions
+- **Traces**: Log messages from ILogger
+
+### Telemetry Initializers
+
+Custom telemetry initializers are configured in `Program.cs`:
+
+- `CustomTelemetryInitializer`: Adds custom properties (like ApplicationName) to all telemetry items
+
+To add custom telemetry initializers, implement `ITelemetryInitializer` and register in `Program.cs`.
+
+### Sampling
+
+Sampling is configured using the `SamplingPercentage` setting. The SDK uses fixed-rate sampling to control the percentage of telemetry sent to Application Insights. This helps manage costs and data volume while maintaining representative data.
 
 ## HTTPS & Security
 
