@@ -1,3 +1,4 @@
+using Demo1.Middleware;
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
 
@@ -18,10 +19,10 @@ var samplingPercentage = builder.Configuration.GetValue<double?>("ApplicationIns
 builder.Services.Configure<TelemetryConfiguration>(config =>
 {
     var samplingProcessorBuilder = config.DefaultTelemetrySink.TelemetryProcessorChainBuilder;
-    
+
     // Use fixed-rate sampling based on the configured percentage
     samplingProcessorBuilder.UseSampling(samplingPercentage);
-    
+
     samplingProcessorBuilder.Build();
 });
 
