@@ -1,6 +1,5 @@
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
