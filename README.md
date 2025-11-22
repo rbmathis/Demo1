@@ -55,6 +55,19 @@ To debug the application in VS Code:
 
 The debugger will launch the application and open it in your default browser.
 
+## Documentation
+
+- Docs hub: [`docs/README.md`](docs/README.md)
+- Architecture: [`docs/architecture.md`](docs/architecture.md)
+- Coding & docs conventions: [`docs/conventions.md`](docs/conventions.md)
+- Configuration: [`docs/configuration.md`](docs/configuration.md)
+- Testing guidelines: [`docs/testing.md`](docs/testing.md)
+
+### XML Documentation
+
+- The project generates XML docs on build: `bin/<Configuration>/<TargetFramework>/Demo1.xml`
+- All **public** APIs should include `///` XML comments (enforced by the Documentation Helper CI agent)
+
 ## GitHub Actions & Copilot Integration
 
 This project is configured with GitHub Actions workflows and Copilot Custom Agents:
