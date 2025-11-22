@@ -13,18 +13,22 @@
     const getStoredTheme = () => localStorage.getItem('theme');
     const setStoredTheme = theme => localStorage.setItem('theme', theme);
 
+    const getSystemPreferredTheme = () => {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
     const getPreferredTheme = () => {
         const storedTheme = getStoredTheme();
         if (storedTheme) {
             return storedTheme;
         }
 
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return getSystemPreferredTheme();
     };
 
     const setTheme = theme => {
-        if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        if (theme === 'auto') {
+            document.documentElement.setAttribute('data-bs-theme', getSystemPreferredTheme());
         } else {
             document.documentElement.setAttribute('data-bs-theme', theme);
         }
@@ -42,17 +46,33 @@
         const themeSwitcherText = document.querySelector('#bd-theme-text');
         const activeThemeIcon = document.querySelector('.theme-icon-active use');
         const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`);
-        const svgOfActiveBtn = btnToActive.querySelector('svg use').getAttribute('href');
+        
+        if (!btnToActive || !themeSwitcherText || !activeThemeIcon) {
+            return;
+        }
+        
+        const svgElement = btnToActive.querySelector('svg use');
+        if (!svgElement) {
+            return;
+        }
+        
+        const svgOfActiveBtn = svgElement.getAttribute('href');
 
         document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
             element.classList.remove('active');
             element.setAttribute('aria-pressed', 'false');
-            element.querySelector('.bi.ms-auto').classList.add('d-none');
+            const checkIcon = element.querySelector('.bi.ms-auto');
+            if (checkIcon) {
+                checkIcon.classList.add('d-none');
+            }
         });
 
         btnToActive.classList.add('active');
         btnToActive.setAttribute('aria-pressed', 'true');
-        btnToActive.querySelector('.bi.ms-auto').classList.remove('d-none');
+        const activeCheckIcon = btnToActive.querySelector('.bi.ms-auto');
+        if (activeCheckIcon) {
+            activeCheckIcon.classList.remove('d-none');
+        }
         activeThemeIcon.setAttribute('href', svgOfActiveBtn);
         const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
         themeSwitcher.setAttribute('aria-label', themeSwitcherLabel);
