@@ -39,6 +39,15 @@ public class HomeController : Controller
     }
 
     /// <summary>
+    /// Displays the About Us page with company information.
+    /// </summary>
+    /// <returns>The AboutUs view.</returns>
+    public IActionResult AboutUs()
+    {
+        return View();
+    }
+
+    /// <summary>
     /// Displays the error page with the current request identifier, if available.
     /// </summary>
     /// <returns>The Error view with <see cref="ErrorViewModel"/>.</returns>
