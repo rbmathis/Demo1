@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Demo1.Models;
+using Microsoft.FeatureManagement.Mvc;
+using Demo1.Features;
 
 namespace Demo1.Controllers;
 
@@ -44,6 +46,17 @@ public class HomeController : Controller
     /// <returns>The AboutUs view.</returns>
     public IActionResult AboutUs()
     {
+        return View();
+    }
+
+    /// <summary>
+    /// Displays Feature1 demo page (gated by feature flag).
+    /// </summary>
+    /// <returns>The Feature1 view if enabled, otherwise NotFound.</returns>
+    [FeatureGate(FeatureFlags.Feature1)]
+    public IActionResult Feature1()
+    {
+        _logger.LogInformation("Feature1 accessed");
         return View();
     }
 

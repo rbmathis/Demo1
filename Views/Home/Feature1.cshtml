@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Feature1";
+}
+
+<div class="text-center">
+    <h1 class="display-4">🎉 Feature1 Demo</h1>
+    <p class="lead">This page is controlled by a feature flag!</p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2">
+        <div class="alert alert-success" role="alert">
+            <h4 class="alert-heading">✅ Feature Flag Enabled!</h4>
+            <p>
+                You're seeing this page because the <strong>Feature1</strong> feature flag is currently
+                <strong>enabled</strong>.
+            </p>
+            <hr>
+            <p class="mb-0">
+                Feature flags allow you to toggle functionality on/off without redeploying your application.
+            </p>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>How It Works</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Controller:</strong> The <code>Feature1()</code> action is decorated with
+                    <code>[FeatureGate(FeatureFlags.Feature1)]</code></p>
+                <p><strong>Configuration:</strong> Feature flags are defined in <code>appsettings.json</code> under
+                    <code>FeatureManagement</code></p>
+                <p><strong>Behavior:</strong> When disabled, this route returns a 404 Not Found</p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Try It Out</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Open <code>appsettings.json</code></li>
+                    <li>Change <code>"Feature1": true</code> to <code>"Feature1": false</code></li>
+                    <li>Restart the application</li>
+                    <li>Navigate to <code>/Home/Feature1</code> - you'll get a 404!</li>
+                </ol>
+                <p class="text-muted mt-3">
+                    <small>
+                        <strong>Note:</strong> In production, feature flags can be managed via Azure App Configuration
+                        for dynamic updates without restarts.
+                    </small>
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to Home</a>
+            <a asp-area="" asp-controller="Home" asp-action="AboutUs" class="btn btn-outline-secondary">About Us</a>
+        </div>
+    </div>
+</div>

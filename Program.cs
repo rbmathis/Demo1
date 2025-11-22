@@ -1,12 +1,16 @@
 using Demo1.Middleware;
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.FeatureManagement;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
+
+// Add Feature Management
+builder.Services.AddFeatureManagement();
 
 // Add Application Insights telemetry
 builder.Services.AddApplicationInsightsTelemetry(options =>
@@ -16,7 +20,7 @@ builder.Services.AddApplicationInsightsTelemetry(options =>
 
 // Configure sampling percentage
 var samplingPercentage = builder.Configuration.GetValue<double?>("ApplicationInsights:SamplingPercentage") ?? 100.0;
-builder.Services.Configure<TelemetryConfiguration>(config =>
+builder.Services.Configure<Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration>(config =>
 {
     var samplingProcessorBuilder = config.DefaultTelemetrySink.TelemetryProcessorChainBuilder;
 

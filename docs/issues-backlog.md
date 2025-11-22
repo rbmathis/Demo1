@@ -4,20 +4,23 @@
 
 ## Table
 
-| ID  | Title                                         | Type          | Priority | Scope         |
-| --- | --------------------------------------------- | ------------- | -------- | ------------- |
-| 1   | Enforce HTTPS and HSTS                        | Security      | High     | Middleware    |
-| 2   | Add global exception handling & logging       | Enhancement   | High     | Middleware    |
-| 3   | Implement authentication (Azure AD)           | Feature       | High     | Identity      |
-| 4   | Add health check endpoint (`/health`)         | Ops           | Medium   | Observability |
-| 5   | Create Demo1.Tests with controller unit tests | Testing       | Medium   | QA            |
-| 6   | Integrate Playwright for basic UI smoke       | Testing       | Medium   | QA            |
-| 7   | Add Dockerfile and containerized dev workflow | DevOps        | Medium   | Infra         |
-| 8   | Add Application Insights telemetry            | Observability | Medium   | Telemetry     |
-| 9   | Accessibility pass on views (ARIA/landmarks)  | Accessibility | Medium   | UI            |
-| 10  | Add code analyzers and dotnet format baseline | Quality       | Medium   | Tooling       |
-| 11  | Optimize CI with restore/build caching        | DevOps        | Low      | CI            |
-| 12  | Create custom error pages (404/500)           | UX            | Low      | UI            |
+| ID  | Title                                         | Type          | Priority | Scope         | Status       |
+| --- | --------------------------------------------- | ------------- | -------- | ------------- | ------------ |
+| 1   | Enforce HTTPS and HSTS                        | Security      | High     | Middleware    | ✅ Completed |
+| 2   | Add global exception handling & logging       | Enhancement   | High     | Middleware    | ✅ Completed |
+| 3   | Implement authentication (Azure AD)           | Feature       | High     | Identity      | Open         |
+| 4   | Add health check endpoint (`/health`)         | Ops           | Medium   | Observability | ✅ Completed |
+| 5   | Create Demo1.Tests with controller unit tests | Testing       | Medium   | QA            | Open         |
+| 6   | Integrate Playwright for basic UI smoke       | Testing       | Medium   | QA            | Open         |
+| 7   | Add Dockerfile and containerized dev workflow | DevOps        | Medium   | Infra         | Open         |
+| 8   | Add Application Insights telemetry            | Observability | Medium   | Telemetry     | ✅ Completed |
+| 9   | Accessibility pass on views (ARIA/landmarks)  | Accessibility | Medium   | UI            | Open         |
+| 10  | Add code analyzers and dotnet format baseline | Quality       | Medium   | Tooling       | Open         |
+| 11  | Optimize CI with restore/build caching        | DevOps        | Low      | CI            | ✅ Completed |
+| 12  | Create custom error pages (404/500)           | UX            | Low      | UI            | ✅ Completed |
+| 13  | About Us page                                 | Feature       | Low      | UI            | ✅ Completed |
+| 14  | Security headers middleware                   | Security      | High     | Middleware    | ✅ Completed |
+| 45  | Feature Flags with Azure App Configuration    | Feature       | Medium   | Configuration | ✅ Completed |
 
 ---
 
@@ -212,3 +215,35 @@
 - Manual check documented.
 
 **Labels:** `ux`, `ui`
+
+---
+
+## 45. ✅ Feature Flags with Azure App Configuration
+
+**Type:** Feature
+**Priority:** Medium
+**Status:** ✅ COMPLETED
+**Description:** Implement feature flags using Microsoft.FeatureManagement with Azure App Configuration support for enabling/disabling features at runtime without deployments.
+
+**Acceptance Criteria**
+
+- ✅ Installed Microsoft.FeatureManagement.AspNetCore 4.3.0
+- ✅ Installed Microsoft.Azure.AppConfiguration.AspNetCore 8.4.0
+- ✅ Created Features/FeatureFlags.cs with constants (Feature1, DarkMode, ContactForm, BetaFeatures)
+- ✅ Configured Program.cs with AddFeatureManagement() and Azure App Configuration
+- ✅ Added Feature1 demo: controller action with [FeatureGate], view with documentation
+- ✅ Updated \_Layout.cshtml navigation with <feature> tag helper
+- ✅ Registered tag helpers in \_ViewImports.cshtml
+- ✅ Configured appsettings.json with FeatureManagement section
+- ✅ Fixed TelemetryConfiguration namespace ambiguity (fully qualified ApplicationInsights type)
+- ✅ Tested: Feature1 returns 404 when disabled, loads page when enabled
+- ✅ Verified: Navigation link visibility controlled by feature flag state
+
+**Implementation Details**
+
+- Controller-level: `[FeatureGate(FeatureFlags.Feature1)]` attribute on actions
+- View-level: `<feature name="Feature1">` tag helper for conditional rendering
+- Configuration: JSON-based flags in appsettings.json, ready for Azure App Configuration
+- Example: /Home/Feature1 demonstrates flag toggling with clear documentation
+
+**Labels:** `feature`, `enhancement`, `azure`
