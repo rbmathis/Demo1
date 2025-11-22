@@ -5,7 +5,7 @@ using Demo1.Models;
 namespace Demo1.Controllers;
 
 /// <summary>
-/// Provides MVC actions for the home pages (Index, Privacy, Error).
+/// Provides MVC actions for the home pages (Index, Privacy, AboutUs, Error).
 /// </summary>
 public class HomeController : Controller
 {
@@ -34,6 +34,15 @@ public class HomeController : Controller
     /// </summary>
     /// <returns>The Privacy view.</returns>
     public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Displays the about us page.
+    /// </summary>
+    /// <returns>The AboutUs view.</returns>
+    public IActionResult AboutUs()
     {
         return View();
     }
