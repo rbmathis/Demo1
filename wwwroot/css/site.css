@@ -29,3 +29,43 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Theme toggle styles */
+.dropdown-toggle {
+  outline: 0;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+#bd-theme {
+  white-space: nowrap;
+}
+
+#bd-theme .dropdown-toggle:hover,
+#bd-theme .dropdown-toggle:focus {
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.1);
+  border-radius: 0.375rem;
+}
+
+.bi {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: currentColor;
+}
+
+.theme-icon-active {
+  display: inline-block;
+}
+
+.dropdown-menu {
+  min-width: 8rem;
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.1);
+  color: var(--bs-emphasis-color);
+}
