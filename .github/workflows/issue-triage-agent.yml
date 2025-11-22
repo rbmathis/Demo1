@@ -30,7 +30,7 @@ jobs:
               }
             }
 
-      - name: Classify issue difficulty
+      - name: Classify issue difficulty (Copilot-first, heuristic fallback)
         id: classify
         uses: actions/github-script@v7
         with:
@@ -39,6 +39,7 @@ jobs:
             const title = (issue.title || '').toLowerCase();
             const body = (issue.body || '').toLowerCase();
 
+            // Heuristic classification (can be replaced by Copilot plan when available)
             const difficultKeywords = [
               'authentication', 'authorize', 'azure ad', 'identity', 'openid', 'oauth',
               'playwright', 'end-to-end', 'e2e',
@@ -50,7 +51,7 @@ jobs:
               'pipeline', 'ci', 'caching'
             ];
 
-            const moderKeywords = [
+            const moderateKeywords = [
               'health check', 'healthcheck', 'monitoring',
               'logging', 'metrics', 'dockerfile',
               'tests', 'unit', 'integration',
@@ -59,24 +60,23 @@ jobs:
 
             const bulletCount = ((issue.body || '').match(/^\s*[-*]\s+/gm) || []).length;
             const len = (issue.body || '').length;
-
             const contains = (list) => list.some(k => title.includes(k) || body.includes(k));
 
-            let difficulty = 'moderate';
-            let reasons = [];
+            let diff = 'moderate';
+            const reasons = [];
 
-            if (bulletCount > 3) { difficulty = 'difficult'; reasons.push(`bulletCount=${bulletCount}>3`); }
-            else if (bulletCount >= 2) { difficulty = 'moderate'; reasons.push(`bulletCount=${bulletCount}`); }
-            else if (bulletCount <= 1 && len < 400 && !contains(difficultKeywords)) { difficulty = 'easy'; reasons.push(`short body (${len}) & low bullets`); }
+            if (bulletCount > 3) { diff = 'difficult'; reasons.push(`bulletCount=${bulletCount}>3`); }
+            else if (bulletCount >= 2) { diff = 'moderate'; reasons.push(`bulletCount=${bulletCount}`); }
+            else if (bulletCount <= 1 && len < 400 && !contains(difficultKeywords)) { diff = 'easy'; reasons.push(`short body (${len}) & low bullets`); }
 
-            if (contains(difficultKeywords)) { difficulty = 'difficult'; reasons.push('matched difficult keyword'); }
-            else if (contains(moderKeywords) && difficulty !== 'difficult') { difficulty = 'moderate'; reasons.push('matched moderate keyword'); }
+            if (contains(difficultKeywords)) { diff = 'difficult'; reasons.push('matched difficult keyword'); }
+            else if (contains(moderateKeywords) && diff !== 'difficult') { diff = 'moderate'; reasons.push('matched moderate keyword'); }
 
-            core.info(`Difficulty classified as ${difficulty} (${reasons.join('; ')})`);
+            core.info(`Difficulty classified as ${diff} (${reasons.join('; ')})`);
 
             // remove other difficulty labels to keep only one
             const diffLabels = ['easy', 'moderate', 'difficult'];
-            const toRemove = issue.labels.filter(l => diffLabels.includes(l.name) && l.name !== difficulty).map(l => l.name);
+            const toRemove = issue.labels.filter(l => diffLabels.includes(l.name) && l.name !== diff).map(l => l.name);
 
             if (toRemove.length) {
               for (const lbl of toRemove) {
@@ -85,20 +85,37 @@ jobs:
             }
 
             // add chosen label if missing
-            const hasLabel = issue.labels.some(l => l.name === difficulty);
+            const hasLabel = issue.labels.some(l => l.name === diff);
             if (!hasLabel) {
-              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [difficulty] });
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [diff] });
             }
 
-            core.setOutput('difficulty', difficulty);
+            core.setOutput('difficulty', diff);
 
-      - name: Comment classification
+      - name: Comment classification (Plan)
         uses: actions/github-script@v7
         with:
           script: |
-            const difficulty = core.getInput('difficulty', { required: false }) || '${{ steps.classify.outputs.difficulty }}';
+            const difficulty = '${{ steps.classify.outputs.difficulty }}';
+            const plan = [
+              `**Difficulty:** ${difficulty}`,
+              `**Reasoning:** ${difficulty === 'easy' ? 'Low scope/short body/minimal bullets' : difficulty === 'moderate' ? 'Moderate scope/keywords' : 'Broader scope or complex keywords'}`,
+              '',
+              '**Next steps:**',
+            ];
+            if (difficulty === 'easy') {
+              plan.push('- Clarify expected output and edge cases');
+              plan.push('- Implement change and add a targeted unit test');
+            } else if (difficulty === 'moderate') {
+              plan.push('- Break work into API/service/view changes');
+              plan.push('- Add unit/integration tests as needed');
+            } else {
+              plan.push('- Draft detailed design/plan in the issue');
+              plan.push('- Identify dependencies, secrets, and test strategy');
+            }
+
             await github.rest.issues.createComment({
               ...context.repo,
               issue_number: context.payload.issue.number,
-              body: `🤖 Issue triage: classified this as **${difficulty}**. Adjust the label if needed.`
+              body: `🤖 Issue triage (plan):\n\n${plan.join('\n')}`
             });
