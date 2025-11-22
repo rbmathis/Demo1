@@ -1,7 +1,31 @@
+using Demo1.Telemetry;
+using Microsoft.ApplicationInsights.Extensibility;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add Application Insights telemetry
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+});
+
+// Configure sampling percentage
+var samplingPercentage = builder.Configuration.GetValue<double?>("ApplicationInsights:SamplingPercentage") ?? 100.0;
+if (samplingPercentage < 100.0)
+{
+    builder.Services.Configure<TelemetryConfiguration>(config =>
+    {
+        var builder = config.DefaultTelemetrySink.TelemetryProcessorChainBuilder;
+        builder.UseAdaptiveSampling(maxTelemetryItemsPerSecond: 5);
+        builder.Build();
+    });
+}
+
+// Register custom telemetry initializers
+builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitializer("Demo1"));
 
 var app = builder.Build();
 
