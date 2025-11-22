@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHealthChecks();
 
 // Add Application Insights telemetry
 builder.Services.AddApplicationInsightsTelemetry(options =>
@@ -38,11 +39,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseSecurityHeaders();
+app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready");
 
 app.MapControllerRoute(
     name: "default",

@@ -76,9 +76,39 @@ Sampling is configured using the `SamplingPercentage` setting. The SDK uses fixe
 
 ## HTTPS & Security
 
-- `UseHttpsRedirection()` is enabled by default in non-development environments.
+### HTTPS Redirection
+
+- `UseHttpsRedirection()` is enabled in all environments to ensure secure communication.
+- Configure HTTPS port in `Properties/launchSettings.json`.
+
+### HSTS (HTTP Strict Transport Security)
+
+- `UseHsts()` is enabled for non-development environments.
+- Default max-age is 30 days. Configure via `builder.Services.AddHsts()` if needed.
+- HSTS tells browsers to only access the site via HTTPS for the specified duration.
+
+### Security Headers
+
+The application includes a custom `SecurityHeadersMiddleware` that adds the following headers:
+
+- **X-Content-Type-Options**: `nosniff` - Prevents MIME type sniffing
+- **X-Frame-Options**: `DENY` - Prevents clickjacking by disabling iframe embedding
+- **X-XSS-Protection**: `1; mode=block` - Enables browser XSS filtering
+- **Referrer-Policy**: `strict-origin-when-cross-origin` - Controls referrer information
+- **Content-Security-Policy**: Restricts resource loading to trusted sources
+  - `default-src 'self'` - Only allow resources from same origin by default
+  - `script-src 'self' 'unsafe-inline' 'unsafe-eval'` - Allow inline scripts (required for Bootstrap/jQuery)
+  - `style-src 'self' 'unsafe-inline'` - Allow inline styles
+  - `img-src 'self' data:` - Allow images from same origin and data URIs
+  - `font-src 'self'` - Allow fonts from same origin
+  - `connect-src 'self'` - Allow AJAX requests to same origin
+
+**Note**: The CSP policy can be customized in `Middleware/SecurityHeadersMiddleware.cs` based on your application's needs.
+
+### Authentication & Authorization
+
 - Configure authentication/authorization via `builder.Services.AddAuthentication()`/`AddAuthorization()`
-- Add security headers middleware as needed.
+- See issue #4 for Azure AD integration plans.
 
 ## Logging
 
