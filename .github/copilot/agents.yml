@@ -1,0 +1,49 @@
+# GitHub Copilot Custom Agents Configuration
+# Define custom agents to help with specific tasks in this repository
+
+agents:
+  - name: Code Reviewer
+    description: "Reviews pull requests for code quality, style, and best practices in .NET MVC projects."
+    triggers:
+      - on_pull_request_opened
+      - on_pull_request_synchronized
+    actions:
+      - analyze_code_changes
+      - check_mvc_patterns
+      - validate_security_practices
+      - provide_feedback
+      - suggest_improvements
+    handoff:
+      to: "tester"
+
+  - name: Build Validator
+    description: "Validates that .NET builds are successful and dependencies are correct."
+    triggers:
+      - on_push
+      - on_pull_request
+    actions:
+      - check_project_files
+      - validate_dependencies
+      - run_build_tests
+      - report_build_status
+
+  - name: Security Auditor
+    description: "Scans for security vulnerabilities in .NET code and dependencies."
+    triggers:
+      - on_schedule_weekly
+      - on_pull_request_opened
+    actions:
+      - scan_dependencies
+      - check_security_headers
+      - validate_authentication
+      - audit_data_access
+
+  - name: Documentation Helper
+    description: "Ensures code documentation and README files are up to date."
+    triggers:
+      - on_pull_request_opened
+      - on_push_to_main
+    actions:
+      - check_xml_comments
+      - validate_readme
+      - suggest_documentation_improvements

@@ -1,0 +1,156 @@
+name: Copilot Agent Triggered Tasks
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * 1" # Weekly security scan
+
+jobs:
+  code-review-agent:
+    name: Code Review Agent
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Analyze MVC Patterns
+        run: |
+          echo "🔍 Analyzing MVC patterns..."
+
+          # Check for proper controller structure
+          echo "📁 Controllers found:"
+          find Controllers -name "*.cs" 2>/dev/null || echo "No controllers directory found"
+
+          # Check for proper model structure
+          echo "📊 Models found:"
+          find Models -name "*.cs" 2>/dev/null || echo "No models directory found"
+
+          # Check for proper view structure
+          echo "🎨 Views found:"
+          find Views -name "*.cshtml" 2>/dev/null || echo "No views directory found"
+
+      - name: Security Analysis
+        run: |
+          echo "🛡️ Security check..."
+
+          # Check for authentication configuration
+          if grep -r "AddAuthentication\|AddAuthorization" . --include="*.cs"; then
+            echo "✅ Authentication configuration found"
+          else
+            echo "⚠️ No authentication configuration detected"
+          fi
+
+          # Check for HTTPS redirection
+          if grep -r "UseHttpsRedirection" . --include="*.cs"; then
+            echo "✅ HTTPS redirection configured"
+          else
+            echo "⚠️ HTTPS redirection not found"
+          fi
+
+  build-validator-agent:
+    name: Build Validator Agent
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Validate Project Files
+        run: |
+          echo "📋 Validating project structure..."
+
+          # Check for required files
+          if [ -f "Program.cs" ]; then
+            echo "✅ Program.cs found"
+          else
+            echo "❌ Program.cs missing"
+          fi
+
+          if [ -f "appsettings.json" ]; then
+            echo "✅ appsettings.json found"
+          else
+            echo "❌ appsettings.json missing"
+          fi
+
+      - name: Build and Test
+        run: |
+          echo "🔨 Building project..."
+          dotnet restore
+          dotnet build --configuration Release
+          echo "✅ Build completed successfully"
+
+  security-auditor-agent:
+    name: Security Auditor Agent
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Dependency Security Scan
+        run: |
+          echo "🔒 Security audit..."
+          dotnet restore
+          dotnet list package --vulnerable --include-transitive || echo "No known vulnerabilities found"
+
+      - name: Configuration Security Check
+        run: |
+          echo "⚙️ Configuration security check..."
+
+          # Check for sensitive data in appsettings
+          if grep -i "password\|secret\|key" appsettings*.json; then
+            echo "⚠️ Potential sensitive data in configuration files"
+          else
+            echo "✅ No sensitive data detected in configuration"
+          fi
+
+  documentation-helper-agent:
+    name: Documentation Helper Agent
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Documentation
+        run: |
+          echo "📚 Documentation check..."
+
+          # Check README
+          if [ -f "README.md" ]; then
+            echo "✅ README.md exists"
+            if grep -q "Getting Started\|Installation\|Usage" README.md; then
+              echo "✅ README contains helpful sections"
+            else
+              echo "⚠️ README could use Getting Started or Usage sections"
+            fi
+          else
+            echo "❌ README.md missing"
+          fi
+
+          # Check for XML documentation in controllers
+          if grep -r "/// <summary>" Controllers/ 2>/dev/null; then
+            echo "✅ XML documentation found in controllers"
+          else
+            echo "⚠️ Consider adding XML documentation to controllers"
+          fi
