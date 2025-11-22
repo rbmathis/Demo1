@@ -39,11 +39,12 @@ agents:
       - audit_data_access
 
   - name: Documentation Helper
-    description: "Ensures code documentation and README files are up to date."
+    description: "Ensures code documentation is up to date and new public code includes XML comments."
     triggers:
       - on_pull_request_opened
       - on_push_to_main
     actions:
       - check_xml_comments
+      - check_new_code_comments
       - validate_readme
       - suggest_documentation_improvements

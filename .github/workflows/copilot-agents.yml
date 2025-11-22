@@ -154,3 +154,75 @@ jobs:
           else
             echo "⚠️ Consider adding XML documentation to controllers"
           fi
+
+      - name: Check new public code for XML docs
+        id: xml-doc-check
+        env:
+          PR_BASE: ${{ github.base_ref }}
+        run: |-
+          set -e
+          echo "🔎 Checking new/modified C# files for XML documentation on public APIs..."
+
+          # Determine diff range
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin "$PR_BASE"
+            DIFF_RANGE="origin/${PR_BASE}...${{ github.sha }}"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              BEFORE=$(git rev-list --max-parents=0 HEAD)
+            fi
+            DIFF_RANGE="$BEFORE..${{ github.sha }}"
+          fi
+
+          echo "Using diff range: $DIFF_RANGE"
+
+          # Get changed C# files (exclude bin/obj)
+          CHANGED_FILES=$(git diff --name-only "$DIFF_RANGE" -- '*.cs' ':!**/bin/**' ':!**/obj/**' ':!**/*.Designer.cs')
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "✅ No C# files changed; skipping XML doc check."
+            exit 0
+          fi
+
+          echo "Changed C# files:"
+          echo "$CHANGED_FILES"
+
+          cat > /tmp/xml_doc_check.py <<'PYCODE'
+          import re, sys
+          from pathlib import Path
+
+          missing = []
+
+          def check_file(path: Path):
+              text = path.read_text(encoding='utf-8', errors='ignore').splitlines()
+              prev_has_xml = False
+              for idx, line in enumerate(text):
+                  if re.match(r"\s*///", line):
+                      prev_has_xml = True
+                      continue
+                  # Look for public declarations (class/interface/struct/enum/record/delegate, methods, properties)
+                  if re.match(r"\s*public\s+", line):
+                      # ignore auto-generated backing fields etc.
+                      if re.search(r"class|interface|struct|enum|record|delegate", line) or "(" in line or "{" in line:
+                          if not prev_has_xml:
+                              missing.append(f"{path}:{idx+1}: Missing XML doc -> {line.strip()}")
+                      prev_has_xml = False
+                  else:
+                      prev_has_xml = False
+
+          for file in sys.stdin.read().splitlines():
+              if not file.strip():
+                  continue
+              check_file(Path(file))
+
+          if missing:
+              print("\n❌ Missing XML documentation for public declarations:")
+              for m in missing:
+                  print(m)
+              sys.exit(1)
+          else:
+              print("✅ All public declarations in changed files have XML docs.")
+          PYCODE
+
+          echo "$CHANGED_FILES" | python3 /tmp/xml_doc_check.py
