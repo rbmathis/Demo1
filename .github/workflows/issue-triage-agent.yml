@@ -1,0 +1,104 @@
+name: Issue Triage Agent
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure difficulty labels exist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              { name: 'easy', color: '0e8a16', description: 'Low complexity / quick-win' },
+              { name: 'moderate', color: 'fbca04', description: 'Medium complexity' },
+              { name: 'difficult', color: 'b60205', description: 'High complexity or multi-step' },
+            ];
+            for (const lbl of labels) {
+              try {
+                await github.rest.issues.getLabel({ ...context.repo, name: lbl.name });
+                // update description/color if needed
+                await github.rest.issues.updateLabel({ ...context.repo, name: lbl.name, color: lbl.color, description: lbl.description });
+              } catch (err) {
+                await github.rest.issues.createLabel({ ...context.repo, name: lbl.name, color: lbl.color, description: lbl.description });
+              }
+            }
+
+      - name: Classify issue difficulty
+        id: classify
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = (issue.title || '').toLowerCase();
+            const body = (issue.body || '').toLowerCase();
+
+            const difficultKeywords = [
+              'authentication', 'authorize', 'azure ad', 'identity', 'openid', 'oauth',
+              'playwright', 'end-to-end', 'e2e',
+              'docker', 'container', 'kubernetes',
+              'telemetry', 'application insights', 'app insights',
+              'accessibility', 'wcag', 'aria',
+              'global exception', 'exception handling', 'security', 'hsts',
+              'analyzer', 'code analyzer', 'stylecop', 'roslyn',
+              'pipeline', 'ci', 'caching'
+            ];
+
+            const moderKeywords = [
+              'health check', 'healthcheck', 'monitoring',
+              'logging', 'metrics', 'dockerfile',
+              'tests', 'unit', 'integration',
+              'format', 'analyzers'
+            ];
+
+            const bulletCount = ((issue.body || '').match(/^\s*[-*]\s+/gm) || []).length;
+            const len = (issue.body || '').length;
+
+            const contains = (list) => list.some(k => title.includes(k) || body.includes(k));
+
+            let difficulty = 'moderate';
+            let reasons = [];
+
+            if (bulletCount > 3) { difficulty = 'difficult'; reasons.push(`bulletCount=${bulletCount}>3`); }
+            else if (bulletCount >= 2) { difficulty = 'moderate'; reasons.push(`bulletCount=${bulletCount}`); }
+            else if (bulletCount <= 1 && len < 400 && !contains(difficultKeywords)) { difficulty = 'easy'; reasons.push(`short body (${len}) & low bullets`); }
+
+            if (contains(difficultKeywords)) { difficulty = 'difficult'; reasons.push('matched difficult keyword'); }
+            else if (contains(moderKeywords) && difficulty !== 'difficult') { difficulty = 'moderate'; reasons.push('matched moderate keyword'); }
+
+            core.info(`Difficulty classified as ${difficulty} (${reasons.join('; ')})`);
+
+            // remove other difficulty labels to keep only one
+            const diffLabels = ['easy', 'moderate', 'difficult'];
+            const toRemove = issue.labels.filter(l => diffLabels.includes(l.name) && l.name !== difficulty).map(l => l.name);
+
+            if (toRemove.length) {
+              for (const lbl of toRemove) {
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: lbl });
+              }
+            }
+
+            // add chosen label if missing
+            const hasLabel = issue.labels.some(l => l.name === difficulty);
+            if (!hasLabel) {
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [difficulty] });
+            }
+
+            core.setOutput('difficulty', difficulty);
+
+      - name: Comment classification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const difficulty = core.getInput('difficulty', { required: false }) || '${{ steps.classify.outputs.difficulty }}';
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.payload.issue.number,
+              body: `🤖 Issue triage: classified this as **${difficulty}**. Adjust the label if needed.`
+            });

@@ -48,3 +48,10 @@ agents:
       - check_new_code_comments
       - validate_readme
       - suggest_documentation_improvements
+
+  - name: Issue Triage
+    description: "Classifies new issues by difficulty and applies easy/moderate/difficult labels."
+    triggers:
+      - on_issue_opened
+    actions:
+      - classify_issue_difficulty
