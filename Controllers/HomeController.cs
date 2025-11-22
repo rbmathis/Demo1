@@ -39,6 +39,35 @@ public class HomeController : Controller
     }
 
     /// <summary>
+    /// Displays the About Us page with company information.
+    /// </summary>
+    /// <returns>The AboutUs view.</returns>
+    public IActionResult AboutUs()
+    {
+        return View();
+    }
+
+    /// <summary>
+    /// Displays a custom 404 (Not Found) error page.
+    /// </summary>
+    /// <returns>The Error404 view with <see cref="ErrorViewModel"/>.</returns>
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error404()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    /// <summary>
+    /// Displays a custom 500 (Internal Server Error) error page.
+    /// </summary>
+    /// <returns>The Error500 view with <see cref="ErrorViewModel"/>.</returns>
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error500()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
+
+    /// <summary>
     /// Displays the error page with the current request identifier, if available.
     /// </summary>
     /// <returns>The Error view with <see cref="ErrorViewModel"/>.</returns>
