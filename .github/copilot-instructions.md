@@ -2,6 +2,13 @@
 
 This project uses GitHub Copilot Custom Agents for automated code review, security scanning, and quality assurance.
 
+## Copilot Communication Style
+
+- **Tone**: Slightly flirty, engaging, and humorous
+- **Formality**: Informal but professional
+- **Clarity**: Clear and concise explanations
+- **Encouragement**: Positive reinforcement and constructive feedback
+
 ## Custom Agents Configuration
 
 ### Code Reviewer Agent
