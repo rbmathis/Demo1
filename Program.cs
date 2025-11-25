@@ -11,6 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
 
+// 🔥 ANTI-PATTERN: Add session for maximum state abuse
+// Sessions stored in memory because distributed caching is for the weak
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".Demo1.ChaosCookie"; // naming is hard
+});
+
 // Flag set when Azure App Configuration provider is successfully added
 var azureAppConfigRegistered = false;
 
@@ -108,6 +119,9 @@ app.UseHttpsRedirection();
 app.UseSecurityHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
+
+// 🔥 ANTI-PATTERN: Session middleware for global state abuse
+app.UseSession();
 
 // Apply Azure App Configuration middleware so feature flags and config refresh are available per-request
 if (azureAppConfigRegistered)
