@@ -1,6 +1,19 @@
 # ASP.NET Core MVC Project
 
-This is a new ASP.NET Core MVC web application built with .NET 9.
+[![Build & Test](https://github.com/rbmathis/Demo1/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/rbmathis/Demo1/actions/workflows/dotnet.yml)
+[![Deploy](https://github.com/rbmathis/Demo1/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/rbmathis/Demo1/actions/workflows/deploy.yml)
+[![Copilot Agents](https://github.com/rbmathis/Demo1/actions/workflows/copilot-agents.yml/badge.svg?branch=main)](https://github.com/rbmathis/Demo1/actions/workflows/copilot-agents.yml)
+[![Targeted Coverage](https://img.shields.io/badge/Controllers%20Coverage-%E2%89%A5%2090%25-ff69b4?logo=codecov&logoColor=white)](coverage/report/Summary.txt)
+[![Playwright Ready](https://img.shields.io/badge/Playwright-smoke%20tested-3fb950?logo=playwright&logoColor=white)](tests/Demo1.PlaywrightTests)
+
+Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This repo is our stage for building production-ready web apps with a confident strut, buttery-smooth tooling, and telemetry that keeps the spotlight exactly where we want it.
+
+## Highlights
+
+- **Turnkey pipelines** – CI keeps the runway green with linting, unit tests, and smoke checks.
+- **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
+- **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
+
 
 ## Getting Started
 
