@@ -5,13 +5,17 @@ namespace Demo1.PlaywrightTests.Infrastructure;
 
 internal static class PlaywrightInstaller
 {
+    private static readonly object _lock = new();
     private static bool _installed;
 
     public static async Task EnsureBrowsersAsync()
     {
-        if (_installed)
+        lock (_lock)
         {
-            return;
+            if (_installed)
+            {
+                return;
+            }
         }
 
         // Ensure the Playwright browser binaries are available before tests run.
@@ -21,6 +25,10 @@ internal static class PlaywrightInstaller
         {
             throw new InvalidOperationException($"Playwright browser installation failed with exit code {exitCode}.");
         }
-        _installed = true;
+
+        lock (_lock)
+        {
+            _installed = true;
+        }
     }
 }
