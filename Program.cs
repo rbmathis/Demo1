@@ -128,3 +128,10 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+/// <summary>
+/// Marker partial class used to host the application in integration tests.
+/// </summary>
+public partial class Program
+{
+}
