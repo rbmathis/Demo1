@@ -36,6 +36,12 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      - name: Install Playwright browsers
+        run: |
+          dotnet tool install --global Microsoft.Playwright.CLI
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          playwright install --with-deps
+
       - name: Test
         run: |
           if [ -d "test" ] || [ -d "tests" ] || find . -name "*Test*.csproj" -o -name "*.Tests.csproj" | grep -q .; then
