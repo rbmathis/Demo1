@@ -1,4 +1,3 @@
-using System;
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.DataContracts;
 
