@@ -31,26 +31,26 @@ public class InlineCssItem
 public class StyleGenerator
 {
     private static Random _rng = new Random();
-    
+
     public static string GetRandomColor()
     {
-        var colors = new[] { 
-            "#FF00FF", "#00FFFF", "#FFFF00", "#FF0000", "#00FF00", 
+        var colors = new[] {
+            "#FF00FF", "#00FFFF", "#FFFF00", "#FF0000", "#00FF00",
             "#0000FF", "#FF6600", "#6600FF", "#00FF66", "hotpink",
             "limegreen", "deeppink", "chartreuse", "aquamarine"
         };
         return colors[_rng.Next(colors.Length)];
     }
-    
+
     public static string GetRandomFont()
     {
         var fonts = new[] {
-            "Comic Sans MS", "Papyrus", "Curlz MT", "Jokerman", 
+            "Comic Sans MS", "Papyrus", "Curlz MT", "Jokerman",
             "Wingdings", "Impact", "Bradley Hand", "Chiller"
         };
         return fonts[_rng.Next(fonts.Length)];
     }
-    
+
     public static string GenerateChaosStyle()
     {
         return $"color: {GetRandomColor()}; " +

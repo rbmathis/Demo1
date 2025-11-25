@@ -1,39 +1,36 @@
-// this model exists only to pass raw data to the view
-// all logic will be in the razor file because we hate ourselves
+// Data model for calculator view demonstration
 
 namespace Demo1.Models;
 
+/// <summary>
+/// Data model for the view logic calculator demo.
+/// </summary>
 public class ViewLogicData
 {
-    // just dump raw numbers, the view will figure it out
     public double number1 { get; set; }
     public double number2 { get; set; }
     public double number3 { get; set; }
     public double number4 { get; set; }
     public double number5 { get; set; }
-    
-    // raw strings, view will parse them
-    public string dateString { get; set; }
-    public string jsonString { get; set; }
-    public string csvString { get; set; }
-    public string xmlString { get; set; }
-    
-    // list of stuff for the view to process
-    public List<object> rawData { get; set; }
-    
-    // settings that probably shouldn't be in a model
-    public string connectionString { get; set; }
-    public string apiKey { get; set; }
+
+    public string dateString { get; set; } = string.Empty;
+    public string jsonString { get; set; } = string.Empty;
+    public string csvString { get; set; } = string.Empty;
+    public string xmlString { get; set; } = string.Empty;
+
+    public List<object> rawData { get; set; } = new();
+
     public bool debugMode { get; set; }
 }
 
-// another model because one wasn't enough
+/// <summary>
+/// Result of a calculation operation.
+/// </summary>
 public class CalculationResult
 {
-    public string operation { get; set; }
+    public string operation { get; set; } = string.Empty;
     public double result { get; set; }
     public bool success { get; set; }
-    public string error { get; set; }
-    public DateTime calculatedAt { get; set; }
-    public string calculatedBy { get; set; } // the view, obviously
+    public string error { get; set; } = string.Empty;
+    public DateTime calculatedAt { get; set; } = DateTime.UtcNow;
 }

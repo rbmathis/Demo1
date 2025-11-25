@@ -1,111 +1,93 @@
-@* 
-    GOD OBJECT PROFILE PAGE
-    This view exposes ALL user data including passwords because transparency is key
-    Security review status: What's a security review?
+@*
+    USER PROFILE PAGE - Now properly secured!
+    This view demonstrates what the old anti-pattern looked like,
+    but now uses proper services and data protection.
 *@
+@using Demo1.Services
 @{
-    ViewData["Title"] = "God Object Profile - The Model That Does Everything";
-    var profile = ViewBag.Profile as Demo1.Models.GodObjectProfile;
-    var passwords = ViewBag.AllPasswords as Dictionary<string, string>;
+    ViewData["Title"] = "User Profile - Properly Secured";
+    var profile = ViewBag.Profile as UserProfile;
+    var stats = ViewBag.Stats as ProfileStats;
 }
 
-<div style="font-family: 'Comic Sans MS', cursive; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); padding: 20px; border-radius: 10px;">
-    <h1 style="color: #fff; text-shadow: 3px 3px #000; font-size: 3em;">
-        🗃️ THE GOD OBJECT PROFILE 🗃️
+<div style="font-family: 'Segoe UI', sans-serif; background: linear-gradient(45deg, #4ecdc4, #44a08d); padding: 20px; border-radius: 10px;">
+    <h1 style="color: #fff; font-size: 2.5em;">
+        👤 User Profile Management
     </h1>
-    <p style="color: yellow; font-style: italic;">A model with 100+ properties because separation of concerns is for quitters</p>
+    <p style="color: #e8f4f8;">✅ Now using proper dependency injection and data encapsulation</p>
 </div>
 
-<div style="margin-top: 20px; padding: 15px; border: 5px dashed hotpink; background: #ffffcc;">
-    <h2 style="color: crimson;">📋 User Information (ALL OF IT)</h2>
-    
+@if (ViewBag.Error != null)
+{
+    <div style="margin-top: 15px; padding: 15px; background: #ffcccc; border: 2px solid #cc0000; border-radius: 5px;">
+        <strong>⚠️ Error:</strong> @ViewBag.Error
+    </div>
+}
+
+<div style="margin-top: 20px; padding: 15px; border: 2px solid #4ecdc4; border-radius: 10px; background: #f8f9fa;">
+    <h2 style="color: #333;">📋 Profile Information</h2>
+
     <table style="width: 100%; border-collapse: collapse; font-family: monospace;">
-        <tr style="background: #ff69b4;">
-            <th style="padding: 10px; border: 2px solid black;">Field</th>
-            <th style="padding: 10px; border: 2px solid black;">Value</th>
-            <th style="padding: 10px; border: 2px solid black;">Edit It! (via URL)</th>
+        <tr style="background: #4ecdc4;">
+            <th style="padding: 10px; border: 2px solid #333;">Field</th>
+            <th style="padding: 10px; border: 2px solid #333;">Value</th>
+            <th style="padding: 10px; border: 2px solid #333;">Update</th>
         </tr>
-        <tr style="background: #98fb98;">
-            <td style="padding: 8px; border: 1px solid black;">name</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.name</td>
-            <td style="padding: 8px; border: 1px solid black;"><a href="?action=update&field=name&value=HACKED">Click to change!</a></td>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Name</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Name</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Name&value=UpdatedName">Update</a></td>
         </tr>
-        <tr style="background: #87ceeb;">
-            <td style="padding: 8px; border: 1px solid black;">Name2 (backup)</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.Name2</td>
-            <td style="padding: 8px; border: 1px solid black;"><a href="?action=update&field=Name2&value=PWNED">Edit me!</a></td>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Email</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Email</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Email&value=new@example.com">Update</a></td>
         </tr>
-        <tr style="background: #dda0dd;">
-            <td style="padding: 8px; border: 1px solid black;">email</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.email</td>
-            <td style="padding: 8px; border: 1px solid black;">🔓</td>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Age</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Age</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Age&value=30">Update</a></td>
         </tr>
-        <tr style="background: #ff6347;">
-            <td style="padding: 8px; border: 1px solid black;">🔑 PASSWORD (plaintext!)</td>
-            <td style="padding: 8px; border: 1px solid black; font-weight: bold; color: red;">@profile?.password</td>
-            <td style="padding: 8px; border: 1px solid black;"><a href="?action=update&field=password&value=newpassword">Change it!</a></td>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">City</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.City</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=City&value=Portland">Update</a></td>
         </tr>
-        <tr style="background: #ff4500;">
-            <td style="padding: 8px; border: 1px solid black;">🆔 SSN</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.ssn</td>
-            <td style="padding: 8px; border: 1px solid black;">⚠️ Exposed!</td>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">State</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.State</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=State&value=OR">Update</a></td>
         </tr>
-        <tr style="background: #ffd700;">
-            <td style="padding: 8px; border: 1px solid black;">💳 Credit Card</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.creditCard</td>
-            <td style="padding: 8px; border: 1px solid black;">💸</td>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Country</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Country</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Country&value=Canada">Update</a></td>
         </tr>
-        <tr style="background: #ff8c00;">
-            <td style="padding: 8px; border: 1px solid black;">🔢 CVV</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.creditCardCvv</td>
-            <td style="padding: 8px; border: 1px solid black;">🙈</td>
-        </tr>
-        <tr style="background: #00ced1;">
-            <td style="padding: 8px; border: 1px solid black;">🏠 Hogwarts House</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.hogwartsHouse</td>
-            <td style="padding: 8px; border: 1px solid black;"><a href="?action=update&field=hogwartsHouse&value=Slytherin">Join the dark side!</a></td>
-        </tr>
-        <tr style="background: #9370db;">
-            <td style="padding: 8px; border: 1px solid black;">⚡ Midichlorian Count</td>
-            <td style="padding: 8px; border: 1px solid black;">@profile?.midichlorianCount</td>
-            <td style="padding: 8px; border: 1px solid black;">IT'S OVER 9000!</td>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Favorite Color</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.FavoriteColor</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=FavoriteColor&value=Green">Update</a></td>
         </tr>
     </table>
 </div>
 
-<div style="margin-top: 20px; padding: 15px; background: #000; color: #0f0; font-family: monospace; border: 3px solid #0f0;">
-    <h3>🔓 PASSWORD DATABASE DUMP (this is fine) 🔓</h3>
-    <pre style="color: #0f0;">
-@if (passwords != null)
-{
-    foreach (var kvp in passwords)
-    {
-        @:Email: @kvp.Key | Password: @kvp.Value
-    }
-}
-    </pre>
-</div>
-
-<div style="margin-top: 20px; padding: 15px; background: #ffcccc; border: 3px solid red;">
-    <h3>📤 Serialized User Data (JSON with secrets!)</h3>
-    <textarea style="width: 100%; height: 100px; font-family: monospace; background: #333; color: #0f0;" readonly>@ViewBag.DisplayJson</textarea>
-</div>
-
-<div style="margin-top: 20px; padding: 20px; background: repeating-linear-gradient(45deg, #606dbc, #606dbc 10px, #465298 10px, #465298 20px);">
-    <h3 style="color: white;">🎯 Anti-Patterns Achieved:</h3>
-    <ul style="color: white; font-size: 1.2em;">
-        <li>✅ God Object with 100+ properties</li>
-        <li>✅ Sensitive data stored in plaintext</li>
-        <li>✅ No input validation anywhere</li>
-        <li>✅ Reflection-based property setting</li>
-        <li>✅ Global static state for users</li>
-        <li>✅ Passwords exposed in view</li>
-        <li>✅ URL-based data manipulation</li>
-        <li>✅ Manual JSON serialization (insecure)</li>
+<div style="margin-top: 20px; padding: 15px; background: #28a745; color: #fff; border-radius: 10px;">
+    <h3>✅ Security Improvements Made:</h3>
+    <ul style="font-size: 1.1em;">
+        <li>✅ No passwords stored or displayed</li>
+        <li>✅ No sensitive data (SSN, credit cards) in model</li>
+        <li>✅ Proper service abstraction via DI</li>
+        <li>✅ Field whitelist prevents arbitrary property updates</li>
+        <li>✅ Thread-safe implementation</li>
+        <li>✅ Proper logging without sensitive data</li>
     </ul>
 </div>
 
-<div style="margin-top: 20px; text-align: center;">
-    <p style="font-size: 2em;">🎉 Total Users in Memory: @ViewBag.TotalUsers 🎉</p>
-    <p style="color: gray; font-style: italic;">IsValid() check passed: @ViewBag.IsValid (it always returns true lol)</p>
+<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+    <h4>📊 Service Statistics</h4>
+    <p>Total Profiles: @stats?.TotalProfiles</p>
+    <p>Active Profiles: @stats?.ActiveProfiles</p>
+    <p>Profile ID: @profile?.Id</p>
+    <p>Created: @profile?.CreatedAt.ToString("O")</p>
+    <p>Updated: @profile?.UpdatedAt.ToString("O")</p>
 </div>

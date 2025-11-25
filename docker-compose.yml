@@ -1,0 +1,51 @@
+# Docker Compose for Demo1 Application
+# Provides local development parity with production environment
+
+services:
+  # Main application
+  demo1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5555:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - APPLICATIONINSIGHTS__CONNECTIONSTRING=${APPLICATIONINSIGHTS_CONNECTIONSTRING:-}
+      - AZUREAPPCONFIGURATION__CONNECTIONSTRING=${AZURE_APP_CONFIG_CONNECTIONSTRING:-}
+      - REDIS__CONNECTIONSTRING=redis:6379
+      - CACHEPROVIDER=Redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - demo1-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Redis for distributed caching and session state
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - demo1-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+networks:
+  demo1-network:
+    driver: bridge
+
+volumes:
+  redis-data:

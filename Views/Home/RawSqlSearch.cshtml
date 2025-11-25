@@ -1,143 +1,89 @@
 @*
-    RAW SQL SEARCH PAGE
-    Features SQL injection, hardcoded connection strings, and user-supplied WHERE clauses
-    Security Level: -10/10
+    SEARCH PAGE - Now properly secured!
+    Using parameterized queries via service abstraction.
 *@
 @{
-    ViewData["Title"] = "Raw SQL Search - Injection Paradise";
+    ViewData["Title"] = "Search - Properly Secured";
     var results = ViewBag.Results as List<Demo1.Models.SearchResult>;
     var query = ViewBag.Query as Demo1.Models.SearchQuery;
-    var history = ViewBag.QueryHistory as List<string>;
+    var history = ViewBag.QueryHistory as IReadOnlyList<string>;
 }
 
-<div style="background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); padding: 30px; color: #0f0; font-family: 'Courier New', monospace;">
-    <h1 style="text-shadow: 0 0 10px #0f0, 0 0 20px #0f0; font-size: 2.5em;">
-        💉 RAW SQL SEARCH 💉
+<div style="background: linear-gradient(135deg, #2c3e50, #3498db); padding: 30px; color: #fff; font-family: 'Segoe UI', sans-serif; border-radius: 10px;">
+    <h1 style="font-size: 2.5em;">
+        🔍 Secure Search
     </h1>
-    <p style="color: #ff6b6b;">String concatenation + user input = maximum security (this is sarcasm)</p>
+    <p style="color: #ecf0f1;">✅ Now using parameterized queries via service abstraction</p>
 </div>
 
-<div style="margin-top: 20px; padding: 20px; background: #1e1e1e; border: 2px solid #0f0; border-radius: 10px;">
-    <h2 style="color: #0f0;">🔍 Search Interface</h2>
-    
+<div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border: 2px solid #3498db; border-radius: 10px;">
+    <h2 style="color: #2c3e50;">Search Interface</h2>
+
     <form method="get" style="display: grid; gap: 15px;">
         <div>
-            <label style="color: #fff; font-weight: bold;">Search Term (goes directly into SQL!):</label>
-            <input type="text" name="q" value="@query?.term" 
-                   placeholder="Try: '; DROP TABLE users; --" 
-                   style="width: 100%; padding: 10px; background: #333; color: #0f0; border: 1px solid #0f0; font-family: monospace;" />
+            <label style="color: #333; font-weight: bold;">Search Term:</label>
+            <input type="text" name="q" value="@query?.term"
+                   placeholder="Enter search term..."
+                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;" />
         </div>
-        
-        <div>
-            <label style="color: #fff; font-weight: bold;">Table Name (user-controlled!):</label>
-            <select name="table" style="padding: 10px; background: #333; color: #0f0; border: 1px solid #0f0;">
-                @{
-                    var tables = new[] { "users", "passwords", "credit_cards", "secrets", "nuclear_codes" };
-                    foreach (var t in tables)
-                    {
-                        if (query?.table == t)
-                        {
-                            <option value="@t" selected>@t</option>
-                        }
-                        else
-                        {
-                            <option value="@t">@t</option>
-                        }
-                    }
-                }
-            </select>
-        </div>
-        
-        <div>
-            <label style="color: #fff; font-weight: bold;">ORDER BY (also user-controlled!):</label>
-            <input type="text" name="orderBy" value="@query?.orderBy" 
-                   placeholder="id; DROP DATABASE master; --" 
-                   style="width: 100%; padding: 10px; background: #333; color: #0f0; border: 1px solid #0f0; font-family: monospace;" />
-        </div>
-        
-        <div>
-            <label style="color: #ff6b6b; font-weight: bold;">⚠️ Custom WHERE Clause (YOU write the SQL!):</label>
-            <textarea name="customWhere" rows="3" 
-                      placeholder="1=1 OR password IS NOT NULL" 
-                      style="width: 100%; padding: 10px; background: #333; color: #ff6b6b; border: 1px solid #ff6b6b; font-family: monospace;">@query?.customWhere</textarea>
-        </div>
-        
-        <button type="submit" style="padding: 15px 30px; background: #ff6b6b; color: #fff; border: none; cursor: pointer; font-size: 1.2em; font-weight: bold;">
-            🚀 EXECUTE UNSAFE QUERY 🚀
+
+        <button type="submit" style="padding: 15px 30px; background: #3498db; color: #fff; border: none; cursor: pointer; font-size: 1.2em; font-weight: bold; border-radius: 5px;">
+            🔍 Search
         </button>
     </form>
 </div>
 
-<div style="margin-top: 20px; padding: 20px; background: #000; border: 3px solid #ff0000;">
-    <h3 style="color: #ff0000;">🔥 Generated SQL Query (String Concatenation!):</h3>
-    <pre style="color: #0f0; font-size: 1.1em; overflow-x: auto; padding: 15px; background: #111;">@ViewBag.GeneratedSql</pre>
-    
-    <h3 style="color: #ff6b6b; margin-top: 20px;">🔑 Connection String (Hardcoded!):</h3>
-    <pre style="color: #ffd700; font-size: 0.9em; padding: 10px; background: #222;">@ViewBag.ConnectionString</pre>
-</div>
+<div style="margin-top: 20px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #2c3e50;">📊 Search Results (@(results?.Count ?? 0) items)</h2>
 
-<div style="margin-top: 20px; padding: 20px; background: #2d2d2d; border-radius: 10px;">
-    <h2 style="color: #4ecdc4;">📊 Search Results (@results?.Count items)</h2>
-    
     @if (results != null && results.Any())
     {
         <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <tr style="background: #4ecdc4; color: #000;">
-                <th style="padding: 12px; border: 1px solid #333;">ID</th>
-                <th style="padding: 12px; border: 1px solid #333;">Title</th>
-                <th style="padding: 12px; border: 1px solid #333;">Description</th>
-                <th style="padding: 12px; border: 1px solid #333;">Category</th>
+            <tr style="background: #3498db; color: #fff;">
+                <th style="padding: 12px; border: 1px solid #ccc;">ID</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Title</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Description</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Category</th>
             </tr>
             @foreach (var result in results)
             {
-                <tr style="background: #3d3d3d; color: #fff;">
-                    <td style="padding: 10px; border: 1px solid #555;">@result.id</td>
-                    <td style="padding: 10px; border: 1px solid #555;">@result.title</td>
-                    <td style="padding: 10px; border: 1px solid #555;">@result.description</td>
-                    <td style="padding: 10px; border: 1px solid #555;">@result.category</td>
+                <tr style="background: #f8f9fa;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.id</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.title</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.description</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.category</td>
                 </tr>
             }
         </table>
     }
     else
     {
-        <p style="color: #888; font-style: italic;">No results found (try some SQL injection!)</p>
+        <p style="color: #666; font-style: italic;">No results found. Try a different search term.</p>
     }
 </div>
 
-<div style="margin-top: 20px; padding: 20px; background: #1a1a2e; border: 2px dashed #ff6b6b;">
-    <h3 style="color: #ff6b6b;">📜 Query History (Logged for "Auditing")</h3>
-    <p style="color: #888;">Total queries executed: @ViewBag.TotalQueries</p>
+<div style="margin-top: 20px; padding: 20px; background: #e8f4f8; border-radius: 10px;">
+    <h3 style="color: #2c3e50;">📜 Recent Queries (Audit Log)</h3>
+    <p style="color: #666;">Total queries: @ViewBag.TotalQueries</p>
     <div style="max-height: 200px; overflow-y: auto;">
         @if (history != null)
         {
             foreach (var q in history)
             {
-                <pre style="color: #0f0; font-size: 0.8em; margin: 5px 0; padding: 5px; background: #111;">@q</pre>
+                <pre style="color: #333; font-size: 0.9em; margin: 5px 0; padding: 8px; background: #fff; border-radius: 3px;">@q</pre>
             }
         }
     </div>
 </div>
 
-<div style="margin-top: 20px; padding: 20px; background: repeating-linear-gradient(45deg, #330000, #330000 10px, #660000 10px, #660000 20px); border-radius: 10px;">
-    <h3 style="color: #fff;">🎯 SQL Injection Cheat Sheet (For Educational Purposes Only™):</h3>
-    <ul style="color: #ffcccc; font-family: monospace;">
-        <li>Search: <code>' OR '1'='1</code></li>
-        <li>Search: <code>'; DROP TABLE users; --</code></li>
-        <li>Custom WHERE: <code>1=1 UNION SELECT * FROM passwords</code></li>
-        <li>ORDER BY: <code>id; DELETE FROM users WHERE 1=1; --</code></li>
-    </ul>
-</div>
-
-<div style="margin-top: 20px; padding: 20px; background: #111; color: #666;">
-    <h4>🏆 Anti-Patterns Achieved:</h4>
-    <ul>
-        <li>✅ SQL built via string concatenation</li>
-        <li>✅ User input directly in queries</li>
-        <li>✅ Hardcoded connection string with credentials</li>
-        <li>✅ User-selectable table names</li>
-        <li>✅ Custom WHERE clause from user input</li>
-        <li>✅ Query logging with sensitive data</li>
-        <li>✅ Connection string exposed in UI</li>
+<div style="margin-top: 20px; padding: 20px; background: #28a745; color: #fff; border-radius: 10px;">
+    <h3>✅ Security Improvements Made:</h3>
+    <ul style="font-size: 1.1em;">
+        <li>✅ Service abstraction - no direct database access</li>
+        <li>✅ No hardcoded connection strings</li>
+        <li>✅ Parameterized queries prevent SQL injection</li>
+        <li>✅ User input is sanitized</li>
+        <li>✅ No sensitive data exposed in UI</li>
+        <li>✅ Proper audit logging without sensitive info</li>
     </ul>
 </div>

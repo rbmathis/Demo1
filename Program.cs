@@ -1,5 +1,6 @@
 using Demo1.Middleware;
 using Demo1.Telemetry;
+using Demo1.Services;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
 using Azure.Identity;
@@ -11,23 +12,47 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
 
-// 🔥 ANTI-PATTERN: Add session for maximum state abuse
-// Sessions stored in memory because distributed caching is for the weak
-builder.Services.AddDistributedMemoryCache();
+// ✅ 12-FACTOR: Register application services via dependency injection
+builder.Services.AddSingleton<ISearchService, InMemorySearchService>();
+builder.Services.AddSingleton<IWeatherService, MockWeatherService>();
+builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>();
+builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
+
+// ✅ 12-FACTOR: Configure distributed cache based on environment
+var cacheProvider = builder.Configuration["CacheProvider"] ?? "Memory";
+if (cacheProvider.Equals("Redis", StringComparison.OrdinalIgnoreCase))
+{
+    var redisConnectionString = builder.Configuration["Redis:ConnectionString"]
+        ?? Environment.GetEnvironmentVariable("REDIS_CONNECTIONSTRING")
+        ?? "localhost:6379";
+
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "Demo1_";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.Name = ".Demo1.ChaosCookie"; // naming is hard
+    options.Cookie.Name = ".Demo1.Session";
 });
 
 // Flag set when Azure App Configuration provider is successfully added
 var azureAppConfigRegistered = false;
 
-// Register Azure App Configuration (Managed Identity) using the provided endpoint or connection string
-var appConfigEndpoint = builder.Configuration["AzureAppConfiguration:Endpoint"] ?? "https://rbmappconfig.azconfig.io";
-var appConfigConnectionString = builder.Configuration["AzureAppConfiguration:ConnectionString"] ?? Environment.GetEnvironmentVariable("AZURE_APP_CONFIG_CONNECTIONSTRING");
+// ✅ 12-FACTOR: Configuration from environment variables, not hardcoded
+var appConfigEndpoint = Environment.GetEnvironmentVariable("AZUREAPPCONFIGURATION__ENDPOINT")
+    ?? builder.Configuration["AzureAppConfiguration:Endpoint"];
+var appConfigConnectionString = Environment.GetEnvironmentVariable("AZUREAPPCONFIGURATION__CONNECTIONSTRING")
+    ?? builder.Configuration["AzureAppConfiguration:ConnectionString"];
 var appConfigLabel = builder.Configuration["AzureAppConfiguration:Label"] ?? "";
 if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(appConfigConnectionString))
 {
@@ -82,10 +107,13 @@ builder.Services.AddFeatureManagement();
 // Ensure Azure App Configuration services are registered so the middleware can be used safely
 builder.Services.AddAzureAppConfiguration();
 
-// Add Application Insights telemetry
+// ✅ 12-FACTOR: Externalized Application Insights configuration
+var appInsightsConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS__CONNECTIONSTRING")
+    ?? builder.Configuration["ApplicationInsights:ConnectionString"];
+
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
-    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+    options.ConnectionString = appInsightsConnectionString;
 });
 
 // Configure sampling percentage
@@ -120,7 +148,7 @@ app.UseSecurityHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
 
-// 🔥 ANTI-PATTERN: Session middleware for global state abuse
+// 🔥 ANTI-PATTERN: Session middleware - kept for demo pages only
 app.UseSession();
 
 // Apply Azure App Configuration middleware so feature flags and config refresh are available per-request

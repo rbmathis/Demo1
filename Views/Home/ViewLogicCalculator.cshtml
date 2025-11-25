@@ -7,14 +7,14 @@
 @using System.Xml.Linq
 @{
     ViewData["Title"] = "View Logic Calculator - Where Controllers Fear to Tread";
-    
+
     // ╔════════════════════════════════════════════════════════════════════════════╗
     // ║  ALL THE BUSINESS LOGIC IS RIGHT HERE IN THE VIEW. THIS IS FINE. 🔥       ║
     // ╚════════════════════════════════════════════════════════════════════════════╝
-    
+
     var data = ViewBag.Data as Demo1.Models.ViewLogicData;
     var queryString = ViewBag.RawQueryString as string ?? "";
-    
+
     // Parse query parameters IN THE VIEW because MVC is just a suggestion
     var queryParams = new Dictionary<string, string>();
     if (!string.IsNullOrEmpty(queryString))
@@ -29,27 +29,27 @@
             }
         }
     }
-    
+
     // Get operation from query string
     var operation = queryParams.GetValueOrDefault("op", "add");
     var num1Str = queryParams.GetValueOrDefault("a", "0");
     var num2Str = queryParams.GetValueOrDefault("b", "0");
-    
+
     // Parse numbers IN THE VIEW with try-catch
     double num1 = 0, num2 = 0;
     var parseErrors = new List<string>();
-    
+
     try { num1 = double.Parse(num1Str); }
     catch { parseErrors.Add($"Failed to parse '{num1Str}' as number"); num1 = data?.number1 ?? 0; }
-    
+
     try { num2 = double.Parse(num2Str); }
     catch { parseErrors.Add($"Failed to parse '{num2Str}' as number"); num2 = data?.number2 ?? 0; }
-    
+
     // DO ALL THE MATH IN THE VIEW
     double result = 0;
     string resultMessage = "";
     bool success = true;
-    
+
     switch (operation.ToLower())
     {
         case "add":
@@ -91,7 +91,7 @@
             success = false;
             break;
     }
-    
+
     // Parse JSON IN THE VIEW
     var jsonData = new Dictionary<string, object>();
     try
@@ -105,7 +105,7 @@
     {
         parseErrors.Add($"JSON parse error: {ex.Message}");
     }
-    
+
     // Parse CSV IN THE VIEW
     var csvRows = new List<string[]>();
     try
@@ -123,7 +123,7 @@
     {
         parseErrors.Add($"CSV parse error: {ex.Message}");
     }
-    
+
     // Parse XML IN THE VIEW
     var xmlItems = new List<string>();
     try
@@ -138,7 +138,7 @@
     {
         parseErrors.Add($"XML parse error: {ex.Message}");
     }
-    
+
     // Calculate statistics IN THE VIEW
     var numbers = new[] { data?.number1 ?? 0, data?.number2 ?? 0, data?.number3 ?? 0, data?.number4 ?? 0, data?.number5 ?? 0 };
     var sum = numbers.Sum();
@@ -146,7 +146,7 @@
     var max = numbers.Max();
     var min = numbers.Min();
     var stdDev = Math.Sqrt(numbers.Select(x => Math.Pow(x - avg, 2)).Sum() / numbers.Length);
-    
+
     // Date parsing IN THE VIEW
     DateTime parsedDate = DateTime.Now;
     try
@@ -154,7 +154,7 @@
         parsedDate = DateTime.Parse(data?.dateString ?? DateTime.Now.ToString());
     }
     catch { parseErrors.Add("Date parse failed, using now"); }
-    
+
     // Time zone conversions IN THE VIEW
     var utcTime = parsedDate.ToUniversalTime();
     var localTime = parsedDate.ToLocalTime();
@@ -169,11 +169,11 @@
 
 <div style="margin-top: 20px; padding: 20px; background: #f0f0f0; border-radius: 10px;">
     <h2 style="color: #667eea;">🔢 Calculator (Logic in View!)</h2>
-    
+
     <form method="get" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-        <input type="number" name="a" value="@num1" step="any" 
+        <input type="number" name="a" value="@num1" step="any"
                style="padding: 15px; font-size: 1.5em; width: 150px; border: 2px solid #667eea; border-radius: 5px;" />
-        
+
         <select name="op" style="padding: 15px; font-size: 1.5em; border: 2px solid #667eea; border-radius: 5px;">
             @{
                 var ops = new[] { ("add", "➕ Add"), ("subtract", "➖ Subtract"), ("multiply", "✖️ Multiply"), ("divide", "➗ Divide"), ("power", "⚡ Power"), ("chaos", "🌀 CHAOS") };
@@ -190,15 +190,15 @@
                 }
             }
         </select>
-        
+
         <input type="number" name="b" value="@num2" step="any"
                style="padding: 15px; font-size: 1.5em; width: 150px; border: 2px solid #667eea; border-radius: 5px;" />
-        
+
         <button type="submit" style="padding: 15px 30px; font-size: 1.5em; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
             Calculate!
         </button>
     </form>
-    
+
     <div style="margin-top: 20px; padding: 20px; background: @(success ? "#d4edda" : "#f8d7da"); border-radius: 10px; font-size: 1.5em;">
         <strong>Result:</strong> @resultMessage
     </div>
@@ -243,7 +243,7 @@
         <h3 style="color: #28a745;">📋 JSON Parsed in View:</h3>
         <pre style="background: #f8f9fa; padding: 10px; overflow: auto;">@JsonSerializer.Serialize(jsonData, new JsonSerializerOptions { WriteIndented = true })</pre>
     </div>
-    
+
     <div style="padding: 20px; background: #fff; border: 2px solid #fd7e14; border-radius: 10px;">
         <h3 style="color: #fd7e14;">📄 CSV Parsed in View:</h3>
         <table style="width: 100%; border-collapse: collapse;">
@@ -258,7 +258,7 @@
             }
         </table>
     </div>
-    
+
     <div style="padding: 20px; background: #fff; border: 2px solid #6f42c1; border-radius: 10px;">
         <h3 style="color: #6f42c1;">📜 XML Parsed in View:</h3>
         <ul>
@@ -268,7 +268,7 @@
             }
         </ul>
     </div>
-    
+
     <div style="padding: 20px; background: #fff; border: 2px solid #20c997; border-radius: 10px;">
         <h3 style="color: #20c997;">🕐 Date/Time (Converted in View!):</h3>
         <p><strong>Original:</strong> @data?.dateString</p>
@@ -278,17 +278,15 @@
     </div>
 </div>
 
-<div style="margin-top: 20px; padding: 20px; background: #dc3545; color: white; border-radius: 10px;">
-    <h3>🔑 Sensitive Data From Model (Exposed in View!):</h3>
-    <p><strong>Connection String:</strong> @data?.connectionString</p>
-    <p><strong>API Key:</strong> @data?.apiKey</p>
+<div style="margin-top: 20px; padding: 20px; background: #28a745; color: white; border-radius: 10px;">
+    <h3>✅ Security Improvement:</h3>
+    <p>Sensitive data like connection strings and API keys are no longer exposed in the view.</p>
     <p><strong>Debug Mode:</strong> @data?.debugMode</p>
 </div>
 
 <div style="margin-top: 20px; padding: 20px; background: #343a40; color: white; border-radius: 10px;">
-    <h3>🏆 Anti-Patterns Achieved in This View:</h3>
+    <h3>📝 View Logic Demo:</h3>
     <ul style="columns: 2;">
-        <li>✅ All business logic in Razor view</li>
         <li>✅ Query string parsing in view</li>
         <li>✅ Math calculations in view</li>
         <li>✅ JSON parsing in view</li>
@@ -297,7 +295,7 @@
         <li>✅ Date conversions in view</li>
         <li>✅ Statistics calculations in view</li>
         <li>✅ Error handling in view</li>
-        <li>✅ Sensitive data displayed</li>
+        <li>🛡️ Sensitive data now protected</li>
         <li>✅ Controller does literally nothing</li>
         <li>✅ ~150 lines of C# in a .cshtml file</li>
     </ul>
