@@ -32,11 +32,18 @@ public class SmokeTests : PageTest
     }
 
     public override BrowserNewContextOptions ContextOptions()
-        => new()
+    {
+        if (_server is null)
         {
-            BaseURL = _server?.BaseAddress.ToString(),
+            throw new InvalidOperationException("Server fixture was not initialized.");
+        }
+
+        return new()
+        {
+            BaseURL = _server.BaseAddress.ToString(),
             IgnoreHTTPSErrors = true
         };
+    }
 
     [Test]
     public async Task HomePage_LoadsAndDisplaysWelcomeHeading()
