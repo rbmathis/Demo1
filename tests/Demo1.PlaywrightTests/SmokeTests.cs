@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Demo1.PlaywrightTests.Infrastructure;
 using Microsoft.Playwright;
 using Microsoft.Playwright.NUnit;
