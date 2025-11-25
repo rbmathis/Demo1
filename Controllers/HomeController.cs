@@ -61,6 +61,17 @@ public class HomeController : Controller
     }
 
     /// <summary>
+    /// Displays the Contact page (gated by feature flag).
+    /// </summary>
+    /// <returns>The Contact view if enabled, otherwise NotFound.</returns>
+    [FeatureGate(FeatureFlags.ContactForm)]
+    public IActionResult Contact()
+    {
+        _logger.LogInformation("Contact page accessed");
+        return View();
+    }
+
+    /// <summary>
     /// Displays a custom 404 (Not Found) error page.
     /// </summary>
     /// <returns>The Error404 view with <see cref="ErrorViewModel"/>.</returns>

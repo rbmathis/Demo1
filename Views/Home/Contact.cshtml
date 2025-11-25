@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Contact";
+}
+
+<div class="text-center">
+    <h1 class="display-4">📧 Contact Us</h1>
+    <p class="lead">This page is controlled by the ContactForm feature flag!</p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2">
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">✅ ContactForm Feature Flag Enabled!</h4>
+            <p>
+                You're seeing this contact form because the <strong>ContactForm</strong> feature flag is currently
+                <strong>enabled</strong>.
+            </p>
+            <hr>
+            <p class="mb-0">
+                Toggle the feature flag in Azure App Configuration to enable or disable this page.
+            </p>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Contact Form</h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Your name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" rows="4" placeholder="Your message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Home</a>
+        </div>
+    </div>
+</div>
