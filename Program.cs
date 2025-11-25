@@ -2,6 +2,8 @@ using Demo1.Middleware;
 using Demo1.Telemetry;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
+using Azure.Identity;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +11,65 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
 
+// Flag set when Azure App Configuration provider is successfully added
+var azureAppConfigRegistered = false;
+
+// Register Azure App Configuration (Managed Identity) using the provided endpoint or connection string
+var appConfigEndpoint = builder.Configuration["AzureAppConfiguration:Endpoint"] ?? "https://rbmappconfig.azconfig.io";
+var appConfigConnectionString = builder.Configuration["AzureAppConfiguration:ConnectionString"] ?? Environment.GetEnvironmentVariable("AZURE_APP_CONFIG_CONNECTIONSTRING");
+var appConfigLabel = builder.Configuration["AzureAppConfiguration:Label"] ?? "";
+if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(appConfigConnectionString))
+{
+    try
+    {
+        if (!string.IsNullOrWhiteSpace(appConfigEndpoint))
+        {
+            builder.Configuration.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(new Uri(appConfigEndpoint), new DefaultAzureCredential())
+                     .UseFeatureFlags(featureFlagOptions =>
+                     {
+                         featureFlagOptions.Label = appConfigLabel;
+                         featureFlagOptions.CacheExpirationInterval = TimeSpan.FromSeconds(30);
+                     })
+                     .ConfigureRefresh(refresh =>
+                     {
+                         refresh.Register("FeatureManagement:Sentinel", refreshAll: true)
+                                .SetCacheExpiration(TimeSpan.FromSeconds(30));
+                     });
+            });
+            azureAppConfigRegistered = true;
+        }
+        else if (!string.IsNullOrWhiteSpace(appConfigConnectionString))
+        {
+            builder.Configuration.AddAzureAppConfiguration(options =>
+            {
+                options.Connect(appConfigConnectionString)
+                     .UseFeatureFlags(featureFlagOptions =>
+                     {
+                         featureFlagOptions.Label = appConfigLabel;
+                         featureFlagOptions.CacheExpirationInterval = TimeSpan.FromSeconds(30);
+                     })
+                     .ConfigureRefresh(refresh =>
+                     {
+                         refresh.Register("FeatureManagement:Sentinel", refreshAll: true)
+                                .SetCacheExpiration(TimeSpan.FromSeconds(30));
+                     });
+            });
+            azureAppConfigRegistered = true;
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Failed to configure Azure App Configuration: {ex.Message}");
+        Console.WriteLine("Azure App Configuration will be skipped. Feature flags will fallback to local config.");
+    }
+}
+
 // Add Feature Management
 builder.Services.AddFeatureManagement();
+// Ensure Azure App Configuration services are registered so the middleware can be used safely
+builder.Services.AddAzureAppConfiguration();
 
 // Add Application Insights telemetry
 builder.Services.AddApplicationInsightsTelemetry(options =>
@@ -35,6 +94,8 @@ builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitiali
 
 var app = builder.Build();
 
+// Flag set when Azure App Configuration provider is successfully added
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -47,6 +108,12 @@ app.UseHttpsRedirection();
 app.UseSecurityHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
+
+// Apply Azure App Configuration middleware so feature flags and config refresh are available per-request
+if (azureAppConfigRegistered)
+{
+    app.UseAzureAppConfiguration();
+}
 
 app.UseAuthorization();
 

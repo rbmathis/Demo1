@@ -93,3 +93,74 @@ This project is configured with GitHub Actions workflows and Copilot Custom Agen
 4. Configure deployment secrets for production releases
 
 See `.github/copilot-instructions.md` for detailed agent configuration.
+
+## 🤖 Using Custom Copilot Agents
+
+This project includes custom GitHub Copilot agents that you can chat with directly in VS Code!
+
+### Available Agents
+
+Use `@agent-name` in Copilot Chat to invoke them:
+
+#### @code-reviewer 💖
+Reviews your code for quality and best practices.
+
+```
+@code-reviewer look at this controller
+@code-reviewer check my security implementation
+```
+
+#### @build-validator 🔧
+Validates project files and dependencies.
+
+```
+@build-validator check my .csproj file
+@build-validator analyze dependencies
+```
+
+#### @security-auditor 🛡️
+Scans for security vulnerabilities.
+
+```
+@security-auditor scan this file
+@security-auditor check for SQL injection risks
+```
+
+#### @doc-helper 📚
+Helps improve documentation.
+
+```
+@doc-helper generate XML comments
+@doc-helper check documentation coverage
+```
+
+#### @issue-helper 🎯
+Helps triage GitHub issues.
+
+```
+@issue-helper classify this issue
+@issue-helper suggest labels
+```
+
+### Quick Start
+
+1. Open Copilot Chat (Ctrl+Shift+I)
+2. Type `@` to see available agents
+3. Select an agent and ask your question
+4. Get intelligent, context-aware assistance!
+
+### Examples
+
+```
+# Review current file
+@code-reviewer analyze this controller for MVC best practices
+
+# Check security
+@security-auditor scan for authentication issues
+
+# Validate build
+@build-validator check package versions
+
+# Improve docs
+@doc-helper add XML comments to selected code
+```
