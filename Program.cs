@@ -30,12 +30,11 @@ if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(
                      .UseFeatureFlags(featureFlagOptions =>
                      {
                          featureFlagOptions.Label = appConfigLabel;
-                         featureFlagOptions.CacheExpirationInterval = TimeSpan.FromSeconds(30);
                      })
                      .ConfigureRefresh(refresh =>
                      {
                          refresh.Register("FeatureManagement:Sentinel", refreshAll: true)
-                                .SetCacheExpiration(TimeSpan.FromSeconds(30));
+                                .SetRefreshInterval(TimeSpan.FromSeconds(30));
                      });
             });
             azureAppConfigRegistered = true;
@@ -48,12 +47,11 @@ if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(
                      .UseFeatureFlags(featureFlagOptions =>
                      {
                          featureFlagOptions.Label = appConfigLabel;
-                         featureFlagOptions.CacheExpirationInterval = TimeSpan.FromSeconds(30);
                      })
                      .ConfigureRefresh(refresh =>
                      {
                          refresh.Register("FeatureManagement:Sentinel", refreshAll: true)
-                                .SetCacheExpiration(TimeSpan.FromSeconds(30));
+                                .SetRefreshInterval(TimeSpan.FromSeconds(30));
                      });
             });
             azureAppConfigRegistered = true;

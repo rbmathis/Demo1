@@ -46,6 +46,7 @@ agents:
         - security-auditor
         - doc-helper
         - build-validator
+    activation: manual
 
   build-validator:
     displayName: "Build Validator 🛠️"
@@ -76,6 +77,7 @@ agents:
       can_handoff_to:
         - security-auditor
         - code-reviewer
+    activation: manual
 
   security-auditor:
     displayName: "Security Auditor 🛡️"
@@ -109,6 +111,7 @@ agents:
       can_handoff_to:
         - code-reviewer
         - build-validator
+    activation: manual
 
   doc-helper:
     displayName: "Documentation Helper 📚"
@@ -137,6 +140,7 @@ agents:
     handoff:
       can_handoff_to:
         - code-reviewer
+    activation: manual
 
   issue-helper:
     displayName: "Issue Helper 🎯"
@@ -164,3 +168,4 @@ agents:
       can_handoff_to:
         - code-reviewer
         - security-auditor
+    activation: manual
