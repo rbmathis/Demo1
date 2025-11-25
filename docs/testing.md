@@ -2,7 +2,7 @@
 
 ## Current Status
 
-- No test projects exist yet (`*.Tests`); the CI pipeline skips tests when none are found.
+- `Demo1.PlaywrightTests` provides headless smoke coverage using Playwright against a running instance of the site.
 
 ## How to Add Tests
 
@@ -20,7 +20,8 @@
 ## Running Tests
 
 - Locally: `dotnet test`
-- CI (GitHub Actions): Automatically runs `dotnet test` if any test projects exist.
+- Playwright browsers (first run): `dotnet build tests/Demo1.PlaywrightTests` followed by `pwsh bin/Debug/net9.0/playwright.ps1 install` or simply execute the tests once and the suite will install browsers automatically.
+- CI (GitHub Actions): Automatically installs Playwright via `Microsoft.Playwright.CLI` and runs `dotnet test` when test projects exist.
 
 ## Guidelines
 
