@@ -30,7 +30,7 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
             return;
         }
 
-        var startInfo = new ProcessStartInfo("dotnet", $"run --no-build --urls {BaseAddress}")
+        var startInfo = new ProcessStartInfo("dotnet", $"run --urls {BaseAddress}")
         {
             WorkingDirectory = _projectDirectory,
             RedirectStandardOutput = true,
