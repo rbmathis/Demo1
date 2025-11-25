@@ -2,27 +2,26 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Text.RegularExpressions;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Demo1.PlaywrightTests.Infrastructure;
 
-internal sealed partial class Demo1ServerFixture : IAsyncDisposable
+internal sealed class Demo1ServerFixture : IAsyncDisposable
 {
-    // Pattern to match "Now listening on: http://127.0.0.1:XXXXX"
-    [System.Text.RegularExpressions.GeneratedRegex(@"Now listening on:\s*(http://[^\s]+)", RegexOptions.IgnoreCase)]
-    private static partial Regex ListeningPattern();
-
     private Process? _process;
+    private readonly int _port;
     private readonly string _projectDirectory;
 
     public Demo1ServerFixture()
     {
+        _port = GetFreeTcpPort();
         _projectDirectory = LocateProjectDirectory();
+        BaseAddress = new Uri($"http://127.0.0.1:{_port}");
     }
 
-    public Uri? BaseAddress { get; private set; }
+    public Uri BaseAddress { get; }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -31,9 +30,7 @@ internal sealed partial class Demo1ServerFixture : IAsyncDisposable
             return;
         }
 
-        // Use port 0 to let Kestrel dynamically assign an available port
-        // This avoids the race condition of freeing a port before the server starts
-        var startInfo = new ProcessStartInfo("dotnet", "run --urls http://127.0.0.1:0")
+        var startInfo = new ProcessStartInfo("dotnet", $"run --urls {BaseAddress}")
         {
             WorkingDirectory = _projectDirectory,
             RedirectStandardOutput = true,
@@ -46,39 +43,7 @@ internal sealed partial class Demo1ServerFixture : IAsyncDisposable
 
         _process = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start Demo1 application.");
 
-        // Read the actual port from Kestrel's output
-        BaseAddress = await ReadBaseAddressFromOutputAsync(_process, cancellationToken).ConfigureAwait(false);
-
         await WaitForHealthyAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<Uri> ReadBaseAddressFromOutputAsync(Process process, CancellationToken cancellationToken)
-    {
-        var startTime = DateTime.UtcNow;
-        var timeout = TimeSpan.FromSeconds(60);
-
-        while (DateTime.UtcNow - startTime < timeout)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (process.HasExited)
-            {
-                throw new InvalidOperationException($"Demo1 process exited unexpectedly with code {process.ExitCode}.");
-            }
-
-            // Try to read available output
-            var line = await process.StandardOutput.ReadLineAsync().ConfigureAwait(false);
-            if (line is not null)
-            {
-                var match = ListeningPattern().Match(line);
-                if (match.Success)
-                {
-                    return new Uri(match.Groups[1].Value);
-                }
-            }
-        }
-
-        throw new InvalidOperationException("Could not determine the listening port from server output within the expected time.");
     }
 
     private async Task WaitForHealthyAsync(CancellationToken cancellationToken)
@@ -131,6 +96,15 @@ internal sealed partial class Demo1ServerFixture : IAsyncDisposable
         {
             _process.Dispose();
         }
+    }
+
+    private static int GetFreeTcpPort()
+    {
+        using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
     }
 
     private static string LocateProjectDirectory()

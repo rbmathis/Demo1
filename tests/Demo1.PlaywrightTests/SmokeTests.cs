@@ -38,11 +38,6 @@ public class SmokeTests : PageTest
             throw new InvalidOperationException("Server fixture was not initialized.");
         }
 
-        if (_server.BaseAddress is null)
-        {
-            throw new InvalidOperationException("Server was not started. BaseAddress is not available.");
-        }
-
         return new()
         {
             BaseURL = _server.BaseAddress.ToString(),
