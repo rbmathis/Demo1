@@ -30,6 +30,7 @@ if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(
                      .UseFeatureFlags(featureFlagOptions =>
                      {
                          featureFlagOptions.Label = appConfigLabel;
+                         featureFlagOptions.SetRefreshInterval(TimeSpan.FromSeconds(30));
                      })
                      .ConfigureRefresh(refresh =>
                      {
@@ -47,6 +48,7 @@ if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(
                      .UseFeatureFlags(featureFlagOptions =>
                      {
                          featureFlagOptions.Label = appConfigLabel;
+                         featureFlagOptions.SetRefreshInterval(TimeSpan.FromSeconds(30));
                      })
                      .ConfigureRefresh(refresh =>
                      {

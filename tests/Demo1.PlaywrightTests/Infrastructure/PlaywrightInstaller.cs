@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Demo1.PlaywrightTests.Infrastructure;
 

@@ -14,6 +14,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 - **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
 - **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
 
+
 ## Getting Started
 
 ### Prerequisites
@@ -69,12 +70,9 @@ The debugger will launch the application and open it in your default browser.
 
 ## Testing
 
-> We flex in public by keeping the green checkmarks coming.
-
-- `dotnet test` triggers all suites, including `Demo1.UnitTests` (xUnit) and the Playwright smoke tests.
-- To capture coverage locally: `dotnet tool install --global dotnet-coverage` (once) and `dotnet-coverage collect --output coverage/coverage.cobertura.xml --output-format cobertura --include-files Demo1.dll dotnet test tests/Demo1.UnitTests/Demo1.UnitTests.csproj --no-build`, then `python scripts/check_coverage.py coverage/coverage.cobertura.xml 90` to validate the targeted threshold.
-- On the first run Playwright downloads headless browser binaries automatically; alternatively install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` after a build.
-- GitHub Actions installs both dotnet-coverage and the Playwright CLI, enforces **90 %** coverage on Controllers/Middleware/Telemetry via `scripts/check_coverage.py`, publishes the Cobertura report, and then runs the full test matrix.
+- `dotnet test` triggers all suites, including the Playwright smoke tests in `Demo1.PlaywrightTests`.
+- On the first run Playwright downloads headless browser binaries automatically; alternatively, install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` from the repository root after a build (ensure your working directory is the solution root).
+- The GitHub Actions workflow installs the Playwright CLI (`Microsoft.Playwright.CLI`) so CI runs the same headless checks.
 
 ## Documentation
 
