@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
 using Demo1;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
