@@ -8,8 +8,12 @@ using System.Threading.Tasks;
 
 namespace Demo1.PlaywrightTests.Infrastructure;
 
-internal sealed class Demo1ServerFixture : IAsyncDisposable
+internal sealed partial class Demo1ServerFixture : IAsyncDisposable
 {
+    // Pattern to match "Now listening on: http://127.0.0.1:XXXXX"
+    [System.Text.RegularExpressions.GeneratedRegex(@"Now listening on:\s*(http://[^\s]+)", RegexOptions.IgnoreCase)]
+    private static partial Regex ListeningPattern();
+
     private Process? _process;
     private readonly string _projectDirectory;
 
@@ -50,9 +54,6 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
 
     private static async Task<Uri> ReadBaseAddressFromOutputAsync(Process process, CancellationToken cancellationToken)
     {
-        // Pattern to match "Now listening on: http://127.0.0.1:XXXXX"
-        var listeningPattern = new Regex(@"Now listening on:\s*(http://[^\s]+)", RegexOptions.IgnoreCase);
-
         var startTime = DateTime.UtcNow;
         var timeout = TimeSpan.FromSeconds(60);
 
@@ -66,10 +67,10 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
             }
 
             // Try to read available output
-            var line = await process.StandardOutput.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+            var line = await process.StandardOutput.ReadLineAsync().ConfigureAwait(false);
             if (line is not null)
             {
-                var match = listeningPattern.Match(line);
+                var match = ListeningPattern().Match(line);
                 if (match.Success)
                 {
                     return new Uri(match.Groups[1].Value);
