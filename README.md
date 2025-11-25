@@ -58,7 +58,7 @@ The debugger will launch the application and open it in your default browser.
 ## Testing
 
 - `dotnet test` triggers all suites, including the Playwright smoke tests in `Demo1.PlaywrightTests`.
-- On the first run Playwright downloads headless browser binaries automatically; alternatively install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` after a build.
+- On the first run Playwright downloads headless browser binaries automatically; alternatively, install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` from the repository root after a build (ensure your working directory is the solution root).
 - The GitHub Actions workflow installs the Playwright CLI (`Microsoft.Playwright.CLI`) so CI runs the same headless checks.
 
 ## Documentation
