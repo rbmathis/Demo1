@@ -62,7 +62,11 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
                     return;
                 }
             }
-            catch
+            catch (HttpRequestException)
+            {
+                // Server not ready yet.
+            }
+            catch (TaskCanceledException)
             {
                 // Server not ready yet.
             }
