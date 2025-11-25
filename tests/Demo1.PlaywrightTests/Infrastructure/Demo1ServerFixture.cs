@@ -30,7 +30,7 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
             return;
         }
 
-        var startInfo = new ProcessStartInfo("dotnet", $"run --no-build --urls {BaseAddress}")
+        var startInfo = new ProcessStartInfo("dotnet", $"run --urls {BaseAddress}")
         {
             WorkingDirectory = _projectDirectory,
             RedirectStandardOutput = true,
@@ -62,7 +62,11 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
                     return;
                 }
             }
-            catch
+            catch (HttpRequestException)
+            {
+                // Server not ready yet.
+            }
+            catch (TaskCanceledException)
             {
                 // Server not ready yet.
             }
@@ -80,19 +84,23 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
             return;
         }
 
-        using var process = _process;
-        _process = null;
-
-        if (!process.HasExited)
+        try
         {
-            process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync().ConfigureAwait(false);
+            if (!_process.HasExited)
+            {
+                _process.Kill(entireProcessTree: true);
+                await _process.WaitForExitAsync().ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _process.Dispose();
         }
     }
 
     private static int GetFreeTcpPort()
     {
-        var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
+        using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
         var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
