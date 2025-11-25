@@ -100,7 +100,7 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
 
     private static int GetFreeTcpPort()
     {
-        var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
+        using var listener = new TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
         var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
