@@ -80,17 +80,13 @@ internal sealed class Demo1ServerFixture : IAsyncDisposable
             return;
         }
 
-        try
+        using var process = _process;
+        _process = null;
+
+        if (!process.HasExited)
         {
-            if (!_process.HasExited)
-            {
-                _process.Kill(entireProcessTree: true);
-                await _process.WaitForExitAsync().ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            _process.Dispose();
+            process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync().ConfigureAwait(false);
         }
     }
 
