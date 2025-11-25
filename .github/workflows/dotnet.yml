@@ -36,11 +36,26 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
-      - name: Install Playwright browsers
+      - name: Install testing toolchain
         run: |
           dotnet tool install --global Microsoft.Playwright.CLI
+          dotnet tool install --global dotnet-coverage
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
           export PATH="$HOME/.dotnet/tools:$PATH"
           playwright install --with-deps
+
+      - name: Run unit tests with coverage
+        run: |
+          mkdir -p coverage
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet-coverage collect --output coverage/coverage.cobertura.xml --output-format cobertura --include-files Demo1.dll dotnet test tests/Demo1.UnitTests/Demo1.UnitTests.csproj --no-build --configuration Release
+          python scripts/check_coverage.py coverage/coverage.cobertura.xml 90
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
 
       - name: Test
         run: |
