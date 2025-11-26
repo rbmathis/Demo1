@@ -2,7 +2,7 @@
 
 > Use these as ready-made GitHub issues. Copy/paste into GitHub or run `gh issue create` with the provided titles and bodies.
 
-## 📊 Latest Review (November 26, 2025)
+## 📊 Latest Review (November 26, 2024)
 
 **🎯 See [issue-review-2025-11-26.md](issue-review-2025-11-26.md) for comprehensive review with:**
 - Detailed status for all 18 open GitHub issues
