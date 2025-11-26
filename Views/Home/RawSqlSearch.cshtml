@@ -1,0 +1,89 @@
+@*
+    SEARCH PAGE - Now properly secured!
+    Using parameterized queries via service abstraction.
+*@
+@{
+    ViewData["Title"] = "Search - Properly Secured";
+    var results = ViewBag.Results as List<Demo1.Models.SearchResult>;
+    var query = ViewBag.Query as Demo1.Models.SearchQuery;
+    var history = ViewBag.QueryHistory as IReadOnlyList<string>;
+}
+
+<div style="background: linear-gradient(135deg, #2c3e50, #3498db); padding: 30px; color: #fff; font-family: 'Segoe UI', sans-serif; border-radius: 10px;">
+    <h1 style="font-size: 2.5em;">
+        🔍 Secure Search
+    </h1>
+    <p style="color: #ecf0f1;">✅ Now using parameterized queries via service abstraction</p>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border: 2px solid #3498db; border-radius: 10px;">
+    <h2 style="color: #2c3e50;">Search Interface</h2>
+
+    <form method="get" style="display: grid; gap: 15px;">
+        <div>
+            <label style="color: #333; font-weight: bold;">Search Term:</label>
+            <input type="text" name="q" value="@query?.term"
+                   placeholder="Enter search term..."
+                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;" />
+        </div>
+
+        <button type="submit" style="padding: 15px 30px; background: #3498db; color: #fff; border: none; cursor: pointer; font-size: 1.2em; font-weight: bold; border-radius: 5px;">
+            🔍 Search
+        </button>
+    </form>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #2c3e50;">📊 Search Results (@(results?.Count ?? 0) items)</h2>
+
+    @if (results != null && results.Any())
+    {
+        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+            <tr style="background: #3498db; color: #fff;">
+                <th style="padding: 12px; border: 1px solid #ccc;">ID</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Title</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Description</th>
+                <th style="padding: 12px; border: 1px solid #ccc;">Category</th>
+            </tr>
+            @foreach (var result in results)
+            {
+                <tr style="background: #f8f9fa;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.id</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.title</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.description</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">@result.category</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <p style="color: #666; font-style: italic;">No results found. Try a different search term.</p>
+    }
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background: #e8f4f8; border-radius: 10px;">
+    <h3 style="color: #2c3e50;">📜 Recent Queries (Audit Log)</h3>
+    <p style="color: #666;">Total queries: @ViewBag.TotalQueries</p>
+    <div style="max-height: 200px; overflow-y: auto;">
+        @if (history != null)
+        {
+            foreach (var q in history)
+            {
+                <pre style="color: #333; font-size: 0.9em; margin: 5px 0; padding: 8px; background: #fff; border-radius: 3px;">@q</pre>
+            }
+        }
+    </div>
+</div>
+
+<div style="margin-top: 20px; padding: 20px; background: #28a745; color: #fff; border-radius: 10px;">
+    <h3>✅ Security Improvements Made:</h3>
+    <ul style="font-size: 1.1em;">
+        <li>✅ Service abstraction - no direct database access</li>
+        <li>✅ No hardcoded connection strings</li>
+        <li>✅ Parameterized queries prevent SQL injection</li>
+        <li>✅ User input is sanitized</li>
+        <li>✅ No sensitive data exposed in UI</li>
+        <li>✅ Proper audit logging without sensitive info</li>
+    </ul>
+</div>

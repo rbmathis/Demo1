@@ -1,0 +1,177 @@
+@*
+    CALLBACK HELL WEATHER PAGE
+    Features: Nested async operations, artificial delays, exception swallowing
+    This weather data is 100% made up (just like real weather predictions)
+*@
+@{
+    ViewData["Title"] = "Callback Hell Weather - Async All The Way Down";
+    var weather = ViewBag.Weather as Demo1.Models.WeatherData;
+    var errors = ViewBag.Errors as List<string>;
+}
+
+<div style="background: linear-gradient(to bottom, #1e3c72, #2a5298, #4a90c2); padding: 40px; color: white; text-align: center; font-family: 'Arial Rounded MT Bold', sans-serif;">
+    <h1 style="font-size: 3em; text-shadow: 3px 3px 6px rgba(0,0,0,0.5); margin: 0;">
+        🌊 CALLBACK HELL WEATHER 🌊
+    </h1>
+    <p style="font-size: 1.3em; opacity: 0.9; margin-top: 10px;">
+        Nested async operations so deep, even the debugger gets lost
+    </p>
+    <p style="font-size: 0.9em; opacity: 0.7;">
+        await Task.Run(async () => await Task.Run(async () => await Task.Run(async () => /* weather here somewhere */)))
+    </p>
+</div>
+
+<div style="margin: 20px auto; max-width: 800px;">
+    <form method="get" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 30px;">
+        <input type="text" name="city" value="@weather?.city" placeholder="Enter city name..."
+               style="padding: 15px 20px; font-size: 1.2em; border: 3px solid #4a90c2; border-radius: 30px; width: 300px;" />
+        <button type="submit" style="padding: 15px 30px; font-size: 1.2em; background: linear-gradient(to right, #f093fb, #f5576c); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold;">
+            🔮 Get Weather (Eventually)
+        </button>
+    </form>
+
+    <div style="background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden;">
+        <!-- Weather Display -->
+        <div style="padding: 40px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h2 style="color: white; font-size: 2em; margin: 0;">@weather?.city?.ToUpper()</h2>
+            <div style="font-size: 8em; margin: 20px 0;">@weather?.conditionEmoji</div>
+            <div style="font-size: 4em; color: white; font-weight: bold;">@weather?.temp°C</div>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.5em;">@weather?.condition</p>
+        </div>
+
+        <!-- Temperature Conversions -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); background: #f8f9fa;">
+            <div style="padding: 20px; text-align: center; border-right: 1px solid #ddd;">
+                <div style="font-size: 2em; font-weight: bold; color: #667eea;">@weather?.temp°</div>
+                <div style="color: #666;">Celsius</div>
+            </div>
+            <div style="padding: 20px; text-align: center; border-right: 1px solid #ddd;">
+                <div style="font-size: 2em; font-weight: bold; color: #f5576c;">@weather?.tempF.ToString("F1")°</div>
+                <div style="color: #666;">Fahrenheit</div>
+            </div>
+            <div style="padding: 20px; text-align: center; border-right: 1px solid #ddd;">
+                <div style="font-size: 2em; font-weight: bold; color: #17a2b8;">@weather?.tempK.ToString("F1")</div>
+                <div style="color: #666;">Kelvin</div>
+            </div>
+            <div style="padding: 20px; text-align: center;">
+                <div style="font-size: 2em; font-weight: bold; color: #28a745;">@weather?.tempR.ToString("F1")</div>
+                <div style="color: #666;">Rankine 🤓</div>
+            </div>
+        </div>
+
+        <!-- Advice Section -->
+        <div style="padding: 30px; background: linear-gradient(to right, #ffecd2, #fcb69f);">
+            <h3 style="margin: 0 0 10px 0; color: #e74c3c;">💡 Today's Advice:</h3>
+            <p style="font-size: 1.3em; margin: 0; color: #333; font-style: italic;">"@weather?.advice"</p>
+        </div>
+
+        <!-- Forecast -->
+        <div style="padding: 30px; background: #2c3e50; color: white;">
+            <h3 style="margin: 0 0 15px 0;">📅 Forecast:</h3>
+            <p style="font-size: 1.1em; opacity: 0.9;">@weather?.forecast</p>
+        </div>
+
+        <!-- Chaos Meter -->
+        <div style="padding: 30px; background: linear-gradient(to right, #11998e, #38ef7d);">
+            <h3 style="color: white; margin: 0 0 15px 0;">🌀 Chaos Level: @weather?.chaosLevel/10</h3>
+            <div style="background: rgba(0,0,0,0.2); border-radius: 10px; height: 30px; overflow: hidden;">
+                <div style="background: linear-gradient(to right, #f093fb, #f5576c); height: 100%; width: @(weather?.chaosLevel * 10)%; transition: width 0.5s;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warnings -->
+    @if (weather?.warnings != null && weather.warnings.Any())
+    {
+        <div style="margin-top: 20px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px;">
+            <h3 style="color: #856404; margin: 0 0 10px 0;">⚠️ Important Warnings:</h3>
+            <ul style="margin: 0; color: #856404;">
+                @foreach (var warning in weather.warnings)
+                {
+                    <li>@warning</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Technical Details (The Bad Stuff) -->
+    <div style="margin-top: 30px; padding: 20px; background: #1e1e1e; color: #0f0; font-family: 'Courier New', monospace; border-radius: 10px;">
+        <h3 style="color: #ff6b6b; margin: 0 0 20px 0;">🔧 Technical Chaos Details:</h3>
+
+        <div style="display: grid; gap: 15px;">
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">Data Source:</span>
+                <span style="color: #ffd700;">@weather?.source</span>
+            </div>
+
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">Is Real Data?:</span>
+                <span style="color: @(weather?.isReal == true ? "#28a745" : "#dc3545");">@(weather?.isReal == true ? "Yes" : "ABSOLUTELY NOT")</span>
+            </div>
+
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">API Calls Made:</span>
+                <span style="color: #17a2b8;">@ViewBag.ApiCalls</span>
+            </div>
+
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">Exceptions Swallowed:</span>
+                <span style="color: #dc3545;">@ViewBag.SwallowedExceptions 🗑️</span>
+            </div>
+
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">Cache Status:</span>
+                <span>@ViewBag.CacheStatus</span>
+            </div>
+
+            <div style="padding: 15px; background: #2d2d2d; border-radius: 5px;">
+                <span style="color: #888;">Timestamp:</span>
+                <span style="color: #aaa;">@weather?.timestamp</span>
+            </div>
+        </div>
+    </div>
+
+    @if (errors != null && errors.Any())
+    {
+        <div style="margin-top: 20px; padding: 20px; background: #f8d7da; border: 2px solid #dc3545; border-radius: 10px;">
+            <h3 style="color: #721c24; margin: 0 0 10px 0;">💥 Errors (That We Caught and Ignored):</h3>
+            <ul style="color: #721c24; margin: 0;">
+                @foreach (var error in errors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- Anti-Pattern Summary -->
+    <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #232526, #414345); border-radius: 10px; color: white;">
+        <h3 style="margin: 0 0 20px 0;">🏆 Async Anti-Patterns Achieved:</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Nested Task.Run() calls
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Artificial Task.Delay()
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Exception swallowing
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Global static cache
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Race conditions possible
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Fake async operations
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ No cancellation tokens
+            </div>
+            <div style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                ✅ Magic numbers everywhere
+            </div>
+        </div>
+    </div>
+</div>

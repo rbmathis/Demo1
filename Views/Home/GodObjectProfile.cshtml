@@ -1,0 +1,93 @@
+@*
+    USER PROFILE PAGE - Now properly secured!
+    This view demonstrates what the old anti-pattern looked like,
+    but now uses proper services and data protection.
+*@
+@using Demo1.Services
+@{
+    ViewData["Title"] = "User Profile - Properly Secured";
+    var profile = ViewBag.Profile as UserProfile;
+    var stats = ViewBag.Stats as ProfileStats;
+}
+
+<div style="font-family: 'Segoe UI', sans-serif; background: linear-gradient(45deg, #4ecdc4, #44a08d); padding: 20px; border-radius: 10px;">
+    <h1 style="color: #fff; font-size: 2.5em;">
+        👤 User Profile Management
+    </h1>
+    <p style="color: #e8f4f8;">✅ Now using proper dependency injection and data encapsulation</p>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div style="margin-top: 15px; padding: 15px; background: #ffcccc; border: 2px solid #cc0000; border-radius: 5px;">
+        <strong>⚠️ Error:</strong> @ViewBag.Error
+    </div>
+}
+
+<div style="margin-top: 20px; padding: 15px; border: 2px solid #4ecdc4; border-radius: 10px; background: #f8f9fa;">
+    <h2 style="color: #333;">📋 Profile Information</h2>
+
+    <table style="width: 100%; border-collapse: collapse; font-family: monospace;">
+        <tr style="background: #4ecdc4;">
+            <th style="padding: 10px; border: 2px solid #333;">Field</th>
+            <th style="padding: 10px; border: 2px solid #333;">Value</th>
+            <th style="padding: 10px; border: 2px solid #333;">Update</th>
+        </tr>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Name</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Name</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Name&value=UpdatedName">Update</a></td>
+        </tr>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Email</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Email</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Email&value=new@example.com">Update</a></td>
+        </tr>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Age</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Age</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Age&value=30">Update</a></td>
+        </tr>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">City</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.City</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=City&value=Portland">Update</a></td>
+        </tr>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">State</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.State</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=State&value=OR">Update</a></td>
+        </tr>
+        <tr style="background: #fff;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Country</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.Country</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=Country&value=Canada">Update</a></td>
+        </tr>
+        <tr style="background: #e8f4f8;">
+            <td style="padding: 8px; border: 1px solid #ccc;">Favorite Color</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">@profile?.FavoriteColor</td>
+            <td style="padding: 8px; border: 1px solid #ccc;"><a href="?action=update&field=FavoriteColor&value=Green">Update</a></td>
+        </tr>
+    </table>
+</div>
+
+<div style="margin-top: 20px; padding: 15px; background: #28a745; color: #fff; border-radius: 10px;">
+    <h3>✅ Security Improvements Made:</h3>
+    <ul style="font-size: 1.1em;">
+        <li>✅ No passwords stored or displayed</li>
+        <li>✅ No sensitive data (SSN, credit cards) in model</li>
+        <li>✅ Proper service abstraction via DI</li>
+        <li>✅ Field whitelist prevents arbitrary property updates</li>
+        <li>✅ Thread-safe implementation</li>
+        <li>✅ Proper logging without sensitive data</li>
+    </ul>
+</div>
+
+<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+    <h4>📊 Service Statistics</h4>
+    <p>Total Profiles: @stats?.TotalProfiles</p>
+    <p>Active Profiles: @stats?.ActiveProfiles</p>
+    <p>Profile ID: @profile?.Id</p>
+    <p>Created: @profile?.CreatedAt.ToString("O")</p>
+    <p>Updated: @profile?.UpdatedAt.ToString("O")</p>
+</div>
