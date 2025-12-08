@@ -13,8 +13,12 @@ MAGENTA='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-# Snarky messages
-SNARKY_COMMIT_MESSAGES=(
+# Parse command line arguments
+COMMIT_MSG="${1:-}"
+PR_TITLE="${2:-}"
+
+# Default snarky messages (used if not provided)
+DEFAULT_COMMIT_MESSAGES=(
     "Fixed the thing. You know, THAT thing. 🙄"
     "Code so clean it sparkles ✨ (unlike my commit history)"
     "This commit is chef's kiss 👌 Your code review? Probably not."
@@ -32,7 +36,7 @@ SNARKY_COMMIT_MESSAGES=(
     "Code review this. I dare you. I DOUBLE dare you. 😤"
 )
 
-SNARKY_PR_TITLES=(
+DEFAULT_PR_TITLES=(
     "🔥 This PR is hotter than your last performance review"
     "✨ Fixed everything. You're welcome."
     "💪 Flex on 'em: The Commit"
@@ -50,12 +54,33 @@ SNARKY_PR_TITLES=(
     "🦄 Magical code that actually compiles"
 )
 
+# Use provided messages or pick random defaults
+if [ -z "$COMMIT_MSG" ]; then
+    COMMIT_MSG="${DEFAULT_COMMIT_MESSAGES[$RANDOM % ${#DEFAULT_COMMIT_MESSAGES[@]}]}"
+fi
+
+if [ -z "$PR_TITLE" ]; then
+    PR_TITLE="${DEFAULT_PR_TITLES[$RANDOM % ${#DEFAULT_PR_TITLES[@]}]}"
+fi
+
 echo -e "${BOLD}${MAGENTA}"
 echo "╔═══════════════════════════════════════════════════╗"
 echo "║  🔥 SNARKY AUTO-COMMIT EXTRAVAGANZA 3000™ 🔥     ║"
 echo "║  Because your code deserves attitude             ║"
 echo "╚═══════════════════════════════════════════════════╝"
 echo -e "${NC}"
+
+# Show what messages we're using
+if [ -n "$1" ]; then
+    echo -e "${CYAN}Using custom commit message:${NC} ${MAGENTA}${COMMIT_MSG}${NC}"
+fi
+if [ -n "$2" ]; then
+    echo -e "${CYAN}Using custom PR title:${NC} ${MAGENTA}${PR_TITLE}${NC}"
+fi
+if [ -z "$1" ] && [ -z "$2" ]; then
+    echo -e "${CYAN}Using random snarky messages${NC} ${YELLOW}(you could've picked your own, you know)${NC}"
+fi
+echo ""
 
 # Step 1: Build the app
 echo -e "${CYAN}${BOLD}[1/7]${NC} Building the app... ${YELLOW}(pretending this isn't scary)${NC}"
@@ -144,9 +169,6 @@ fi
 # Step 6: Commit with snarky message
 echo -e "${CYAN}${BOLD}[6/7]${NC} Committing changes... ${YELLOW}(with maximum attitude)${NC}"
 
-# Pick a random snarky commit message
-COMMIT_MSG="${SNARKY_COMMIT_MESSAGES[$RANDOM % ${#SNARKY_COMMIT_MESSAGES[@]}]}"
-
 git add -A
 if git diff --cached --quiet; then
     echo -e "      ${YELLOW}⚠ No changes to commit${NC}"
@@ -165,9 +187,6 @@ git push -u origin "$BRANCH_NAME" 2>&1 | grep -v "^To " || true
 
 # Check if gh CLI is available
 if command -v gh &> /dev/null; then
-    # Pick a random snarky PR title
-    PR_TITLE="${SNARKY_PR_TITLES[$RANDOM % ${#SNARKY_PR_TITLES[@]}]}"
-
     # Create PR description
     PR_BODY="## 🎯 What's This?
 This PR contains commits that are too good for main branch right now.
