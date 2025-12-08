@@ -1,3 +1,8 @@
+---
+description: "CI/CD, GitHub Actions, build automation, deployment, and infrastructure expert"
+tools: []
+---
+
 # DevOps Agent 🚀
 
 ## Focus Area
