@@ -17,34 +17,37 @@ This prompt will execute a comprehensive quality check and commit workflow:
 
 ## Usage Options
 
-### Option 1: Fully Custom (Recommended)
-Provide both commit message and PR title:
+### Option 1: Fully Custom with PR Body (Ultimate Control)
+Provide commit message, PR title, AND custom PR description:
+```bash
+./scripts/commit.sh "Your commit message" "Your PR title" "Your awesome PR description explaining what changed and why"
+```
+
+### Option 2: Custom Commit & Title, Default PR Body
+Provide commit message and PR title only:
 ```bash
 ./scripts/commit.sh "Your snarky commit message 🔥" "Your spicy PR title ✨"
 ```
 
-### Option 2: Custom Commit, Random PR Title
+### Option 3: Custom Commit, Random Everything Else
 Provide just the commit message:
 ```bash
 ./scripts/commit.sh "Fixed all the things like a boss 💪"
 ```
 
-### Option 3: Full Random (Original Behavior)
+### Option 4: Full Random (Original Behavior)
 Let the script pick everything randomly:
 ```bash
 ./scripts/commit.sh
 ```
 
 ### Using with Agent Chat
-When using this prompt in Agent Chat, you can specify:
-- Custom commit message
-- Custom PR title
-- Or let the agent pick random snarky ones for you
-
-Just tell the agent what you want, like:
-- "Run snarky commit with message 'Crushed this feature 🎯'"
-- "Run snarky commit with custom PR title 'Best code you'll see today 💎'"
-- "Run snarky commit with random messages"
+When using this prompt in Agent Chat, the agent will:
+- Analyze your changes
+- Generate witty commit message
+- Create a spicy PR title
+- Write a custom PR description explaining what changed
+- All messages include emojis and sass!
 
 ## Prerequisites
 
@@ -93,38 +96,65 @@ The script will exit if any of these fail:
 # Go full chaos mode with random everything
 ./scripts/commit.sh
 
-# Professional but fun
-./scripts/commit.sh "Add user authentication feature" "feat: User authentication with JWT"
+# Professional with custom description
+./scripts/commit.sh "Add user authentication feature" "feat: User authentication with JWT" "Implemented JWT-based authentication with refresh tokens. Users can now securely log in and maintain sessions."
 
 # Maximum sass mode activated
-./scripts/commit.sh "Your code could never 💅" "🔥 Roasted the competition with this PR"
+./scripts/commit.sh "Your code could never 💅" "🔥 Roasted the competition with this PR" "Refactored the entire authentication system to be more secure and performant. Previous implementation? We don't talk about that."
 
-# Wholesome but still cool
+# Just commit and title, default body
 ./scripts/commit.sh "Fixed bugs and added tests ✨" "🎯 Quality improvements incoming"
 ```
+
+**Note:** The PR body will ALWAYS include the required sections:
+- `## ✅ Quality Checks` - Automatically filled with build/test results
+- `## 🎪 Side Effects` - Either your custom text or default sass
 
 ## Agent Instructions
 
 When this prompt is invoked:
 
-1. **Generate creative snarky messages** based on the changes:
-   - Analyze the git diff to understand what was changed
-   - Create a witty, snarky commit message that describes the changes
-   - Create a spicy, attitude-filled PR title that sells the changes
-   - Keep them PG-13 but make them pop! 🔥
+1. **Analyze the changes** to understand what was modified:
+   - Check git diff to see file changes
+   - Identify the scope and nature of modifications
+   - Note any patterns or significant updates
 
-2. **Run the commit script** with your generated messages:
+2. **Generate three creative messages**:
+
+   **A) Commit Message:**
+   - Describe what was changed in a snarky, witty way
+   - Keep it concise but descriptive
+   - Add relevant emojis
+   - Example: "Refactored auth system. Now it's actually secure 🔒"
+
+   **B) PR Title:**
+   - Create a bold, attention-grabbing title
+   - Sell the changes with confidence
+   - Make it spicy but professional
+   - Example: "🔥 Security Fortress: Auth system that would make Fort Knox jealous"
+
+   **C) PR Description:**
+   - Write 1-3 paragraphs explaining WHAT changed and WHY
+   - Include technical details but keep it readable
+   - Add personality and sass
+   - Mention any breaking changes or important notes
+   - Example: "Completely overhauled the authentication system. The old implementation was... let's call it 'optimistic' about security. Now we've got JWT tokens, refresh token rotation, and proper session management. Your users' data is safe, and you can sleep at night."
+
+3. **Run the commit script** with all three generated messages:
    ```bash
-   cd /workspaces/Demo1 && ./scripts/commit.sh "your generated commit message" "your generated PR title"
+   cd /workspaces/Demo1 && ./scripts/commit.sh "commit message" "PR title" "PR description"
    ```
 
-3. **Report the results** with enthusiasm and celebrate the successful commit!
+4. **Report the results** with enthusiasm and celebrate!
+
+**Required Sections:**
+The script automatically appends these sections to every PR:
+- `## ✅ Quality Checks` - Shows build, test, coverage, and runtime status
+- `## 🎪 Side Effects` - Default sass or can be customized in description
 
 **Message Style Guidelines:**
-- Commit messages: Describe what was done but make it sassy
-- PR titles: Sell the changes with confidence and flair
 - Use emojis liberally 💅✨🔥
 - Be playful but professional enough for a real repo
-- Examples:
-  - Commit: "Refactored the entire codebase. It's prettier than your portfolio now 💅"
-  - PR: "🎨 The Great Refactoring: Making code beautiful again"
+- Make boring changes sound exciting
+- Be specific about what changed
+- Keep it PG-13
