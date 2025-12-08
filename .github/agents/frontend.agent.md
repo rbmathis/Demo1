@@ -1,3 +1,8 @@
+---
+description: "Frontend development expert for Views, Razor templates, CSS, JavaScript, and static assets"
+tools: []
+---
+
 # Frontend Agent 🎨
 
 ## Focus Area

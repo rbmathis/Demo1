@@ -1,3 +1,8 @@
+---
+description: "Unit testing, integration testing, and test automation expert"
+tools: []
+---
+
 # Testing Agent 🧪
 
 ## Focus Area

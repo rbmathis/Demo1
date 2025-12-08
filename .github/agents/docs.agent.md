@@ -1,3 +1,8 @@
+---
+description: "Documentation, XML comments, README, and architectural diagrams expert"
+tools: []
+---
+
 # Documentation Agent 📚
 
 ## Focus Area

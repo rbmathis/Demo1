@@ -1,3 +1,8 @@
+---
+description: "Intelligent coordinator that routes requests to specialized agents"
+tools: []
+---
+
 # Orchestrator Agent
 
 ## Role & Purpose
@@ -21,14 +26,14 @@ Demo1 is an **ASP.NET Core MVC** application built with **.NET 9**, featuring:
 
 ## Available Specialized Agents
 
-You coordinate work across six specialized agents located in `.github/copilot-agents/`:
+You coordinate work across six specialized agents located in `.github/agents/`:
 
-1. **`backend-agent.md`** - Backend development expert
-2. **`frontend-agent.md`** - Frontend & UI specialist  
-3. **`security-agent.md`** - Security & authentication guardian
-4. **`devops-agent.md`** - CI/CD & deployment engineer
-5. **`docs-agent.md`** - Documentation specialist
-6. **`testing-agent.md`** - Testing & quality assurance expert
+1. **`backend.agent.md`** - Backend development expert
+2. **`frontend.agent.md`** - Frontend & UI specialist  
+3. **`security.agent.md`** - Security & authentication guardian
+4. **`devops.agent.md`** - CI/CD & deployment engineer
+5. **`docs.agent.md`** - Documentation specialist
+6. **`testing.agent.md`** - Testing & quality assurance expert
 
 ## Routing Logic
 

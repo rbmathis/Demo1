@@ -1,3 +1,8 @@
+---
+description: "Authentication, authorization, security headers, and OWASP vulnerability protection expert"
+tools: []
+---
+
 # Security Agent 🔒
 
 ## Focus Area
