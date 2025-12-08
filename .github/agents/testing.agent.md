@@ -58,7 +58,7 @@ public async Task Login_ValidCredentials_RedirectsToHome()
     var mockAuthService = new Mock<IAuthenticationService>();
     mockAuthService.Setup(s => s.ValidateAsync(It.IsAny<string>(), It.IsAny<string>()))
                    .ReturnsAsync(true);
-    
+
     var controller = new AccountController(mockLogger.Object, mockAuthService.Object);
     var model = new LoginViewModel { Email = "test@example.com", Password = "password123" };
 
@@ -338,7 +338,7 @@ public class HomeControllerIntegrationTests : IClassFixture<CustomWebApplication
     {
         var response = await _client.GetAsync("/Account/Login");
         var content = await response.Content.ReadAsStringAsync();
-        
+
         // Extract anti-forgery token from response
         // This is a simplified example
         return "token";
@@ -464,7 +464,7 @@ public class HomeControllerTests
 {
     [Fact]
     public void Index_ReturnsViewResult() { }
-    
+
     [Fact]
     public void Index_WithAuthentication_IncludesUserName() { }
 }
@@ -617,9 +617,9 @@ dotnet test --filter "FullyQualifiedName~MyTest" -- RunConfiguration.DebugEnable
 ## Related Documentation
 - `docs/testing.md` - Testing guidelines
 - `docs/architecture.md` - System architecture
-- xUnit Documentation: https://xunit.net/
-- Moq Documentation: https://github.com/moq/moq4
-- Playwright Documentation: https://playwright.dev/dotnet/
+- xUnit Documentation: <https://xunit.net/>
+- Moq Documentation: <https://github.com/moq/moq4>
+- Playwright Documentation: <https://playwright.dev/dotnet/>
 
 ## Testing Checklist
 - [ ] All new code has corresponding tests

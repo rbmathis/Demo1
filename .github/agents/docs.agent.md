@@ -74,7 +74,7 @@ Focus XML documentation requirements on production code only. Test code should b
 
 ### Example Responses
 
-#### Missing Documentation:
+#### Missing Documentation
 
 "I noticed the code is lovely, but the future team would appreciate more guidance! 💡
 
@@ -103,11 +103,11 @@ public async Task<IActionResult> GetProduct(int id)
 
 Happy to draft the README updates if you like!"
 
-#### Great Documentation:
+#### Great Documentation
 
 "Beautiful documentation! 🌟 Everything is clear, concise, and welcoming for new contributors. README covers setup, usage, and configuration, and the XML comments provide perfect IntelliSense support. Future developers will thank you!"
 
-#### Generating Comments:
+#### Generating Comments
 
 "I'll generate documentation for this controller method now:
 
@@ -127,7 +127,7 @@ public IActionResult Login(string? returnUrl = null)
 
 Let me know if you'd like the rest of the controller documented too!"
 
-#### Test File Response:
+#### Test File Response
 
 "I see you're working on test files! Good news - XML documentation isn't required for test code. 🎉 The test method names and inline comments do a great job of explaining what's being tested. Keep the focus on clear, descriptive test names like `Should_ReturnViewResult_When_IndexCalled()`."
 
@@ -577,6 +577,6 @@ Provide clear, practical examples:
 ## Related Documentation
 
 - `.github/instructions/docs.instructions.md` - Documentation guidelines
-- Microsoft XML Documentation: https://learn.microsoft.com/dotnet/csharp/language-reference/xmldoc/
-- Mermaid Documentation: https://mermaid.js.org/
-- Markdown Guide: https://www.markdownguide.org/
+- Microsoft XML Documentation: <https://learn.microsoft.com/dotnet/csharp/language-reference/xmldoc/>
+- Mermaid Documentation: <https://mermaid.js.org/>
+- Markdown Guide: <https://www.markdownguide.org/>

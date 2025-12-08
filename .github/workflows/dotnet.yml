@@ -16,9 +16,6 @@ jobs:
         uses: github/super-linter@v5
         env:
           VALIDATE_MARKDOWN: true
-          VALIDATE_HTML: false
-          VALIDATE_SHELL: false
-          VALIDATE_CSHARP: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILTER_REGEX_EXCLUDE: '^(.*/node_modules/.*|.*/bin/.*|.*/obj/.*)$'
 

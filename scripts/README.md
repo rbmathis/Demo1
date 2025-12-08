@@ -8,11 +8,12 @@ This script is your personal DevOps assistant with a serious personality. It wil
 
 1. **Build** your app (Release mode, because we're professionals here)
 2. **Run tests** (all of them, no excuses)
-3. **Check coverage** (70% threshold - we have standards)
-4. **Smoke test** (make sure the app actually runs)
-5. **Create a branch** (if you forgot like the rebel you are)
-6. **Commit** with a randomly selected snarky message
-7. **Create a PR** with maximum attitude
+3. **Lint markdown** (using Super-Linter, same as CI 📝)
+4. **Check coverage** (70% threshold - we have standards)
+5. **Smoke test** (make sure the app actually runs)
+6. **Create a branch** (if you forgot like the rebel you are)
+7. **Commit** with a randomly selected snarky message
+8. **Create a PR** with maximum attitude
 
 All while throwing shade at your coding practices. 😎
 
@@ -21,18 +22,17 @@ All while throwing shade at your coding practices. 😎
 - .NET SDK (obviously)
 - Python 3 (for coverage checking)
 - Git (duh)
+- Docker (for Super-Linter markdown checks)
 - GitHub CLI (`gh`) - optional but recommended for auto PR creation
 
-### Install GitHub CLI
+### Install Prerequisites
 
 ```bash
 # macOS
-brew install gh
+brew install gh docker
 
 # Linux
-sudo apt install gh
-
-# Or download from: https://cli.github.com/
+sudo apt install gh docker.io
 ```
 
 Then authenticate:
@@ -73,11 +73,11 @@ gh auth login
 - "🎯 Bullseye: Actually working code incoming"
 - ...and more sass!
 
-## What Happens If...
+## What Happens If
 
 ### ❌ Build Fails
 
-```
+```text
 ✗ Build failed!
 Even the compiler can't handle this mess 💀
 Fix your build errors first, genius 🤓
@@ -87,7 +87,7 @@ Script exits. Fix your code, champ.
 
 ### ❌ Tests Fail
 
-```
+```text
 ✗ Tests failed!
 Shocking absolutely no one 🙄
 Fix your tests before you embarrass yourself
@@ -97,7 +97,7 @@ Script exits. Green tests only in this house.
 
 ### ❌ Coverage Drops
 
-```
+```text
 ✗ Coverage below threshold!
 Coverage dropped harder than your coding standards 📉
 ```
@@ -106,7 +106,7 @@ Script exits. Write those tests!
 
 ### ✅ Everything Passes
 
-```
+```text
 ╔═══════════════════════════════════════════════════╗
 ║           ✨ COMMIT COMPLETE ✨                   ║
 ║  Your code is now someone else's problem 😎      ║
@@ -153,7 +153,7 @@ Edit the arrays at the top of `commit.sh`:
 
 Sample output:
 
-```
+```text
 ╔═══════════════════════════════════════════════════╗
 ║  🔥 SNARKY AUTO-COMMIT EXTRAVAGANZA 3000™ 🔥     ║
 ║  Because your code deserves attitude             ║
@@ -220,6 +220,55 @@ chmod +x scripts/commit.sh scripts/c.sh
 ### Tests keep failing
 
 That's not the script's fault, genius. Fix your code! 😏
+
+### "Docker not found"
+
+Install Docker:
+
+```bash
+# macOS
+brew install docker
+
+# Linux
+sudo apt install docker.io
+```
+
+Or the script will skip markdown linting (CI will catch it anyway).
+
+## Other Useful Scripts
+
+### `cleanup.sh` - Workspace Cleanup 🧹
+
+Deep clean your workspace to free up disk space:
+
+```bash
+./scripts/cleanup.sh
+```
+
+**What it removes:**
+- Build artifacts (bin/, obj/)
+- Test results and coverage files
+- Playwright browsers (~400MB!)
+- NuGet caches
+- Temp files
+
+Run this when your codespace is running low on storage!
+
+### `lint-docs.sh` - Markdown Linting 📝
+
+Run Super-Linter for markdown (same as CI):
+
+```bash
+./scripts/lint-docs.sh
+```
+
+**What it checks:**
+- Heading hierarchy
+- Consistent list formatting
+- Proper link formatting
+- Code block syntax
+- Uses `.markdownlint.json` configuration
+- Same tool as GitHub Actions workflow!
 
 ## Philosophy
 

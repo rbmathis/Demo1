@@ -26,7 +26,7 @@ flowchart TD
 
 ## Folder Layout
 
-```
+```text
 Controllers/        MVC controllers
 Models/             View/Domain models
 Views/              Razor views

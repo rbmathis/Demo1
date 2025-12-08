@@ -38,8 +38,6 @@ agents:
       - selection
     skillsets:
       - review-controller
-      - review-model
-      - review-view
       - check-security
     handoff:
       can_handoff_to:
@@ -70,8 +68,6 @@ agents:
       - workspace
     skillsets:
       - validate-csproj
-      - check-dependencies
-      - analyze-build-config
     handoff:
       can_handoff_to:
         - security-auditor
@@ -101,10 +97,7 @@ agents:
       - workspace
       - selection
     skillsets:
-      - scan-auth
-      - check-input-validation
-      - detect-secrets
-      - audit-dependencies
+      - check-security
     handoff:
       can_handoff_to:
         - code-reviewer
@@ -130,10 +123,6 @@ agents:
     context:
       - workspace
       - selection
-    skillsets:
-      - check-xml-comments
-      - generate-comments
-      - validate-readme
     handoff:
       can_handoff_to:
         - code-reviewer
@@ -157,9 +146,6 @@ agents:
       - classification
     context:
       - selection
-    skillsets:
-      - classify-difficulty
-      - suggest-labels
     handoff:
       can_handoff_to:
         - code-reviewer

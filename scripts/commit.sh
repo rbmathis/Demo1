@@ -2,6 +2,14 @@
 # Snarky Auto-Commit Script 🔥
 # Because manually checking if your code works is SO 2010
 
+echo "🧹 Running pre-commit cleanup..."
+# Clean only what we need to for the commit
+dotnet clean --configuration Debug --verbosity quiet 2>/dev/null || true
+find . -type d -name "TestResults" -exec rm -rf {} + 2>/dev/null || true
+find . -name "*.trx" -delete 2>/dev/null || true
+
+echo "✅ Workspace cleaned and ready!"
+
 set -e  # Exit on any error
 
 # Terminal colors for maximum sass
@@ -83,7 +91,7 @@ fi
 echo ""
 
 # Step 1: Build the app
-echo -e "${CYAN}${BOLD}[1/7]${NC} Building the app... ${YELLOW}(pretending this isn't scary)${NC}"
+echo -e "${CYAN}${BOLD}[1/8]${NC} Building the app... ${YELLOW}(pretending this isn't scary)${NC}"
 if dotnet build --configuration Release --nologo --verbosity quiet > /dev/null 2>&1; then
     echo -e "      ${GREEN}✓ Build successful!${NC} ${CYAN}The compiler actually likes you today 🎉${NC}"
 else
@@ -93,7 +101,7 @@ else
 fi
 
 # Step 2: Run the tests
-echo -e "${CYAN}${BOLD}[2/7]${NC} Running tests... ${YELLOW}(fingers crossed)${NC}"
+echo -e "${CYAN}${BOLD}[2/8]${NC} Running tests... ${YELLOW}(fingers crossed)${NC}"
 cd tests/Demo1.UnitTests
 if dotnet test --configuration Release --nologo --verbosity quiet > /dev/null 2>&1; then
     echo -e "      ${GREEN}✓ All tests passed!${NC} ${CYAN}Your code is less broken than usual 🎊${NC}"
@@ -105,8 +113,23 @@ else
 fi
 cd ../..
 
-# Step 3: Check code coverage
-echo -e "${CYAN}${BOLD}[3/7]${NC} Checking code coverage... ${YELLOW}(hoping you wrote tests)${NC}"
+# Step 3: Lint markdown documentation
+echo -e "${CYAN}${BOLD}[3/8]${NC} Linting markdown... ${YELLOW}(docs matter too)${NC}"
+if command -v docker &> /dev/null; then
+    if ./scripts/lint-docs.sh > /dev/null 2>&1; then
+        echo -e "      ${GREEN}✓ Markdown looks gorgeous!${NC} ${CYAN}Your docs are 💯${NC}"
+    else
+        echo -e "      ${YELLOW}⚠ Markdown linting found issues${NC}"
+        echo -e "      ${CYAN}Run './scripts/lint-docs.sh' for details${NC}"
+        echo -e "      ${MAGENTA}Continuing anyway... CI will catch it 😏${NC}"
+    fi
+else
+    echo -e "      ${YELLOW}⚠ Docker not found${NC}"
+    echo -e "      ${MAGENTA}Skipping markdown lint... CI will handle it 😉${NC}"
+fi
+
+# Step 4: Check code coverage
+echo -e "${CYAN}${BOLD}[4/8]${NC} Checking code coverage... ${YELLOW}(hoping you wrote tests)${NC}"
 cd tests/Demo1.UnitTests
 dotnet test --collect:"XPlat Code Coverage" --nologo --verbosity quiet > /dev/null 2>&1 || true
 
@@ -131,8 +154,8 @@ else
 fi
 cd ../..
 
-# Step 4: Quick smoke test - ensure the app actually runs
-echo -e "${CYAN}${BOLD}[4/7]${NC} Smoke testing... ${YELLOW}(please don't catch fire)${NC}"
+# Step 5: Quick smoke test - ensure the app actually runs
+echo -e "${CYAN}${BOLD}[5/8]${NC} Smoke testing... ${YELLOW}(please don't catch fire)${NC}"
 timeout 10s dotnet run --no-build --configuration Release --urls "http://localhost:5555" > /dev/null 2>&1 &
 APP_PID=$!
 sleep 5
@@ -146,8 +169,8 @@ else
     exit 1
 fi
 
-# Step 5: Check current branch
-echo -e "${CYAN}${BOLD}[5/7]${NC} Checking git branch... ${YELLOW}(not like you were organized anyway)${NC}"
+# Step 6: Check current branch
+echo -e "${CYAN}${BOLD}[6/8]${NC} Checking git branch... ${YELLOW}(not like you were organized anyway)${NC}"
 CURRENT_BRANCH=$(git branch --show-current)
 
 if [ "$CURRENT_BRANCH" = "main" ] || [ "$CURRENT_BRANCH" = "master" ]; then
@@ -166,8 +189,8 @@ else
     echo -e "      ${CYAN}Someone taught you well 🎓${NC}"
 fi
 
-# Step 6: Commit with snarky message
-echo -e "${CYAN}${BOLD}[6/7]${NC} Committing changes... ${YELLOW}(with maximum attitude)${NC}"
+# Step 7: Commit with snarky message
+echo -e "${CYAN}${BOLD}[7/8]${NC} Committing changes... ${YELLOW}(with maximum attitude)${NC}"
 
 git add -A
 if git diff --cached --quiet; then
@@ -179,8 +202,8 @@ else
     echo -e "      ${BOLD}${MAGENTA}\"${COMMIT_MSG}\"${NC}"
 fi
 
-# Step 7: Push and create PR
-echo -e "${CYAN}${BOLD}[7/7]${NC} Creating PR... ${YELLOW}(prepare for glory)${NC}"
+# Step 8: Push and create PR
+echo -e "${CYAN}${BOLD}[8/8]${NC} Creating PR... ${YELLOW}(prepare for glory)${NC}"
 
 # Push the branch
 git push -u origin "$BRANCH_NAME" 2>&1 | grep -v "^To " || true

@@ -7,7 +7,7 @@ This workflow shows how @issue-helper routes issues to the appropriate specialis
 **Trigger**: New GitHub issue or issue analysis request
 
 ### Step 1: Initial Triage (@issue-helper)
-```
+```bash
 @issue-helper classify this issue
 ```
 
@@ -44,18 +44,18 @@ This workflow shows how @issue-helper routes issues to the appropriate specialis
 
 ### Bug Report Flow
 
-```
+```text
 User reports: "Login controller throws NullReferenceException"
 
-Issue Helper: "Ooh, let's tackle this! 🎯 This looks like a bug report. 
+Issue Helper: "Ooh, let's tackle this! 🎯 This looks like a bug report.
 I'm classifying this as:
 - Type: Bug
 - Difficulty: Moderate
 - Priority: High
 - Component: Authentication
 
-@code-reviewer, can you analyze the LoginController and identify what's 
-causing the NullReferenceException? Line 67 looks suspicious based on the 
+@code-reviewer, can you analyze the LoginController and identify what's
+causing the NullReferenceException? Line 67 looks suspicious based on the
 stack trace."
 
 ---
@@ -64,17 +64,17 @@ Code Reviewer: "On it! 💕 Let me check that controller...
 
 [analyzes code]
 
-Found it! Line 67 is accessing User.Identity.Name without checking if User 
+Found it! Line 67 is accessing User.Identity.Name without checking if User
 is authenticated first. Here's the fix:
 
 [provides code example]
 
-But wait... I'm seeing authentication code here. @security-auditor, mind 
+But wait... I'm seeing authentication code here. @security-auditor, mind
 giving this a quick security review while we're fixing it?"
 
 ---
 
-Security Auditor: "Absolutely! 🛡️ Good catch on involving me. While fixing 
+Security Auditor: "Absolutely! 🛡️ Good catch on involving me. While fixing
 the null reference, let's also:
 1. Add [Authorize] attribute
 2. Validate the user object
@@ -85,12 +85,12 @@ This will be both functional AND secure! 💪"
 
 ### Security Report Flow
 
-```
+```text
 User reports: "Found exposed API keys in config file"
 
 Issue Helper: "🚨 SECURITY ALERT! This is critical!
 
-@security-auditor - I need you immediately! We have a potential exposed 
+@security-auditor - I need you immediately! We have a potential exposed
 secrets situation in the configuration files!"
 
 ---
@@ -99,7 +99,7 @@ Security Auditor: "I'm on it! 🛡️ This is CRITICAL priority.
 
 [scans repository]
 
-Confirmed: Found API keys in appsettings.json. Here's what we need to do 
+Confirmed: Found API keys in appsettings.json. Here's what we need to do
 RIGHT NOW:
 
 1. Rotate those API keys immediately
@@ -107,15 +107,15 @@ RIGHT NOW:
 3. Add appsettings.json patterns to .gitignore
 4. Scan git history for exposed keys
 
-@build-validator, after we move these secrets, can you verify the build 
+@build-validator, after we move these secrets, can you verify the build
 configuration is using the secure setup?
 
-@doc-helper, we'll need documentation on the proper secrets management 
+@doc-helper, we'll need documentation on the proper secrets management
 process for the team."
 
 ---
 
-Build Validator: "On it. ✅ I'll validate the configuration setup uses 
+Build Validator: "On it. ✅ I'll validate the configuration setup uses
 user secrets and Key Vault properly."
 
 Doc Helper: "I'll create comprehensive docs on secrets management! 📚"
@@ -123,7 +123,7 @@ Doc Helper: "I'll create comprehensive docs on secrets management! 📚"
 
 ### Documentation Issue Flow
 
-```
+```text
 User reports: "The API documentation is incomplete"
 
 Issue Helper: "Perfect! 🎯 This is definitely a documentation issue.
@@ -132,12 +132,12 @@ Classification:
 - Difficulty: Easy
 - Scope: API Documentation
 
-@doc-helper, this one's all yours! The API endpoints need better 
+@doc-helper, this one's all yours! The API endpoints need better
 documentation."
 
 ---
 
-Doc Helper: "Love it! 📚 Let me review the API controllers and create 
+Doc Helper: "Love it! 📚 Let me review the API controllers and create
 comprehensive XML comments and README documentation.
 
 [generates documentation]
@@ -148,18 +148,18 @@ Done! I've added:
 - Response type documentation
 - Example usage
 
-@code-reviewer, want to verify the documented API behavior matches the 
+@code-reviewer, want to verify the documented API behavior matches the
 actual implementation?"
 
 ---
 
-Code Reviewer: "Looking gorgeous! 💕 Documentation matches the code 
+Code Reviewer: "Looking gorgeous! 💕 Documentation matches the code
 perfectly. Nice work, team!"
 ```
 
 ## Workflow Diagram
 
-```
+```text
 New Issue
     ↓
 [@issue-helper] Triage & Classify
