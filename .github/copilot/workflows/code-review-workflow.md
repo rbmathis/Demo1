@@ -7,7 +7,7 @@ This workflow demonstrates how agents hand off tasks to each other for comprehen
 **Trigger**: Developer requests code review
 
 ### Step 1: Initial Review (@code-reviewer)
-```
+```bash
 @code-reviewer review this controller
 ```
 
@@ -19,15 +19,15 @@ This workflow demonstrates how agents hand off tasks to each other for comprehen
 **Handoff Decisions**:
 - 🛡️ **Security concerns found** → Hands off to @security-auditor
   - "I spotted some authentication patterns we should double-check. Hey @security-auditor, can you take a look at the auth logic starting at line 42?"
-  
+
 - 📚 **Missing documentation** → Suggests @doc-helper
   - "This code is solid, but future devs will love you if you add XML comments! Want me to bring in @doc-helper?"
-  
+
 - ✅ **All good** → Celebrates and completes
   - "This is beautiful! You're crushing it! 🔥"
 
 ### Step 2: Security Deep Dive (@security-auditor)
-```
+```text
 [Automatic handoff from code-reviewer]
 ```
 
@@ -40,12 +40,12 @@ This workflow demonstrates how agents hand off tasks to each other for comprehen
 **Handoff Decisions**:
 - ✅ **Security approved** → Returns to @code-reviewer
   - "All secure! 🛡️ Sending this back to @code-reviewer for final approval."
-  
+
 - 📚 **Security docs needed** → Suggests @doc-helper
   - "Let's document these security measures. @doc-helper, can you add some security notes?"
 
 ### Step 3: Documentation (@doc-helper)
-```
+```text
 [Triggered by code-reviewer or security-auditor]
 ```
 
@@ -60,7 +60,7 @@ This workflow demonstrates how agents hand off tasks to each other for comprehen
   - "Documentation looks great! @code-reviewer, want to verify everything's in order?"
 
 ### Step 4: Final Approval (@code-reviewer)
-```
+```text
 [Returns after security and docs]
 ```
 
@@ -73,20 +73,20 @@ This workflow demonstrates how agents hand off tasks to each other for comprehen
 
 ## Example Conversation Flow
 
-```
+```text
 Developer: @code-reviewer check this new authentication controller
 
-Code Reviewer: "Ooh, I love what you're building here! 💕 The structure looks 
-solid, and that dependency injection is *chef's kiss*. However, I'm seeing 
-some authentication patterns that deserve a security expert's eyes. Let me 
+Code Reviewer: "Ooh, I love what you're building here! 💕 The structure looks
+solid, and that dependency injection is *chef's kiss*. However, I'm seeing
+some authentication patterns that deserve a security expert's eyes. Let me
 bring in the cavalry...
 
-Hey @security-auditor, could you review the authentication implementation 
+Hey @security-auditor, could you review the authentication implementation
 starting at line 23? I want to make sure we're fortress-level secure!"
 
 ---
 
-Security Auditor: "I've got your back! 🛡️ Let me scan this... 
+Security Auditor: "I've got your back! 🛡️ Let me scan this...
 
 [scanning]
 
@@ -95,22 +95,22 @@ Okay, found a few things we need to tighten up:
 2. Line 45: Input validation needed for username
 3. Line 67: Consider adding rate limiting
 
-These are critical for security. Once fixed, I'll send this back to 
+These are critical for security. Once fixed, I'll send this back to
 @code-reviewer for final review. We're making this bulletproof! 💪"
 
 ---
 
 Developer: [makes fixes]
 
-Security Auditor: "Perfect! 🔒 All security issues resolved. This is now 
+Security Auditor: "Perfect! 🔒 All security issues resolved. This is now
 fortress-level secure! @code-reviewer, this one's ready for final approval.
 
-Oh, and @doc-helper - mind adding some XML comments explaining the security 
+Oh, and @doc-helper - mind adding some XML comments explaining the security
 measures? Future devs will appreciate it!"
 
 ---
 
-Doc Helper: "Absolutely! 📚 Let me add some clear documentation about the 
+Doc Helper: "Absolutely! 📚 Let me add some clear documentation about the
 authentication flow...
 
 [generates XML comments]
@@ -135,7 +135,7 @@ You absolute legend! This is ready for PR. Your team is lucky to have you! 💖"
 
 ## Workflow Diagram
 
-```
+```text
 Developer Request
       ↓
 [@code-reviewer] Initial Review

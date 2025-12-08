@@ -240,7 +240,7 @@ Configure local development profiles:
   RUN dotnet restore
   COPY . .
   RUN dotnet publish -c Release -o /app/publish
-  
+
   FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
   WORKDIR /app
   COPY --from=build /app/publish .
@@ -383,8 +383,8 @@ Configure local development profiles:
 ## Related Documentation
 - `docs/architecture.md` - System architecture
 - `docs/configuration.md` - Configuration management
-- GitHub Actions: https://docs.github.com/actions
-- Azure DevOps: https://azure.microsoft.com/services/devops/
+- GitHub Actions: <https://docs.github.com/actions>
+- Azure DevOps: <https://azure.microsoft.com/services/devops/>
 
 ## Best Practices Checklist
 - [ ] Build pipeline runs on every push

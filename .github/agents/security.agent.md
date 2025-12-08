@@ -35,7 +35,7 @@ This agent specializes in security aspects of ASP.NET Core MVC applications, han
       options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
       options.SlidingExpiration = true;
   });
-  
+
   builder.Services.AddAuthorization(options => {
       options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
   });
@@ -51,10 +51,10 @@ This agent specializes in security aspects of ASP.NET Core MVC applications, han
   ```csharp
   [Authorize]
   public class AccountController : Controller { }
-  
+
   [Authorize(Roles = "Admin")]
   public IActionResult AdminPanel() { }
-  
+
   [Authorize(Policy = "AdminOnly")]
   public IActionResult SecureAction() { }
   ```
@@ -73,7 +73,7 @@ This agent specializes in security aspects of ASP.NET Core MVC applications, han
   ```csharp
   // ✅ GOOD - Parameterized query
   var user = await context.Users.FirstOrDefaultAsync(u => u.Username == username);
-  
+
   // ❌ BAD - String concatenation
   var query = $"SELECT * FROM Users WHERE Username = '{username}'";
   ```
@@ -126,7 +126,7 @@ This agent specializes in security aspects of ASP.NET Core MVC applications, han
 - Use `@Html.Raw()` only with trusted content
 - Implement Content Security Policy (CSP) headers:
   ```csharp
-  context.Response.Headers["Content-Security-Policy"] = 
+  context.Response.Headers["Content-Security-Policy"] =
       "default-src 'self'; script-src 'self' 'unsafe-inline';";
   ```
 - Sanitize rich text input using libraries like HtmlSanitizer
@@ -233,7 +233,7 @@ context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=()"
       [Required]
       [EmailAddress]
       public string Email { get; set; }
-      
+
       [Required]
       [StringLength(100, MinimumLength = 8)]
       public string Password { get; set; }
@@ -330,11 +330,11 @@ context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=()"
 ## Related Documentation
 - `docs/architecture.md` - System architecture
 - `docs/configuration.md` - Configuration management
-- OWASP Top 10: https://owasp.org/www-project-top-ten/
-- ASP.NET Core Security: https://learn.microsoft.com/aspnet/core/security/
+- OWASP Top 10: <https://owasp.org/www-project-top-ten/>
+- ASP.NET Core Security: <https://learn.microsoft.com/aspnet/core/security/>
 
 ## Security Resources
-- OWASP Top 10: https://owasp.org/www-project-top-ten/
-- OWASP Cheat Sheets: https://cheatsheetseries.owasp.org/
-- ASP.NET Core Security Best Practices: https://learn.microsoft.com/aspnet/core/security/
-- .NET Security Guidelines: https://learn.microsoft.com/dotnet/standard/security/
+- OWASP Top 10: <https://owasp.org/www-project-top-ten/>
+- OWASP Cheat Sheets: <https://cheatsheetseries.owasp.org/>
+- ASP.NET Core Security Best Practices: <https://learn.microsoft.com/aspnet/core/security/>
+- .NET Security Guidelines: <https://learn.microsoft.com/dotnet/standard/security/>

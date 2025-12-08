@@ -159,39 +159,43 @@ Use `@agent-name` in Copilot Chat to invoke them:
 #### @code-reviewer 💖
 Reviews your code for quality and best practices.
 
-```
+```bash
 @code-reviewer look at this controller
 @code-reviewer check my security implementation
 ```
 
 #### @build-validator 🔧
+
 Validates project files and dependencies.
 
-```
+```bash
 @build-validator check my .csproj file
 @build-validator analyze dependencies
 ```
 
 #### @security-auditor 🛡️
+
 Scans for security vulnerabilities.
 
-```
+```bash
 @security-auditor scan this file
 @security-auditor check for SQL injection risks
 ```
 
 #### @doc-helper 📚
+
 Helps improve documentation.
 
-```
+```bash
 @doc-helper generate XML comments
 @doc-helper check documentation coverage
 ```
 
 #### @issue-helper 🎯
+
 Helps triage GitHub issues.
 
-```
+```bash
 @issue-helper classify this issue
 @issue-helper suggest labels
 ```
@@ -205,7 +209,7 @@ Helps triage GitHub issues.
 
 ### Examples
 
-```
+```bash
 # Review current file
 @code-reviewer analyze this controller for MVC best practices
 

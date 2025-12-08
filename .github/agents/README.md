@@ -4,7 +4,7 @@ This document explains the proper directory structure for GitHub Copilot Custom 
 
 ## Correct Structure ✅
 
-```
+```text
 .github/
 ├── agents/                          # Custom agent definition files
 │   ├── *.agent.md                   # Individual agent files with YAML frontmatter
