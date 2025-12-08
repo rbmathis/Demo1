@@ -2,25 +2,54 @@
 
 > Use these as ready-made GitHub issues. Copy/paste into GitHub or run `gh issue create` with the provided titles and bodies.
 
+## 📊 Latest Review (November 26, 2024)
+
+**🎯 See [issue-review-2025-11-26.md](issue-review-2025-11-26.md) for comprehensive review with:**
+- Detailed status for all 18 open GitHub issues
+- Implementation questions and clarifications needed
+- Suggested next steps and priority recommendations
+- 3 issues ready to close (#6, #7, #8) ✅
+
+**Key Findings:**
+- ✅ **3 Issues Complete** - Ready to close!
+- 🟡 **5 Issues Partially Complete** - Need finishing touches or clarification
+- 🔴 **10 Issues Not Started** - Clear path forward with questions
+
+**Legend:**
+- ✅ Completed - Feature implemented and working
+- 🟡 Partially Done - Some work complete, needs clarification or finishing
+- Open - Not started, ready for implementation
+
 ## Table
 
-| ID  | Title                                         | Type          | Priority | Scope         | Status       |
-| --- | --------------------------------------------- | ------------- | -------- | ------------- | ------------ |
-| 1   | Enforce HTTPS and HSTS                        | Security      | High     | Middleware    | ✅ Completed |
-| 2   | Add global exception handling & logging       | Enhancement   | High     | Middleware    | ✅ Completed |
-| 3   | Implement authentication (Azure AD)           | Feature       | High     | Identity      | Open         |
-| 4   | Add health check endpoint (`/health`)         | Ops           | Medium   | Observability | ✅ Completed |
-| 5   | Create Demo1.Tests with controller unit tests | Testing       | Medium   | QA            | Open         |
-| 6   | Integrate Playwright for basic UI smoke       | Testing       | Medium   | QA            | Open         |
-| 7   | Add Dockerfile and containerized dev workflow | DevOps        | Medium   | Infra         | Open         |
-| 8   | Add Application Insights telemetry            | Observability | Medium   | Telemetry     | ✅ Completed |
-| 9   | Accessibility pass on views (ARIA/landmarks)  | Accessibility | Medium   | UI            | Open         |
-| 10  | Add code analyzers and dotnet format baseline | Quality       | Medium   | Tooling       | Open         |
-| 11  | Optimize CI with restore/build caching        | DevOps        | Low      | CI            | ✅ Completed |
-| 12  | Create custom error pages (404/500)           | UX            | Low      | UI            | ✅ Completed |
-| 13  | About Us page                                 | Feature       | Low      | UI            | ✅ Completed |
-| 14  | Security headers middleware                   | Security      | High     | Middleware    | ✅ Completed |
-| 45  | Feature Flags with Azure App Configuration    | Feature       | Medium   | Configuration | ✅ Completed |
+| ID  | Title                                         | Type          | Priority | Scope         | Status              | GitHub Issue |
+| --- | --------------------------------------------- | ------------- | -------- | ------------- | ------------------- | ------------ |
+| 1   | Enforce HTTPS and HSTS                        | Security      | High     | Middleware    | ✅ Completed        | -            |
+| 2   | Add global exception handling & logging       | Enhancement   | High     | Middleware    | 🟡 Partially Done   | #3           |
+| 3   | Implement authentication (Azure AD)           | Feature       | High     | Identity      | Open                | #4           |
+| 4   | Add health check endpoint (`/health`)         | Ops           | Medium   | Observability | ✅ Completed        | -            |
+| 5   | Create Demo1.Tests with controller unit tests | Testing       | Medium   | QA            | ✅ Completed        | #6 (close)   |
+| 6   | Integrate Playwright for basic UI smoke       | Testing       | Medium   | QA            | ✅ Completed        | #7 (close)   |
+| 7   | Add Dockerfile and containerized dev workflow | DevOps        | Medium   | Infra         | ✅ Completed        | #8 (close)   |
+| 8   | Add Application Insights telemetry            | Observability | Medium   | Telemetry     | ✅ Completed        | -            |
+| 9   | Accessibility pass on views (ARIA/landmarks)  | Accessibility | Medium   | UI            | Open                | #10          |
+| 10  | Add code analyzers and dotnet format baseline | Quality       | Medium   | Tooling       | Open                | #11          |
+| 11  | Optimize CI with restore/build caching        | DevOps        | Low      | CI            | ✅ Completed        | -            |
+| 12  | Create custom error pages (404/500)           | UX            | Low      | UI            | ✅ Completed        | -            |
+| 13  | About Us page                                 | Feature       | Low      | UI            | ✅ Completed        | -            |
+| 14  | Security headers middleware                   | Security      | High     | Middleware    | ✅ Completed        | -            |
+| 45  | Feature Flags with Azure App Configuration    | Feature       | Medium   | Configuration | ✅ Completed        | -            |
+| 46  | Logging middleware for request/response       | Observability | Medium   | Middleware    | 🟡 Partially Done   | #35          |
+| 47  | Dark mode CSS audit                           | Enhancement   | Medium   | UI            | 🟡 Partially Done   | #20          |
+| 48  | Contact form with email notification          | Feature       | Medium   | Feature       | 🟡 Partially Done   | #38          |
+| 49  | Response caching strategy                     | Performance   | Medium   | Middleware    | 🟡 Partially Done   | #42          |
+| 50  | Comprehensive integration tests               | Testing       | High     | QA            | Open                | #44          |
+| 51  | Sitemap.xml generation                        | SEO           | Low      | Feature       | Open                | #43          |
+| 52  | Serilog structured logging                    | Observability | Medium   | Logging       | Open                | #41          |
+| 53  | Entity Framework Core database                | Infrastructure| High     | Data          | Open                | #40          |
+| 54  | CSS/JS minification and bundling              | Performance   | Medium   | Assets        | Open                | #39          |
+| 55  | Rate limiting middleware                      | Security      | Medium   | Middleware    | Open                | #37          |
+| 56  | API versioning support                        | Architecture  | Low      | API           | Open                | #36          |
 
 ---
 
