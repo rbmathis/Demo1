@@ -6,24 +6,29 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+# Allow an external pre-published directory to be passed via build-arg
+ARG PUBLISHED_DIR=
+
 # Install LibMan for client-side library management
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 
 # Add .NET tools to PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-# Copy csproj and restore dependencies
-COPY Demo1.csproj ./
-RUN dotnet restore
-
-# Copy everything else
+# Copy everything (restore will resolve packages for the whole solution)
 COPY . ./
 
-# Restore client-side libraries
-RUN libman restore
-
-# Build and publish
-RUN dotnet publish -c Release -o /app/publish --no-restore
+# If a published directory was mounted into the build context, prefer
+# using it; otherwise restore and publish as before.
+RUN if [ -n "$PUBLISHED_DIR" ] && [ -d "$PUBLISHED_DIR" ]; then \
+  echo "Using pre-published output from $PUBLISHED_DIR"; \
+  mkdir -p /app/publish && cp -a "$PUBLISHED_DIR"/* /app/publish/; \
+  else \
+  echo "No pre-published output provided; restoring and publishing"; \
+  dotnet restore Demo1.sln && \
+  libman restore && \
+  dotnet publish Demo1.csproj -c Release -o /app/publish --no-restore; \
+  fi
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

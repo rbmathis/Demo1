@@ -23,56 +23,11 @@ jobs:
           FILTER_REGEX_EXCLUDE: '^(.*/node_modules/.*|.*/bin/.*|.*/obj/.*)$'
 
   build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        dotnet-version: ["9.0.x"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ matrix.dotnet-version }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Install Playwright browsers
-        run: |
-          dotnet tool install --global Microsoft.Playwright.CLI
-          export PATH="$HOME/.dotnet/tools:$PATH"
-          playwright install --with-deps
-
-      - name: Test
-        run: |
-          if [ -d "test" ] || [ -d "tests" ] || find . -name "*Test*.csproj" -o -name "*.Tests.csproj" | grep -q .; then
-            dotnet test --no-build --configuration Release --verbosity normal
-          else
-            echo "No test projects found, skipping tests"
-          fi
-
-      - name: Publish
-        run: dotnet publish --no-build --configuration Release --output ./publish
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: published-app
-          path: ./publish
+    uses: ./.github/workflows/build-and-test.yml
+    with:
+      dotnet-version: "9.0.x"
+      # Skip installing Playwright on pull_request runs to speed up PR checks
+      install-playwright: ${{ github.event_name == 'pull_request' && 'false' || 'true' }}
 
   security-scan:
     runs-on: ubuntu-latest
