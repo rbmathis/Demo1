@@ -1,5 +1,6 @@
 using Demo1.Controllers;
 using Demo1.Models;
+using Demo1.Services;
 using Demo1.UnitTests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -10,10 +11,21 @@ namespace Demo1.UnitTests.Controllers;
 
 public class HomeControllerTests
 {
+    private static HomeController CreateController(ILogger<HomeController>? logger = null)
+    {
+        return new HomeController(
+            logger ?? Mock.Of<ILogger<HomeController>>(),
+            Mock.Of<ISearchService>(),
+            Mock.Of<IWeatherService>(),
+            Mock.Of<IUserProfileService>(),
+            Mock.Of<IStyleGeneratorService>()
+        );
+    }
+
     [Fact]
     public void Index_Returns_Default_View()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>());
+        var controller = CreateController();
 
         var result = controller.Index();
 
@@ -24,7 +36,7 @@ public class HomeControllerTests
     [Fact]
     public void Privacy_Returns_Default_View()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>());
+        var controller = CreateController();
 
         var result = controller.Privacy();
 
@@ -34,7 +46,7 @@ public class HomeControllerTests
     [Fact]
     public void AboutUs_Returns_Default_View()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>());
+        var controller = CreateController();
 
         var result = controller.AboutUs();
 
@@ -45,7 +57,7 @@ public class HomeControllerTests
     public void Feature1_Returns_View_And_Logs_Access()
     {
         var logger = new Mock<ILogger<HomeController>>();
-        var controller = new HomeController(logger.Object);
+        var controller = CreateController(logger.Object);
 
         var result = controller.Feature1();
 
@@ -56,12 +68,10 @@ public class HomeControllerTests
     [Fact]
     public void Error404_Returns_View_With_RequestId()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>())
+        var controller = CreateController();
+        controller.ControllerContext = new ControllerContext
         {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-404" }
-            }
+            HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-404" }
         };
 
         var result = controller.Error404();
@@ -74,12 +84,10 @@ public class HomeControllerTests
     [Fact]
     public void Error500_Returns_View_With_RequestId()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>())
+        var controller = CreateController();
+        controller.ControllerContext = new ControllerContext
         {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-500" }
-            }
+            HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-500" }
         };
 
         var result = controller.Error500();
@@ -92,12 +100,10 @@ public class HomeControllerTests
     [Fact]
     public void Error_Returns_View_With_RequestId()
     {
-        var controller = new HomeController(Mock.Of<ILogger<HomeController>>())
+        var controller = CreateController();
+        controller.ControllerContext = new ControllerContext
         {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-error" }
-            }
+            HttpContext = new DefaultHttpContext { TraceIdentifier = "trace-error" }
         };
 
         var result = controller.Error();
