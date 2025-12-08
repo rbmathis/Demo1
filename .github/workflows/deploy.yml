@@ -35,6 +35,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Install Playwright browsers (for UI tests)
+        run: |
+          dotnet tool install --global Microsoft.Playwright.CLI
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          playwright install --with-deps
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
 

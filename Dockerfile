@@ -12,18 +12,18 @@ RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
 # Add .NET tools to PATH
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-# Copy csproj and restore dependencies
-COPY Demo1.csproj ./
-RUN dotnet restore
-
-# Copy everything else
+# Copy everything (restore will resolve packages for the whole solution)
 COPY . ./
+
+# Restore NuGet packages for the solution so transitive dependencies
+# (and any shared packages) are available for publish.
+RUN dotnet restore Demo1.sln
 
 # Restore client-side libraries
 RUN libman restore
 
-# Build and publish
-RUN dotnet publish -c Release -o /app/publish --no-restore
+# Build and publish ONLY the main project (not the solution)
+RUN dotnet publish Demo1.csproj -c Release -o /app/publish --no-restore
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
