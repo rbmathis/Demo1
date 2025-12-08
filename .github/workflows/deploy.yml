@@ -16,7 +16,7 @@ jobs:
   build:
     uses: ./.github/workflows/build-and-test.yml
     with:
-      dotnet-version: ${{ env.DOTNET_VERSION }}
+      dotnet-version: "9.0.x"
       install-playwright: "true"
 
   docker:

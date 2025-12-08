@@ -1,3 +1,7 @@
+---
+trigger: commit
+---
+
 # Snarky Commit & PR
 
 Build, test, check coverage, commit with attitude, and open a PR with maximum sass.

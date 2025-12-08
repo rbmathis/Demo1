@@ -94,9 +94,11 @@ jobs:
 
       - name: Comment classification (Plan)
         uses: actions/github-script@v7
+        env:
+          DIFFICULTY: "${{ steps.classify.outputs.difficulty || 'moderate' }}"
         with:
           script: |
-            const difficulty = '${{ steps.classify.outputs.difficulty }}';
+            const difficulty = process.env.DIFFICULTY;
             const plan = [
               `**Difficulty:** ${difficulty}`,
               `**Reasoning:** ${difficulty === 'easy' ? 'Low scope/short body/minimal bullets' : difficulty === 'moderate' ? 'Moderate scope/keywords' : 'Broader scope or complex keywords'}`,
