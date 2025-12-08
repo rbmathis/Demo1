@@ -75,7 +75,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: webapp
+          name: published-app
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
       # Uncomment when Azure Web App is configured
