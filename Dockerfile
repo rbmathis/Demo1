@@ -6,15 +6,24 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+# Install LibMan for client-side library management
+RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
+
+# Add .NET tools to PATH
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 # Copy csproj and restore dependencies
 COPY Demo1.csproj ./
 RUN dotnet restore
 
-# Copy everything else (including wwwroot with pre-restored libraries)
+# Copy everything else
 COPY . ./
 
-# Build and publish (LibMan libraries should already be in wwwroot)
-RUN dotnet publish -c Release -o /app/publish
+# Restore client-side libraries
+RUN libman restore
+
+# Build and publish
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
