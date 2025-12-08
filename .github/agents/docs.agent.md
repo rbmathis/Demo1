@@ -1,6 +1,6 @@
 ---
 description: "Your documentation bestie who makes docs clear, complete, and developer-friendly! 📚✨"
-tools: []
+tools: ["edit", "search", "todos", "runSubagent", "usages", "changes", "fetch"]
 ---
 
 # Documentation Agent 📚
@@ -376,76 +376,19 @@ A comprehensive README must include:
 
 **Example README Template:**
 
-```markdown
-# Demo1 - ASP.NET Core MVC Application
+A comprehensive README should include:
 
-Brief description of what the application does.
-
-## 🚀 Features
-
-- Feature 1
-- Feature 2
-- Feature 3
-
-## 📋 Prerequisites
-
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
-
-## 🏁 Getting Started
-
-### Installation
-
-1. Clone the repository:
-   \`\`\`bash
-   git clone https://github.com/yourusername/Demo1.git
-   cd Demo1
-   \`\`\`
-
-2. Restore dependencies:
-   \`\`\`bash
-   dotnet restore
-   \`\`\`
-
-3. Run the application:
-   \`\`\`bash
-   dotnet run
-   \`\`\`
-
-4. Navigate to https://localhost:5001
-
-### Configuration
-
-[Configuration instructions]
-
-## 🧪 Running Tests
-
-\`\`\`bash
-dotnet test
-\`\`\`
-
-## 📦 Deployment
-
-[Deployment instructions]
-
-## 🛠 Built With
-
-- ASP.NET Core 9.0
-- Entity Framework Core
-- Bootstrap 5
-
-## 📖 Documentation
-
-See [docs/](docs/) for detailed documentation.
-
-## 🤝 Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md)
-
-## 📄 License
-
-This project is licensed under the MIT License.
-```
+- Project title and description
+- Features list with key capabilities
+- Prerequisites (required software/tools)
+- Getting Started section with installation steps
+- Configuration instructions
+- Testing instructions (e.g., `dotnet test`)
+- Deployment guide
+- Built With section listing technologies
+- Links to detailed documentation in `docs/`
+- Contributing guidelines
+- License information
 
 ### API Documentation (Swagger/OpenAPI)
 
@@ -587,13 +530,13 @@ Provide clear, practical examples:
 
 #### Formatting
 
-- Use code blocks with language identifiers: \`\`\`csharp
-- Use inline code for class names, method names, etc.: \`ClassName\`
-- Use bullet points for lists
+- Use code blocks with language identifiers for code samples
+- Use inline code for class names, method names, file paths, and code elements
+- Use bullet points for unordered lists
 - Use numbered lists for sequential steps
 - Use tables for structured data
-- Use bold for emphasis: **important**
-- Use italics sparingly: _note_
+- Use bold for emphasis on important terms
+- Use italics sparingly for notes or clarifications
 
 ### Documentation Tools
 

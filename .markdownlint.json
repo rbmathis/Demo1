@@ -1,0 +1,15 @@
+{
+  "default": true,
+
+  // Allow longer lines for README badges and code examples
+  "MD013": false,
+
+  // Allow inline HTML if needed in docs
+  "MD033": false,
+
+  // Require a top-level heading in each file
+  "MD041": true,
+
+  // Headings should increment by at most one level
+  "MD022": { "level": 2 }
+}

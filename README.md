@@ -87,6 +87,41 @@ The debugger will launch the application and open it in your default browser.
 - The project generates XML docs on build: `bin/<Configuration>/<TargetFramework>/Demo1.xml`
 - All **public** APIs should include `///` XML comments (enforced by the Documentation Helper CI agent)
 
+## Additional Notes
+
+### Client-side libraries
+
+- Client-side libraries (Bootstrap, jQuery, validation) are managed with LibMan. Run `libman restore` to populate `wwwroot/lib/` when working locally.
+- The repository currently contains restored files in `wwwroot/lib/` so Docker builds and CI do not need to fetch from CDNs at build time. If you prefer not to commit vendor files, update the Dockerfile and CI to run `libman restore` during the build.
+
+### Optional: Swagger / OpenAPI
+
+- The docs include an example for enabling Swagger, but it is not enabled by default in `Program.cs`.
+- To enable Swagger locally during development, you can add the minimal services and middleware in `Program.cs` (or set a feature flag):
+
+```csharp
+// Example: enable when configuration flag is set or in Development
+if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("EnableSwagger", false))
+{
+   app.UseSwagger();
+   app.UseSwaggerUI();
+}
+```
+
+### Code Coverage
+
+- CI may produce coverage artifacts used by badges and checks. To generate coverage locally with Coverlet (example):
+
+```bash
+dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+```
+
+Check your CI workflow for the exact coverage collector and reporting steps if you rely on published coverage reports.
+
+### Docker and client libraries
+
+- The Docker build expects `wwwroot/lib/` to contain client libs (this repository currently tracks them). If you change that approach, ensure CI installs LibMan or restores client libraries during the Docker build to avoid publish failures.
+
 ## GitHub Actions & Copilot Integration
 
 This project is configured with GitHub Actions workflows and Copilot Custom Agents:
