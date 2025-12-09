@@ -50,6 +50,25 @@ This project includes VS Code tasks that you can run via:
 - **Ctrl+Shift+P** → "Tasks: Run Task"
 - Available tasks: `build`, `run`, `watch`
 
+### Versioning
+
+This project uses automatic semantic versioning based on PR merge activity:
+
+- **Current Version**: See [`VERSION`](VERSION) file in repo root
+- **Version Format**: `MAJOR.MINOR.PATCH` (e.g., `0.27.9`)
+- **Automatic Updates**: When a PR is merged to `main`, the version is automatically bumped based on PR body content:
+  - **Major bump** (`1.0.0`): PR body contains `BREAKING CHANGE` or `#major`
+  - **Minor bump** (`0.28.0`): PR body contains `#minor`, `feat:`, or `feature`
+  - **Patch bump** (`0.27.10`): Default for all other PRs
+- **Artifacts**: Each version bump creates:
+  - Updated `VERSION` file
+  - Git tag (e.g., `v0.27.10`)
+  - GitHub Release with auto-generated notes
+  - Docker images with version labels
+  - .NET assemblies with embedded version
+
+See [`.github/workflows/version.yml`](.github/workflows/version.yml) for implementation details.
+
 ### Project Structure
 
 - **Controllers/**: MVC controllers
