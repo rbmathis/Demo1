@@ -30,7 +30,7 @@ jobs:
       - name: Read current version
         id: current_version
         run: |
-          VERSION=$(cat VERSION | tr -d '[:space:]')
+          VERSION=$(cat VERSION | xargs)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $VERSION"
 
@@ -41,10 +41,10 @@ jobs:
           BUMP_TYPE="patch"
 
           # Check for major bump indicators (case-insensitive)
-          if echo "$PR_BODY" | grep -iq "BREAKING CHANGE" || echo "$PR_BODY" | grep -q "#major"; then
+          if echo "$PR_BODY" | grep -iq "BREAKING CHANGE" || echo "$PR_BODY" | grep -iq "#major"; then
             BUMP_TYPE="major"
           # Check for minor bump indicators (case-insensitive)
-          elif echo "$PR_BODY" | grep -q "#minor" || echo "$PR_BODY" | grep -iq "feat:" || echo "$PR_BODY" | grep -iq "feature"; then
+          elif echo "$PR_BODY" | grep -iq "#minor" || echo "$PR_BODY" | grep -iq "feat:" || echo "$PR_BODY" | grep -iq "feature"; then
             BUMP_TYPE="minor"
           fi
 
@@ -106,7 +106,25 @@ jobs:
         with:
           script: |
             const version = '${{ steps.next_version.outputs.version }}';
+            const currentVersion = '${{ steps.current_version.outputs.version }}';
             const tagName = `v${version}`;
+
+            // Build release body
+            let releaseBody = `## What's Changed\n\nThis release was automatically generated from PR #${{ github.event.pull_request.number }}.\n\n`;
+
+            // Try to add changelog link if previous tag exists
+            try {
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `tags/v${currentVersion}`
+              });
+              // Previous tag exists, add comparison link
+              releaseBody += `**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/v${currentVersion}...${tagName}`;
+            } catch (error) {
+              // Previous tag doesn't exist, just mention it's the first release or tag not found
+              console.log(`Previous tag v${currentVersion} not found, skipping changelog link`);
+            }
 
             // Generate release notes
             const { data: release } = await github.rest.repos.createRelease({
@@ -114,7 +132,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: tagName,
               name: tagName,
-              body: `## What's Changed\n\nThis release was automatically generated from PR #${{ github.event.pull_request.number }}.\n\n**Full Changelog**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/v${{ steps.current_version.outputs.version }}...${tagName}`,
+              body: releaseBody,
               draft: false,
               prerelease: false,
               generate_release_notes: true

@@ -39,7 +39,7 @@ jobs:
       - name: Read version from VERSION file
         id: version
         run: |
-          VERSION=$(cat VERSION | tr -d '[:space:]')
+          VERSION=$(cat VERSION | xargs)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
