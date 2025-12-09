@@ -39,7 +39,7 @@ jobs:
         run: |
           PR_BODY="${{ github.event.pull_request.body }}"
           BUMP_TYPE="patch"
-          
+
           # Check for major bump indicators (case-insensitive)
           if echo "$PR_BODY" | grep -iq "BREAKING CHANGE" || echo "$PR_BODY" | grep -q "#major"; then
             BUMP_TYPE="major"
@@ -47,7 +47,7 @@ jobs:
           elif echo "$PR_BODY" | grep -q "#minor" || echo "$PR_BODY" | grep -iq "feat:" || echo "$PR_BODY" | grep -iq "feature"; then
             BUMP_TYPE="minor"
           fi
-          
+
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
           echo "Detected bump type: $BUMP_TYPE"
 
@@ -56,13 +56,13 @@ jobs:
         run: |
           CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
           BUMP_TYPE="${{ steps.bump_type.outputs.bump_type }}"
-          
+
           # Parse semantic version
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-          
+
           # Remove any pre-release or build metadata
           PATCH=$(echo "$PATCH" | cut -d'-' -f1 | cut -d'+' -f1)
-          
+
           # Increment based on bump type
           case "$BUMP_TYPE" in
             major)
@@ -78,7 +78,7 @@ jobs:
               PATCH=$((PATCH + 1))
               ;;
           esac
-          
+
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version: $NEW_VERSION"
@@ -107,7 +107,7 @@ jobs:
           script: |
             const version = '${{ steps.next_version.outputs.version }}';
             const tagName = `v${version}`;
-            
+
             // Generate release notes
             const { data: release } = await github.rest.repos.createRelease({
               owner: context.repo.owner,
@@ -119,5 +119,5 @@ jobs:
               prerelease: false,
               generate_release_notes: true
             });
-            
+
             console.log(`Created release: ${release.html_url}`);
