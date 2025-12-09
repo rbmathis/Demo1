@@ -8,6 +8,9 @@ WORKDIR /src
 
 # Allow an external pre-published directory to be passed via build-arg
 ARG PUBLISHED_DIR=
+# Version metadata arguments
+ARG VERSION=0.0.0
+ARG REVISION=unknown
 
 # Install LibMan for client-side library management
 RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
@@ -33,6 +36,16 @@ RUN if [ -n "$PUBLISHED_DIR" ] && [ -d "$PUBLISHED_DIR" ]; then \
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
+
+# Version metadata arguments for runtime stage
+ARG VERSION=0.0.0
+ARG REVISION=unknown
+
+# OCI-compliant labels for version metadata
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.revision="${REVISION}"
+LABEL org.opencontainers.image.source="https://github.com/rbmathis/Demo1"
+LABEL org.opencontainers.image.title="Demo1"
 
 # Install curl for health check
 USER root
