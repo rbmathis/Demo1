@@ -100,6 +100,7 @@ The debugger will launch the application and open it in your default browser.
 - Coding & docs conventions: [`docs/conventions.md`](docs/conventions.md)
 - Configuration: [`docs/configuration.md`](docs/configuration.md)
 - Testing guidelines: [`docs/testing.md`](docs/testing.md)
+- CI/CD pipeline: [`docs/ci-cd.md`](docs/ci-cd.md)
 
 ### XML Documentation
 

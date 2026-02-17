@@ -10,6 +10,7 @@ Welcome to the documentation hub for **Demo1**.
 | Coding & documentation conventions | [conventions.md](conventions.md)     |
 | Configuration & environments       | [configuration.md](configuration.md) |
 | Testing guidelines                 | [testing.md](testing.md)             |
+| CI/CD pipeline & caching           | [ci-cd.md](ci-cd.md)                 |
 
 ## 🔗 Quick Links
 
