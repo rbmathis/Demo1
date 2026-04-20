@@ -36,8 +36,9 @@ jobs:
 
       - name: Determine version bump type
         id: bump_type
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
           BUMP_TYPE="patch"
 
           # Check for major bump indicators (case-insensitive)
