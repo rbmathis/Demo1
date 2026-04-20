@@ -1,6 +1,6 @@
 ---
 description: "Unit testing, integration testing, and test automation expert"
-tools: []
+tools: ['read', 'edit', 'search', 'execute']
 ---
 
 # Testing Agent 🧪

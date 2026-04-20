@@ -1,6 +1,6 @@
 ---
 description: "Backend development expert for Controllers, Models, Program.cs, Middleware, and Dependency Injection"
-tools: []
+tools: ['read', 'edit', 'search', 'execute']
 ---
 
 # Backend Agent 🔧

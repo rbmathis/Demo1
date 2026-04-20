@@ -1,5 +1,6 @@
 ---
-trigger: commit
+name: commit
+agent: agent
 ---
 
 # Snarky Commit & PR
