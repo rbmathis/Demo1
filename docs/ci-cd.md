@@ -136,14 +136,14 @@ To optimize CI/CD performance and reduce build times, the project implements com
 
 Check the GitHub Actions run logs for cache hit/miss information:
 
-```
+```text
 Run actions/cache@v4
 Cache restored from key: Linux-nuget-abc123...
 ```
 
 Or for a miss:
 
-```
+```text
 Cache not found for input keys: Linux-nuget-abc123...
 ```
 
