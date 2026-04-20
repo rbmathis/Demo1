@@ -1,6 +1,6 @@
 ---
 description: "Intelligent coordinator that routes requests to specialized agents"
-tools: []
+tools: ['read', 'search', 'agent']
 ---
 
 # Orchestrator Agent

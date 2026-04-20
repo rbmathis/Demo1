@@ -1,6 +1,6 @@
 ---
 description: "Authentication, authorization, security headers, and OWASP vulnerability protection expert"
-tools: []
+tools: ['read', 'edit', 'search', 'execute']
 ---
 
 # Security Agent 🔒

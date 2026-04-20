@@ -1,6 +1,6 @@
 ---
 description: "Your triage assistant who organizes issues like a boss. Let's get things sorted!"
-tools: []
+tools: ['read', 'search']
 ---
 
 # Issue Helper Agent

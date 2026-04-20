@@ -1,6 +1,6 @@
 ---
 description: "CI/CD, GitHub Actions, build automation, deployment, and infrastructure expert"
-tools: []
+tools: ['read', 'edit', 'search', 'execute']
 ---
 
 # DevOps Agent 🚀

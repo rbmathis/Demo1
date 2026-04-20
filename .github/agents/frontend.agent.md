@@ -1,6 +1,6 @@
 ---
 description: "Frontend development expert for Views, Razor templates, CSS, JavaScript, and static assets"
-tools: []
+tools: ['read', 'edit', 'search']
 ---
 
 # Frontend Agent 🎨
