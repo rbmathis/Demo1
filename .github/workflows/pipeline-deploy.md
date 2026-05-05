@@ -5,6 +5,7 @@ description: "Coordinates deployment verification and issue closure after succes
 on:
   issues:
     types: [labeled]
+    names: [pipeline:deploying]
 
 engine: copilot
 

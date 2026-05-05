@@ -5,6 +5,7 @@ description: "Handles retry logic with budget enforcement and escalation"
 on:
   issues:
     types: [labeled]
+    names: [pipeline:retry]
 
 engine: copilot
 

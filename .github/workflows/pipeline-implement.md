@@ -5,6 +5,7 @@ description: "Creates implementation plan and assigns Copilot coding agent for a
 on:
   issues:
     types: [labeled]
+    names: [pipeline:planning]
 
 engine: copilot
 

@@ -5,6 +5,7 @@ description: "Handles deployment rollback when health checks fail"
 on:
   issues:
     types: [labeled]
+    names: [pipeline:failed]
 
 engine: copilot
 
