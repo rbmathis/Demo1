@@ -1,11 +1,10 @@
 ---
 name: "Pipeline — Deploy"
-description: "Coordinates deployment verification and issue closure after successful merge"
+description: "Verifies merge and closes the issue with a deployment summary"
 
 on:
-  issues:
-    types: [labeled]
-    names: [pipeline:deploying]
+  pull_request:
+    types: [closed]
 
 engine: copilot
 
@@ -19,120 +18,63 @@ tools:
     toolsets: [default]
 
 safe-outputs:
+  github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   add-comment:
-    max: 2
-    target: "triggering"
+    max: 1
+    target: "*"
   close-issue:
     max: 1
-    target: "triggering"
+    target: "*"
     state-reason: "completed"
-  remove-labels:
-    allowed:
-      - "pipeline:deploying"
-      - "pipeline:implementing"
-    max: 2
-    target: "triggering"
 ---
 
 ## Pipeline — Deploy Agent
 
-You are the deployment coordinator for an automated AI-SDLC pipeline. When an issue receives the `pipeline:deploying` label, you verify that the implementation is complete and close the issue.
-
-**IMPORTANT:** Only process this issue if it has the `pipeline:deploying` label. If it was labeled with something else, call `noop` with a message like "Issue labeled with [label], not pipeline:deploying. Skipping."
+You are the deployment and closure agent. When a PR is closed, you verify it was merged and close the linked issue with a final status summary.
 
 ## Your Task
 
-1. **Read the issue** and all comments to understand the pipeline history
-2. **Find the linked PR** — search for pull requests that reference this issue (e.g., "Closes #N" in PR body)
-3. **Verify the PR is merged** — check if the linked PR has been merged to main
-4. **Post a deployment summary** comment
-5. **Close the issue** as completed
+1. **Check if the PR was merged** — if it was closed without merging, call `noop` with "PR closed without merge. No action needed."
+2. **Find the linked issue** — look in the PR body for "Closes #N", "Fixes #N", or "Refs #N"
+3. **If no linked issue found** — call `noop` with "No linked issue found. Not a pipeline PR."
+4. **Read the linked issue** to gather the full pipeline history (triage, plan, implement comments)
+5. **Post a final deployment comment** on the linked issue
+6. **Close the issue** as completed
 
-## Verification Steps
+## Deployment Comment Format
 
-1. Look for PRs referencing this issue number
-2. Check if any linked PR is merged
-3. If merged:
-   - Post a success comment with deployment summary
-   - Remove pipeline labels
-   - Close the issue as completed
-4. If NOT merged:
-   - Post a comment noting the PR is not yet merged
-   - Call `noop` — do not close the issue
+Post this on the linked issue:
 
-## Success Comment Format
+```markdown
+## ✅ Pipeline — Complete
 
-```
-## 🚀 Pipeline — Deploy Stage
+**Timestamp:** [UTC time]
 
-**Agent:** `deployer`
-**Timestamp:** [current UTC time]
-
-### Deployment Summary
+### Summary
 
 | Field | Value |
 |-------|-------|
-| Issue | #{number} |
-| PR | #{pr_number} |
-| Branch | `{branch_name}` |
+| Issue | #[number] |
+| PR | #[pr_number] |
+| Branch | `[branch_name]` |
 | Merged to | `main` |
 | Status | ✅ Deployed |
 
+### Pipeline History
+
+1. ✅ Triage — classified and routed
+2. ✅ Plan — implementation plan created
+3. ✅ Implement — code written by Copilot
+4. ✅ Review — code reviewed
+5. ✅ Deploy — merged and closed
+
 ### Changes Delivered
 
-[Brief summary of what was implemented based on the PR title and issue description]
-
-### Pipeline Complete
-
-This issue has been fully processed through the AI-SDLC pipeline:
-1. ✅ Intake & Triage
-2. ✅ Planning
-3. ✅ Implementation
-4. ✅ Code Review
-5. ✅ Deployment
-
-Closing issue as completed.
+[Brief summary based on PR title and issue description]
 ```
 
-Then post machine-readable state:
+## Important
 
-```
-<details>
-<summary>📊 Pipeline State</summary>
-
-\`\`\`json
-{
-  "pipeline": "sdlc",
-  "stage": "deploy",
-  "status": "completed",
-  "pr_number": [number],
-  "merged": true,
-  "timestamp": "[ISO timestamp]"
-}
-\`\`\`
-
-</details>
-```
-
-## If PR Not Merged
-
-Post a comment:
-```
-## ⏳ Pipeline — Deploy Stage (Waiting)
-
-**Agent:** `deployer`
-
-The linked PR has not been merged yet. Deployment will proceed once the PR is merged to main.
-
-**Status:** Waiting for merge
-```
-
-Then call `noop` with message "PR not yet merged, waiting for merge before deployment."
-
-## If No PR Found
-
-Post a comment noting that no PR was found referencing this issue, and suggest checking if the implementation was completed. Call `noop`.
-
-## If Not Applicable
-
-If the issue does NOT have the `pipeline:deploying` label, call `noop` with a message explaining this workflow only processes issues labeled `pipeline:deploying`.
+- Only act on MERGED PRs — if closed without merge, `noop`
+- Only act on PRs with linked issues — if no "Closes #N" pattern, `noop`
+- Always close the issue after posting the summary
