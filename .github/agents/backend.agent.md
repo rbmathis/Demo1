@@ -1,6 +1,7 @@
 ---
 description: "Backend development expert for Controllers, Models, Program.cs, Middleware, and Dependency Injection"
 tools: ['read', 'edit', 'search', 'execute']
+argument-hint: "Describe the backend change you need (controllers, models, services, middleware)"
 ---
 
 # Backend Agent 🔧

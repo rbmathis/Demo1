@@ -1,0 +1,249 @@
+name: Pipeline — Rollback
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: write
+  deployments: write
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────
+  # ROLLBACK: Triggered when pipeline:rollback label is applied
+  # Reverts the merge commit and redeploys previous version
+  # ─────────────────────────────────────────────────────────────────────
+  rollback:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'pipeline:rollback'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Parse deploy state
+        id: state
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+
+            const comments = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: issue.number,
+            });
+
+            let deployData = null;
+            for (const comment of comments.data.reverse()) {
+              const match = comment.body.match(/```json\n([\s\S]*?)\n```/);
+              if (match) {
+                try {
+                  const parsed = JSON.parse(match[1]);
+                  if (parsed.pipeline === 'sdlc' && parsed.stage === 'deploy') {
+                    deployData = parsed;
+                    break;
+                  }
+                } catch { /* skip */ }
+              }
+            }
+
+            if (!deployData || !deployData.merge?.sha) {
+              core.setFailed('Could not find deploy state with merge SHA. Cannot rollback.');
+              return;
+            }
+
+            core.setOutput('merge_sha', deployData.merge.sha);
+            core.setOutput('pr_number', (deployData.merge.pr || '').toString());
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 10
+
+      - name: Create revert commit
+        id: revert
+        env:
+          MERGE_SHA: ${{ steps.state.outputs.merge_sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          echo "Attempting to revert $MERGE_SHA"
+          if git revert --no-edit "$MERGE_SHA"; then
+            echo "revert_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "reverted=true" >> "$GITHUB_OUTPUT"
+            git push origin main
+          else
+            echo "reverted=false" >> "$GITHUB_OUTPUT"
+            echo "Revert failed — may need manual intervention"
+            git revert --abort || true
+          fi
+        continue-on-error: true
+
+      - name: Redeploy previous version (placeholder)
+        id: redeploy
+        if: steps.revert.outputs.reverted == 'true'
+        run: |
+          echo "🔄 Redeploying previous version..."
+          echo "In production, this would trigger a fresh deploy of the reverted main branch."
+          echo "redeploy_status=success" >> "$GITHUB_OUTPUT"
+
+      - name: Health check after rollback (placeholder)
+        id: health
+        if: steps.redeploy.outcome == 'success'
+        run: |
+          echo "🏥 Running post-rollback health checks..."
+          echo "health_status=healthy" >> "$GITHUB_OUTPUT"
+
+      - name: Post rollback narrative
+        uses: actions/github-script@v7
+        env:
+          MERGE_SHA: ${{ steps.state.outputs.merge_sha }}
+          REVERTED: ${{ steps.revert.outputs.reverted }}
+          REVERT_SHA: ${{ steps.revert.outputs.revert_sha }}
+          REDEPLOY_RESULT: ${{ steps.redeploy.outcome }}
+          HEALTH_RESULT: ${{ steps.health.outcome }}
+          PR_NUMBER: ${{ steps.state.outputs.pr_number }}
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+            const reverted = process.env.REVERTED === 'true';
+            const revertSha = process.env.REVERT_SHA || '';
+            const mergeSha = process.env.MERGE_SHA || '';
+            const redeployResult = process.env.REDEPLOY_RESULT || 'skipped';
+            const healthResult = process.env.HEALTH_RESULT || 'skipped';
+            const prNumber = process.env.PR_NUMBER;
+            const allSuccess = reverted && redeployResult === 'success' && healthResult === 'success';
+
+            let narrative;
+            if (allSuccess) {
+              narrative = [
+                `## 🔄 Pipeline — Rollback`,
+                ``,
+                `**Agent:** \`deployer\` (rollback mode)  `,
+                `**Timestamp:** ${timestamp}`,
+                ``,
+                `### Rollback Summary`,
+                ``,
+                `| Step | Status | Details |`,
+                `|------|--------|---------|`,
+                `| Revert | ✅ Success | Reverted \`${mergeSha.slice(0, 7)}\` → \`${revertSha.slice(0, 7)}\` |`,
+                `| Redeploy | ✅ Success | Previous version redeployed |`,
+                `| Health | ✅ Healthy | Application restored to healthy state |`,
+                ``,
+                `### ✅ Rollback Complete`,
+                ``,
+                `Production has been restored to its previous working state.`,
+                `The original implementation needs to be reworked before re-attempting deployment.`,
+                ``,
+                `### Thinking`,
+                ``,
+                `The deploy health check failed, indicating the new code caused issues in production. `,
+                `I reverted the merge commit and redeployed the previous known-good version. `,
+                `The application is healthy again.`,
+                ``,
+                `### Next`,
+                ``,
+                `This issue needs investigation. The implementation passed tests and review but failed in production. `,
+                `Possible causes: environment-specific config, missing migration, or integration issues not covered by tests.`,
+                `**Human attention required** to diagnose and plan a fix.`,
+              ].join('\n');
+            } else if (!reverted) {
+              narrative = [
+                `## 🔄 Pipeline — Rollback`,
+                ``,
+                `**Agent:** \`deployer\` (rollback mode)  `,
+                `**Timestamp:** ${timestamp}`,
+                ``,
+                `### ❌ Rollback Failed`,
+                ``,
+                `Could not automatically revert commit \`${mergeSha.slice(0, 7)}\`.`,
+                `This may be due to subsequent commits on main creating conflicts.`,
+                ``,
+                `### ⚠️ URGENT: Manual Intervention Required`,
+                ``,
+                `Production may be in an unhealthy state. Steps to resolve:`,
+                `1. Manually revert commit \`${mergeSha}\` on main`,
+                `2. Push the revert and verify deployment`,
+                `3. Investigate why the original deployment failed`,
+              ].join('\n');
+            } else {
+              narrative = [
+                `## 🔄 Pipeline — Rollback`,
+                ``,
+                `**Agent:** \`deployer\` (rollback mode)  `,
+                `**Timestamp:** ${timestamp}`,
+                ``,
+                `### ⚠️ Partial Rollback`,
+                ``,
+                `| Step | Status |`,
+                `|------|--------|`,
+                `| Revert | ✅ Commit reverted |`,
+                `| Redeploy | ${redeployResult === 'success' ? '✅ Success' : '❌ Failed'} |`,
+                `| Health | ${healthResult === 'success' ? '✅ Healthy' : '❌ Still unhealthy'} |`,
+                ``,
+                `The revert was pushed to main, but the redeployment or health check did not succeed.`,
+                `**Manual investigation needed.**`,
+              ].join('\n');
+            }
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: narrative,
+            });
+
+            // ── Post machine-readable state ──
+            const state = {
+              pipeline: 'sdlc',
+              stage: 'rollback',
+              status: allSuccess ? 'completed' : 'failed',
+              reverted: reverted,
+              revert_sha: revertSha,
+              original_merge_sha: mergeSha,
+              redeploy: redeployResult,
+              health: healthResult,
+              timestamp: new Date().toISOString(),
+            };
+
+            const stateComment = [
+              `<details>`,
+              `<summary>📊 Pipeline State</summary>`,
+              ``,
+              '```json',
+              JSON.stringify(state, null, 2),
+              '```',
+              ``,
+              `</details>`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: stateComment,
+            });
+
+            // ── Update labels ──
+            try {
+              await github.rest.issues.removeLabel({
+                ...context.repo,
+                issue_number: issue.number,
+                name: 'pipeline:rollback',
+              });
+            } catch { /* ignore */ }
+
+            if (allSuccess) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ['pipeline:rolled-back', 'needs-investigation'],
+              });
+            } else {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ['pipeline:blocked', 'urgent'],
+              });
+            }

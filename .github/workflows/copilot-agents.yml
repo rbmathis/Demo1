@@ -228,3 +228,75 @@ jobs:
           PYCODE
 
           echo "$CHANGED_FILES" | python3 /tmp/xml_doc_check.py
+
+  # ─────────────────────────────────────────────────────────────────────
+  # PIPELINE-AWARE REVIEW: Enhanced checks for pipeline PRs
+  # ─────────────────────────────────────────────────────────────────────
+  pipeline-review-checks:
+    name: Pipeline PR Validation
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'pull_request' &&
+      startsWith(github.head_ref, 'feat/issue-')
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate pipeline PR conventions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const branch = pr.head.ref;
+            const body = pr.body || '';
+            const title = pr.title || '';
+            const findings = [];
+
+            // Check PR title format
+            if (!title || title.length < 10) {
+              findings.push('⚠️ PR title is too short. Pipeline PRs should have descriptive titles.');
+            }
+
+            // Check PR body references an issue
+            const issueRef = body.match(/(?:closes|fixes|resolves|refs:?)\s*#(\d+)/i);
+            if (!issueRef) {
+              findings.push('❌ PR body must reference the issue with `Closes #N` or `Refs: #N`.');
+            }
+
+            // Check branch naming convention
+            const branchPattern = /^feat\/issue-\d+-[a-z0-9-]+$/;
+            if (!branchPattern.test(branch)) {
+              findings.push(`⚠️ Branch \`${branch}\` doesn't follow convention: \`feat/issue-N-slug\``);
+            }
+
+            // Check for conventional commit in PR title
+            const conventionalPattern = /^(feat|fix|refactor|docs|test|chore|security)\(.+\):/;
+            if (!conventionalPattern.test(title)) {
+              findings.push('⚠️ PR title should use conventional commit format: `feat(scope): description`');
+            }
+
+            if (findings.length > 0) {
+              const comment = [
+                `## 🤖 Pipeline PR Validation`,
+                ``,
+                `The following conventions should be followed for pipeline PRs:`,
+                ``,
+                ...findings,
+                ``,
+                `---`,
+                `*This is an automated check from the pipeline agent system.*`,
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: pr.number,
+                body: comment,
+              });
+            } else {
+              core.info('Pipeline PR conventions validated successfully.');
+            }

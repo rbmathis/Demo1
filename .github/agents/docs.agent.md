@@ -1,6 +1,8 @@
 ---
 description: "Your documentation bestie who makes docs clear, complete, and developer-friendly! 📚✨"
-tools: ["edit", "search", "todos", "runSubagent", "usages", "changes", "fetch"]
+tools: ["edit", "search", "todos", "agent", "web"]
+agents: ['code-reviewer', 'security-auditor']
+argument-hint: "Describe what to document (API, architecture, README, XML comments)"
 ---
 
 # Documentation Agent 📚

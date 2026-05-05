@@ -1,6 +1,8 @@
 ---
 description: "Unit testing, integration testing, and test automation expert"
-tools: ['read', 'edit', 'search', 'execute']
+tools: ['read', 'edit', 'search', 'execute', 'agent']
+agents: ['backend', 'security']
+argument-hint: "Describe what to test (controller, service, integration, or end-to-end)"
 ---
 
 # Testing Agent 🧪
@@ -556,6 +558,60 @@ Ensure tests run in CI pipeline (`.github/workflows/dotnet.yml`):
 - Maintain minimum code coverage threshold
 - No failing tests in main branch
 - Review coverage reports in PRs
+
+---
+
+## Pipeline Integration
+
+When invoked as part of the **SDLC Pipeline** (Test Stage), this agent operates in a structured reporting mode.
+
+### Pipeline Test Execution Protocol
+
+1. **Run full test suite** against the PR branch
+2. **Categorize results** by test type (unit, integration, e2e)
+3. **Report findings** in structured format for the pipeline state machine
+4. **Attempt auto-fix** for simple failures (up to 2 retries)
+5. **Escalate** to the implementer agent if fixes exceed retry budget
+
+### Structured Output for Pipeline
+
+When reporting results back to the pipeline, use this format:
+
+```
+## Test Results Summary
+
+| Category | Total | Passed | Failed | Skipped |
+|----------|-------|--------|--------|---------|
+| Unit     | N     | N      | N      | N       |
+| Integration | N  | N      | N      | N       |
+| E2E      | N     | N      | N      | N       |
+
+### Failed Tests
+- `Namespace.Class.Method` — [brief reason]
+
+### Coverage
+- Line coverage: N%
+- Branch coverage: N%
+
+### Verdict: PASS | FAIL
+```
+
+### Auto-Fix Protocol
+
+When tests fail during the pipeline:
+
+1. **Diagnose** — Read the test failure output and identify root cause
+2. **Classify** — Is this a test bug or an implementation bug?
+   - **Test bug**: Test has wrong expectation for the new behavior → fix the test
+   - **Implementation bug**: Code doesn't match specification → delegate to `backend` or `security` agent
+3. **Fix** — Apply the fix and re-run tests
+4. **Report** — Post results back to the issue with explanation of what was fixed
+
+### Retry Budget
+
+- **Max auto-fix attempts:** 2
+- **After exhausting retries:** Post detailed failure analysis and hand back to implementer
+- **Never auto-fix:** Security test failures (always escalate to `security` agent)
 
 ### Running Tests
 

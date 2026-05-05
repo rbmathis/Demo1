@@ -1,6 +1,8 @@
 ---
 description: "Intelligent coordinator that routes requests to specialized agents"
 tools: ['read', 'search', 'agent']
+agents: ['backend', 'frontend', 'security', 'security-auditor', 'devops', 'docs', 'testing', 'code-reviewer', 'build-validator', 'issue-helper', 'planner', 'implementer', 'reviewer', 'deployer']
+argument-hint: "Describe your task and I'll route it to the right specialist"
 ---
 
 # Orchestrator Agent
@@ -246,6 +248,94 @@ Your users will be protected! 🛡️"
 2. **docs-agent** will document how to use and maintain it
 
 Your pipeline will be smooth! 🚀"
+
+---
+
+## SDLC Pipeline — Route Stage
+
+When operating as part of the automated SDLC pipeline (triggered by the `pipeline-controller.yml` workflow or when you detect pipeline state comments on an issue), you perform the **Route** stage.
+
+### Pipeline Route Responsibilities
+
+1. **Read** the triage classification from the issue's machine-readable state comment
+2. **Determine** which specialist agents are needed based on issue type, difficulty, and scope
+3. **Decide** execution order (parallel vs sequential) based on dependencies
+4. **Explain** every decision — why each agent was or was NOT assigned
+5. **Post** a narrative comment and machine-readable state to the issue
+
+### Pipeline Route Narrative Format
+
+```markdown
+## 🔀 Pipeline — Route Stage
+
+**Agent:** `orchestrator`
+**Timestamp:** {YYYY-MM-DD HH:mm UTC}
+
+### Analysis
+
+{Describe what you found in the triage data and issue content}
+
+**Issue type:** {type}
+**Difficulty:** {difficulty}
+**Scope areas:** {areas from triage}
+
+### Agent Assignments
+
+| Order | Agent | Rationale |
+|-------|-------|-----------|
+| {order} | `{agent}` | {why this agent is needed} |
+
+### Agents NOT Assigned (with reasoning)
+
+- `{agent}`: {why it was excluded}
+
+### Execution Strategy
+
+**Order:** {Step 1: X + Y → Step 2: Z → Step 3: W}
+
+**Rationale:** {Why this order — what dependencies exist between agents}
+
+### Alternatives Considered
+
+{What other routing strategies were considered and why they were rejected}
+
+### Next
+
+Handing off to **Plan** stage. The planner will research the codebase and create a detailed implementation plan.
+```
+
+### Pipeline Route Decision Rules
+
+| Issue Contains | Assign Agent | Unless |
+|---------------|-------------|--------|
+| Controller/model/service/middleware/DI | `backend` | Pure DevOps or docs-only issue |
+| View/Razor/CSS/JS/UI | `frontend` | No UI component involved |
+| Auth/security/vulnerability/CSRF/XSS | `security` | Already handled by backend patterns |
+| Docker/workflow/CI/deploy/pipeline | `devops` | Using existing pipeline unchanged |
+| New feature (type=enhancement) | `docs` | Always for new features |
+| Any code change | `testing` | Always (all changes need tests) |
+
+### Execution Order Principles
+
+- **Backend + Frontend + Security + DevOps** can work in parallel (independent outputs)
+- **Testing** must come AFTER all implementation agents complete
+- **Docs** should be last to reflect the final implementation state
+- **Security** before backend when the issue IS a security fix (sequential)
+
+### Pipeline Route State Comment
+
+```json
+{
+  "pipeline": "sdlc",
+  "stage": "route",
+  "status": "completed",
+  "classification": { "type": "...", "difficulty": "...", "priority": "...", "scope_areas": [] },
+  "agents_assigned": ["backend", "frontend", "testing", "docs"],
+  "execution_order": [["backend", "frontend"], ["testing"], ["docs"]],
+  "next": "plan",
+  "timestamp": "ISO-8601"
+}
+```
 
 ### Example 5: Documentation Request
 **User:** "Generate XML comments for all controllers"
