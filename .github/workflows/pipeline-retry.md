@@ -39,7 +39,7 @@ safe-outputs:
   assign-to-agent:
     name: "copilot"
     target: "triggering"
-    github-token: ${{ secrets.GH_AW_AGENT_TOKEN }}
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ---
 
 ## Pipeline — Retry Agent
