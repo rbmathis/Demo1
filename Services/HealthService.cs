@@ -39,11 +39,11 @@ public class HealthService : IHealthService
     public HealthInfo GetHealthInfo()
     {
         var timestamp = DateTime.UtcNow;
-        var uptimeSeconds = (timestamp - _startTimeUtc).TotalSeconds;
+        var uptimeInSeconds = (timestamp - _startTimeUtc).TotalSeconds;
 
         return new HealthInfo(
             _version,
-            uptimeSeconds,
+            uptimeInSeconds,
             timestamp,
             _environment);
     }

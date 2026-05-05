@@ -117,7 +117,7 @@ public class HealthControllerTests
 
             var service = new HealthService(environment.Object, configuration);
             var first = service.GetHealthInfo();
-            var second = first;
+            var second = service.GetHealthInfo();
 
             for (var i = 0; i < 5 && second.UptimeSeconds <= first.UptimeSeconds; i++)
             {
