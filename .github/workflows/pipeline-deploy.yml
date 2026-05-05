@@ -3,6 +3,9 @@ name: Pipeline — Deploy
 on:
   issues:
     types: [labeled]
+  workflow_run:
+    workflows: ["Pipeline — Test & Review"]
+    types: [completed]
 
 permissions:
   issues: write
@@ -14,20 +17,52 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────
   # DEPLOY: Triggered when pipeline:deploying label is applied
   # Merges PR → deploys → health checks → marks complete or rollback
+  # Also triggers via workflow_run when Test & Review completes
   # ─────────────────────────────────────────────────────────────────────
   deploy:
     if: >-
-      github.event.action == 'labeled' &&
-      github.event.label.name == 'pipeline:deploying'
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'pipeline:deploying') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Parse pipeline state and find PR
-        id: state
+      - name: Find issue with pipeline:deploying label
+        id: find-issue
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
+            if (context.eventName === 'issues') {
+              core.setOutput('issue_number', String(context.payload.issue.number));
+              return;
+            }
+            const issues = await github.rest.issues.listForRepo({
+              ...context.repo,
+              labels: 'pipeline:deploying',
+              state: 'open',
+              sort: 'updated',
+              direction: 'desc',
+              per_page: 1,
+            });
+            if (issues.data.length === 0) {
+              core.info('No issues with pipeline:deploying label found. Skipping.');
+              core.setOutput('issue_number', '');
+              return;
+            }
+            core.setOutput('issue_number', String(issues.data[0].number));
+
+      - name: Parse pipeline state and find PR
+        id: state
+        if: steps.find-issue.outputs.issue_number != ''
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ steps.find-issue.outputs.issue_number }}
+        with:
+          script: |
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const { data: issue } = await github.rest.issues.get({
+              ...context.repo,
+              issue_number: issueNumber,
+            });
 
             // Parse pipeline state
             const comments = await github.rest.issues.listComments({
