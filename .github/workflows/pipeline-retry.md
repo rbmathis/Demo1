@@ -52,8 +52,14 @@ safe-outputs:
          - Add/update XML documentation comments on ALL new or modified public methods and classes
          - Update relevant docs/ markdown files if the change affects architecture or public APIs
       4. **Validate** — Use `build-validator` agent to verify the project builds cleanly
+      5. **Report** (REQUIRED) — After creating the PR, post a comment on the originating issue with:
+         - A summary of what was implemented
+         - List of files changed (grouped by area: backend, frontend, tests, docs)
+         - Which sub-agents were used
+         - Link to the PR
+         - Any follow-up items or known limitations
 
-      IMPORTANT: Steps 2 and 3 are mandatory. Never skip testing or documentation. After all steps, ensure tests pass before creating the PR.
+      IMPORTANT: Steps 2, 3, and 5 are mandatory. Never skip testing, documentation, or the issue report. After all steps, ensure tests pass before creating the PR.
 ---
 
 ## Pipeline — Retry Agent
