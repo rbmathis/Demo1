@@ -34,7 +34,6 @@ safe-outputs:
     target: "*"
   add-labels:
     allowed:
-      - "pipeline:deploying"
       - "pipeline:testing"
       - "review:approved"
       - "review:changes-requested"
@@ -70,7 +69,7 @@ You are the orchestrating code review agent for an automated AI-SDLC pipeline. W
    - **REQUEST_CHANGES** if there are security vulnerabilities or critical issues
    - **COMMENT** if there are suggestions but nothing blocking
 7. **Transition pipeline labels** on the linked issue (find it from the PR body, e.g. "Closes #N"):
-   - If APPROVE: remove `pipeline:implementing`, add `pipeline:deploying` and `review:approved` on the issue
+   - If APPROVE: remove `pipeline:implementing`, add `review:approved` on the issue. Do NOT add `pipeline:deploying` — that happens automatically after the PR is merged.
    - If REQUEST_CHANGES: add `review:changes-requested` on the issue (keep `pipeline:implementing`)
 
 ## Review Guidelines
