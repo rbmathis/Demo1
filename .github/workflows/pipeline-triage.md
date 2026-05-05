@@ -35,6 +35,7 @@ safe-outputs:
       - "security"
     max: 5
     target: "triggering"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ---
 
 ## Pipeline — Triage Agent
