@@ -171,7 +171,7 @@ public class HomeController : Controller
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
+                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", (field ?? string.Empty).ReplaceLineEndings(string.Empty));
                 ViewBag.Error = ex.Message;
             }
         }
