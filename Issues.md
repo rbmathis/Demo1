@@ -6,7 +6,7 @@ Prioritized list of improvements for this repository, ordered by severity and im
 
 ## 1. CSRF Vulnerability — State Mutations via GET
 
-**Severity:** Critical  
+**Severity:** Critical
 **Area:** `Controllers/HomeController.cs`, `Views/Home/GodObjectProfile.cshtml`
 
 The `GodObjectProfile` action mutates state via GET query parameters (`?action=update&field=Name&value=...`). Links like `<a href="?action=update&field=Name&value=UpdatedName">` can be exploited by attackers embedding these URLs in external pages.
@@ -20,7 +20,7 @@ The `GodObjectProfile` action mutates state via GET query parameters (`?action=u
 
 ## 2. Content Security Policy Allows `unsafe-eval`
 
-**Severity:** High  
+**Severity:** High
 **Area:** `Middleware/SecurityHeadersMiddleware.cs`
 
 The CSP header includes `'unsafe-eval'` in `script-src`, which effectively neuters XSS protection. Any injected script can use `eval()` to execute arbitrary code.
@@ -36,7 +36,7 @@ The CSP header includes `'unsafe-eval'` in `script-src`, which effectively neute
 
 ## 3. Authorization Without Authentication
 
-**Severity:** High  
+**Severity:** High
 **Area:** `Program.cs`
 
 `app.UseAuthorization()` is called but no authentication middleware is registered. Authorization checks are meaningless without a way to identify the user.
@@ -50,7 +50,7 @@ The CSP header includes `'unsafe-eval'` in `script-src`, which effectively neute
 
 ## 4. Business Logic in Razor Views
 
-**Severity:** High  
+**Severity:** High
 **Area:** `Views/Home/ViewLogicCalculator.cshtml`
 
 The view contains 80+ lines of C# business logic including math operations, string parsing, JSON/XML/CSV deserialization. This violates MVC separation of concerns and is untestable.
@@ -64,7 +64,7 @@ The view contains 80+ lines of C# business logic including math operations, stri
 
 ## 5. No Rate Limiting
 
-**Severity:** High  
+**Severity:** High
 **Area:** `Program.cs`
 
 All endpoints are open to abuse with no request throttling. An attacker could flood the search endpoint, weather endpoint, or profile mutations.
@@ -90,7 +90,7 @@ app.UseRateLimiting();
 
 ## 6. Test Coverage Gaps
 
-**Severity:** Medium  
+**Severity:** Medium
 **Area:** `tests/`
 
 Critical gaps:
@@ -111,7 +111,7 @@ Critical gaps:
 
 ## 7. Overloaded HomeController
 
-**Severity:** Medium  
+**Severity:** Medium
 **Area:** `Controllers/HomeController.cs`
 
 Single controller handles 10+ unrelated actions: profiles, search, weather, CSS demos, calculator, about, contact, privacy. This violates Single Responsibility Principle and makes the file difficult to maintain.
@@ -126,7 +126,7 @@ Single controller handles 10+ unrelated actions: profiles, search, weather, CSS 
 
 ## 8. Security Scan Failures Suppressed in CI
 
-**Severity:** Medium  
+**Severity:** Medium
 **Area:** `.github/workflows/` (CI pipeline)
 
 The security vulnerability scan uses `|| true` to swallow failures, meaning known vulnerabilities in dependencies will never break the build.
@@ -142,7 +142,7 @@ The security vulnerability scan uses `|| true` to swallow failures, meaning know
 
 ## 9. Missing Static Assets & Optimization
 
-**Severity:** Medium  
+**Severity:** Medium
 **Area:** `wwwroot/`
 
 Issues:
@@ -164,7 +164,7 @@ Issues:
 
 ## 10. Model Quality Issues
 
-**Severity:** Medium  
+**Severity:** Medium
 **Area:** `Models/`
 
 Problems:
