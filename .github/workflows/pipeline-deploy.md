@@ -6,6 +6,7 @@ on:
   pull_request:
     types: [closed]
 
+runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
 permissions:

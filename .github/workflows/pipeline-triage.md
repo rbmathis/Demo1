@@ -7,6 +7,7 @@ on:
     types: [opened, reopened]
   reaction: "eyes"
 
+runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
 permissions:

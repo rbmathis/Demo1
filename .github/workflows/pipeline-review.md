@@ -7,6 +7,7 @@ on:
     types: [opened, synchronize]
   reaction: "eyes"
 
+runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
 imports:

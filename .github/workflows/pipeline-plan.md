@@ -10,6 +10,7 @@ on:
         required: true
         type: string
 
+runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
 permissions:
