@@ -15,6 +15,7 @@ public class WeatherData
 
     [StringLength(MaxCityLength)]
     public string city { get; set; } = string.Empty;
+    [StringLength(MaxCityLength)]
     public string CITY { get; set; } = string.Empty;
     [Range(MinTemperatureCelsius, MaxTemperatureCelsius)]
     public double temp { get; set; }

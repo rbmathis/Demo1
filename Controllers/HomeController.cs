@@ -254,12 +254,18 @@ public class HomeController : Controller
         {
             errors.AddRange(responseValidationResults.Select(result => result.ErrorMessage ?? "Weather data must be valid."));
 
-            if (weather.city.Length > WeatherData.MaxCityLength)
+            var hasCityValidationError = responseValidationResults.Any(result => result.MemberNames.Contains(nameof(WeatherData.city)));
+            var hasTemperatureValidationError = responseValidationResults.Any(result => result.MemberNames.Contains(nameof(WeatherData.temp)));
+
+            if (hasCityValidationError && weather.city.Length > WeatherData.MaxCityLength)
             {
                 weather.city = weather.city[..WeatherData.MaxCityLength];
             }
 
-            weather.temp = Math.Clamp(weather.temp, WeatherData.MinTemperatureCelsius, WeatherData.MaxTemperatureCelsius);
+            if (hasTemperatureValidationError)
+            {
+                weather.temp = Math.Clamp(weather.temp, WeatherData.MinTemperatureCelsius, WeatherData.MaxTemperatureCelsius);
+            }
         }
 
         var stats = _weatherService.GetStats();

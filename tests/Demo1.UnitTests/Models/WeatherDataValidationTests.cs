@@ -34,11 +34,27 @@ public class WeatherDataValidationTests
     }
 
     [Fact]
+    public void WeatherData_WithTooLongUppercaseCity_IsInvalid()
+    {
+        var model = new WeatherData
+        {
+            city = "Seattle",
+            CITY = new string('X', WeatherData.MaxCityLength + 1),
+            temp = 55,
+        };
+
+        var validationResults = Validate(model);
+
+        Assert.Contains(validationResults, result => result.MemberNames.Contains(nameof(WeatherData.CITY)));
+    }
+
+    [Fact]
     public void WeatherData_WithValidCityAndTemperature_IsValid()
     {
         var model = new WeatherData
         {
             city = "Seattle",
+            CITY = "SEATTLE",
             temp = 72,
         };
 
