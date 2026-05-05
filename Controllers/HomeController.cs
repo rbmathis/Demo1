@@ -160,7 +160,7 @@ public class HomeController : Controller
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
+                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field.Replace("\r", "\\r", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal));
                 TempData["Error"] = ex.Message;
             }
         }
