@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 // Weather data model for demonstration purposes
 
 namespace Demo1.Models;
@@ -7,8 +9,14 @@ namespace Demo1.Models;
 /// </summary>
 public class WeatherData
 {
+    public const int MaxCityLength = 200;
+    public const int MinTemperatureCelsius = -100;
+    public const int MaxTemperatureCelsius = 100;
+
+    [StringLength(MaxCityLength)]
     public string city { get; set; } = string.Empty;
     public string CITY { get; set; } = string.Empty;
+    [Range(MinTemperatureCelsius, MaxTemperatureCelsius)]
     public double temp { get; set; }
     public double tempF { get; set; }
     public double tempK { get; set; }

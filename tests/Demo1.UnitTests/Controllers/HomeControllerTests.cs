@@ -11,12 +11,12 @@ namespace Demo1.UnitTests.Controllers;
 
 public class HomeControllerTests
 {
-    private static HomeController CreateController(ILogger<HomeController>? logger = null)
+    private static HomeController CreateController(ILogger<HomeController>? logger = null, IWeatherService? weatherService = null)
     {
         return new HomeController(
             logger ?? Mock.Of<ILogger<HomeController>>(),
             Mock.Of<ISearchService>(),
-            Mock.Of<IWeatherService>(),
+            weatherService ?? Mock.Of<IWeatherService>(),
             Mock.Of<IUserProfileService>(),
             Mock.Of<IStyleGeneratorService>()
         );
@@ -111,5 +111,67 @@ public class HomeControllerTests
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ErrorViewModel>(view.Model);
         Assert.Equal("trace-error", model.RequestId);
+    }
+
+    [Fact]
+    public async Task CallbackHellWeather_WhenCityExceedsMaxLength_AddsValidationErrorAndTruncatesCity()
+    {
+        var weatherService = new Mock<IWeatherService>();
+        weatherService
+            .Setup(service => service.GetWeatherAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string city, CancellationToken _) => new WeatherData
+            {
+                city = city,
+                temp = 22,
+                condition = "Sunny",
+                isReal = false,
+            });
+        weatherService
+            .Setup(service => service.GetStats())
+            .Returns(new WeatherServiceStats { ApiCallCount = 1, IsHealthy = true, LastUpdated = DateTime.UtcNow });
+
+        var controller = CreateController(weatherService: weatherService.Object);
+        var longCity = new string('A', WeatherData.MaxCityLength + 25);
+
+        var result = await controller.CallbackHellWeather(longCity);
+
+        Assert.IsType<ViewResult>(result);
+        var errors = Assert.IsAssignableFrom<List<string>>(controller.ViewData["Errors"]);
+        Assert.Contains(errors, error => error.Contains(nameof(WeatherData.city), StringComparison.OrdinalIgnoreCase));
+
+        var weather = Assert.IsType<WeatherData>(controller.ViewData["Weather"]);
+        Assert.Equal(WeatherData.MaxCityLength, weather.city.Length);
+        weatherService.Verify(service => service.GetWeatherAsync(
+            It.Is<string>(city => city.Length == WeatherData.MaxCityLength),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CallbackHellWeather_WhenTemperatureOutOfRange_AddsValidationErrorAndClampsTemperature()
+    {
+        var weatherService = new Mock<IWeatherService>();
+        weatherService
+            .Setup(service => service.GetWeatherAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WeatherData
+            {
+                city = "Chaosville",
+                temp = 150,
+                condition = "Boiling",
+                isReal = false,
+            });
+        weatherService
+            .Setup(service => service.GetStats())
+            .Returns(new WeatherServiceStats { ApiCallCount = 1, IsHealthy = true, LastUpdated = DateTime.UtcNow });
+
+        var controller = CreateController(weatherService: weatherService.Object);
+
+        var result = await controller.CallbackHellWeather("Chaosville");
+
+        Assert.IsType<ViewResult>(result);
+        var errors = Assert.IsAssignableFrom<List<string>>(controller.ViewData["Errors"]);
+        Assert.Contains(errors, error => error.Contains(nameof(WeatherData.temp), StringComparison.OrdinalIgnoreCase));
+
+        var weather = Assert.IsType<WeatherData>(controller.ViewData["Weather"]);
+        Assert.Equal(WeatherData.MaxTemperatureCelsius, weather.temp);
     }
 }

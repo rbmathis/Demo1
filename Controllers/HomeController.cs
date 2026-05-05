@@ -6,6 +6,7 @@ using Microsoft.FeatureManagement.Mvc;
 using Demo1.Features;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.ComponentModel.DataAnnotations;
 
 namespace Demo1.Controllers;
 
@@ -216,6 +217,19 @@ public class HomeController : Controller
     {
         WeatherData? weather = null;
         var errors = new List<string>();
+        var requestedWeather = new WeatherData { city = city, temp = 0 };
+        var requestValidationResults = new List<ValidationResult>();
+
+        if (!Validator.TryValidateObject(requestedWeather, new ValidationContext(requestedWeather), requestValidationResults, validateAllProperties: true))
+        {
+            errors.AddRange(requestValidationResults
+                .Where(result => result.MemberNames.Contains(nameof(WeatherData.city)))
+                .Select(result => result.ErrorMessage ?? "City must be valid."));
+
+            city = city.Length > WeatherData.MaxCityLength
+                ? city[..WeatherData.MaxCityLength]
+                : city;
+        }
 
         try
         {
@@ -234,6 +248,19 @@ public class HomeController : Controller
             condition = "Unknown",
             isReal = false,
         };
+
+        var responseValidationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(weather, new ValidationContext(weather), responseValidationResults, validateAllProperties: true))
+        {
+            errors.AddRange(responseValidationResults.Select(result => result.ErrorMessage ?? "Weather data must be valid."));
+
+            if (weather.city.Length > WeatherData.MaxCityLength)
+            {
+                weather.city = weather.city[..WeatherData.MaxCityLength];
+            }
+
+            weather.temp = Math.Clamp(weather.temp, WeatherData.MinTemperatureCelsius, WeatherData.MaxTemperatureCelsius);
+        }
 
         var stats = _weatherService.GetStats();
 
