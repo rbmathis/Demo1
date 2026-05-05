@@ -96,17 +96,18 @@ The implement agent:
   3. Write tests (mandatory)
   4. Add documentation (mandatory)
   5. Validate build
-  6. Report back on the issue with summary and PR link
+
+> **Note:** The coding agent does not post back to the issue. The Copilot coding agent's firewall blocks `api.github.com/graphql`, so the Review stage handles issue reporting instead.
 
 ### Stage 4: Review
 
 | Attribute | Value |
 |-----------|-------|
-| **Trigger** | `pull_request: [opened, synchronize]` |
+| **Trigger** | `pull_request: [review_requested, ready_for_review]` |
 | **Workflow** | `pipeline-review.md` |
 | **Engine** | Copilot |
 | **Imports** | code-reviewer, security-auditor, testing, docs agents |
-| **Output** | PR review (APPROVE / REQUEST_CHANGES / COMMENT) |
+| **Output** | PR review + implementation report on linked issue |
 
 The review agent:
 - Reads the PR and changed files
@@ -117,7 +118,9 @@ The review agent:
   - `docs` — XML documentation and docs/ updates
 - Posts inline review comments on specific lines
 - Submits a consolidated review verdict
-- Posts a status comment on the linked issue (if found)
+- Posts the **Implementation Report** on the linked issue (changes table, review verdict, branch)
+
+> **Why `review_requested`?** The Copilot coding agent creates draft PRs and pushes multiple commits while working. It fires `review_requested` only when finished. Triggering on `opened`/`synchronize` would run review on incomplete code. The `ready_for_review` trigger covers the case where a human marks a draft PR ready.
 
 ### Stage 5: Deploy
 
@@ -147,7 +150,7 @@ Issue #100: "Add a /health endpoint"
 ├── 🏷️ Pipeline — Triage        (classification, agents needed)
 ├── 📋 Pipeline — Plan           (implementation steps, files, acceptance criteria)
 ├── 🚀 Pipeline — Implement      (agent assignment confirmation)
-├── 🔍 Pipeline — Review         (review verdict, findings summary)
+├── 🏗️ Pipeline — Implementation Report  (changes table, review verdict — posted by Review)
 └── ✅ Pipeline — Complete        (deployment summary, pipeline history)
 ```
 
@@ -194,7 +197,7 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 | `pipeline-triage.md` | Classify and dispatch | `issues: [opened, reopened]` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
-| `pipeline-review.md` | Multi-agent code review | `pull_request: [opened, synchronize]` |
+| `pipeline-review.md` | Multi-agent code review + issue report | `pull_request: [review_requested, ready_for_review]` |
 | `pipeline-deploy.md` | Verify merge and close issue | `pull_request: [closed]` |
 
 All workflows are [GitHub Agentic Workflows](https://github.github.com/gh-aw/) (`.md` source compiled to `.lock.yml`).
