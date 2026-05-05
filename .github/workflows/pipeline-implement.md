@@ -61,39 +61,7 @@ safe-outputs:
 
       Use `build-validator` agent to verify the project builds cleanly and tests pass.
 
-      ## STEP 5: REPORT ON THE ISSUE (mandatory — do not skip)
-
-      ⚠️ THIS IS THE MOST IMPORTANT STEP. You MUST do this AFTER creating the PR.
-
-      Post a comment on issue #${{ github.event.inputs.issue_number }} using this EXACT format:
-
-      ```
-      ## 🏗️ Pipeline — Implementation Report
-
-      **Timestamp:** [UTC time]
-      **PR:** #[pr_number]
-      **Branch:** `[branch_name]`
-
-      ### Changes
-
-      | Area | Files | Description |
-      |------|-------|-------------|
-      | [area] | `file1.cs`, `file2.cs` | [what changed] |
-
-      ### Agents Used
-
-      - [agent name] — [what it did]
-
-      ### Test Results
-
-      - [test summary]
-
-      ### Status
-
-      ✅ Implementation complete. Ready for review.
-      ```
-
-      DO NOT CONSIDER YOUR WORK DONE UNTIL YOU HAVE POSTED THIS COMMENT ON ISSUE #${{ github.event.inputs.issue_number }}.
+      NOTE: Do NOT post an implementation report on the issue. The review pipeline handles that automatically.
 ---
 
 ## Pipeline — Implement Agent
