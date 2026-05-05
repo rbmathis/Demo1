@@ -128,30 +128,44 @@ public class HomeController : Controller
     // ╚══════════════════════════════════════════════════════════════════════════════╝
 
     /// <summary>
-    /// Profile management demo - now using proper DI and encapsulation.
+    /// Profile management demo - displays the current profile (read-only GET).
     /// The view still shows "anti-pattern" styling for demo purposes.
     /// </summary>
-    public async Task<IActionResult> GodObjectProfile(string action = "", string field = "", string value = "")
+    [HttpGet]
+    public async Task<IActionResult> GodObjectProfile()
     {
         var profile = await _userProfileService.GetProfileAsync("");
-
-        if (!string.IsNullOrEmpty(action) && action == "update" && !string.IsNullOrEmpty(field))
-        {
-            try
-            {
-                profile = await _userProfileService.UpdateFieldAsync("", field, value);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
-                ViewBag.Error = ex.Message;
-            }
-        }
 
         ViewBag.Profile = profile;
         ViewBag.Stats = _userProfileService.GetStats();
 
         return View();
+    }
+
+    /// <summary>
+    /// Handles profile field update submissions via POST only.
+    /// Validates the anti-forgery token to prevent CSRF attacks.
+    /// </summary>
+    /// <param name="field">The name of the profile field to update.</param>
+    /// <param name="value">The new value for the specified field.</param>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GodObjectProfile(string field, string value)
+    {
+        if (!string.IsNullOrEmpty(field))
+        {
+            try
+            {
+                await _userProfileService.UpdateFieldAsync("", field, value);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
+                TempData["Error"] = ex.Message;
+            }
+        }
+
+        return RedirectToAction(nameof(GodObjectProfile));
     }
 
     /// <summary>

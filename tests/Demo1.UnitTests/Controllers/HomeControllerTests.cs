@@ -11,13 +11,15 @@ namespace Demo1.UnitTests.Controllers;
 
 public class HomeControllerTests
 {
-    private static HomeController CreateController(ILogger<HomeController>? logger = null)
+    private static HomeController CreateController(
+        ILogger<HomeController>? logger = null,
+        IUserProfileService? userProfileService = null)
     {
         return new HomeController(
             logger ?? Mock.Of<ILogger<HomeController>>(),
             Mock.Of<ISearchService>(),
             Mock.Of<IWeatherService>(),
-            Mock.Of<IUserProfileService>(),
+            userProfileService ?? Mock.Of<IUserProfileService>(),
             Mock.Of<IStyleGeneratorService>()
         );
     }
@@ -111,5 +113,66 @@ public class HomeControllerTests
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ErrorViewModel>(view.Model);
         Assert.Equal("trace-error", model.RequestId);
+    }
+
+    [Fact]
+    public async Task GodObjectProfile_Get_Returns_View_Without_Mutating_State()
+    {
+        var profileService = new Mock<IUserProfileService>();
+        profileService.Setup(s => s.GetProfileAsync(It.IsAny<string>()))
+            .ReturnsAsync(new UserProfile { Name = "Test User" });
+        profileService.Setup(s => s.GetStats()).Returns(new ProfileStats());
+        var controller = CreateController(userProfileService: profileService.Object);
+
+        var result = await controller.GodObjectProfile();
+
+        Assert.IsType<ViewResult>(result);
+        profileService.Verify(s => s.UpdateFieldAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GodObjectProfile_Post_UpdatesField_And_Redirects()
+    {
+        var updatedProfile = new UserProfile { Name = "NewName" };
+        var profileService = new Mock<IUserProfileService>();
+        profileService.Setup(s => s.UpdateFieldAsync("", "Name", "NewName"))
+            .ReturnsAsync(updatedProfile);
+        var controller = CreateController(userProfileService: profileService.Object);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            controller.ControllerContext.HttpContext,
+            Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>());
+
+        var result = await controller.GodObjectProfile("Name", "NewName");
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(controller.GodObjectProfile), redirect.ActionName);
+        profileService.Verify(s => s.UpdateFieldAsync("", "Name", "NewName"), Times.Once);
+    }
+
+    [Fact]
+    public async Task GodObjectProfile_Post_InvalidField_LogsWarning_And_Redirects()
+    {
+        var logger = new Mock<ILogger<HomeController>>();
+        var profileService = new Mock<IUserProfileService>();
+        profileService.Setup(s => s.UpdateFieldAsync("", "BadField", "x"))
+            .ThrowsAsync(new ArgumentException("Field 'BadField' is not updatable.", "fieldName"));
+        var controller = CreateController(logger: logger.Object, userProfileService: profileService.Object);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+        controller.TempData = new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(
+            controller.ControllerContext.HttpContext,
+            Mock.Of<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider>());
+
+        var result = await controller.GodObjectProfile("BadField", "x");
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(controller.GodObjectProfile), redirect.ActionName);
+        logger.VerifyLog(LogLevel.Warning, Times.Once());
     }
 }
