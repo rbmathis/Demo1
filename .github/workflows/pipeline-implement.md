@@ -38,14 +38,19 @@ safe-outputs:
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
     custom-instructions: |
-      You have access to specialized sub-agents in .github/agents/. Delegate to them during implementation:
-      - Use `backend` agent for Controllers, Models, Services, Middleware, and Program.cs changes
-      - Use `frontend` agent for Views, Razor templates, CSS, and JavaScript changes
-      - Use `security` agent when fixing security vulnerabilities (CSRF, XSS, SQL injection, auth)
-      - Use `testing` agent to generate unit tests and integration tests for your changes
-      - Use `docs` agent to update XML documentation comments and docs/ files
-      - Use `build-validator` agent to verify project file changes and dependencies
-      After implementing, ensure all tests pass before creating the PR.
+      You have access to specialized sub-agents in .github/agents/. You MUST delegate to them during implementation following this workflow:
+
+      1. **Implement** — delegate to the appropriate agents:
+         - Use `backend` agent for Controllers, Models, Services, Middleware, and Program.cs changes
+         - Use `frontend` agent for Views, Razor templates, CSS, and JavaScript changes
+         - Use `security` agent when fixing security vulnerabilities (CSRF, XSS, SQL injection, auth)
+      2. **Test** (REQUIRED) — Use `testing` agent to generate unit tests and integration tests for ALL changes
+      3. **Document** (REQUIRED) — Use `docs` agent to:
+         - Add/update XML documentation comments on ALL new or modified public methods and classes
+         - Update relevant docs/ markdown files if the change affects architecture or public APIs
+      4. **Validate** — Use `build-validator` agent to verify the project builds cleanly
+
+      IMPORTANT: Steps 2 and 3 are mandatory. Never skip testing or documentation. After all steps, ensure tests pass before creating the PR.
 ---
 
 ## Pipeline — Plan & Implement Agent
