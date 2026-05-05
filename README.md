@@ -144,29 +144,78 @@ Check your CI workflow for the exact coverage collector and reporting steps if y
 
 ## GitHub Actions & Copilot Integration
 
-This project is configured with GitHub Actions workflows and Copilot Custom Agents:
+This project uses an **AI-SDLC Pipeline** powered by [GitHub Agentic Workflows](https://github.github.com/gh-aw/) that automates the full software development lifecycle from issue to deploy.
 
-### Automated Workflows
+### AI-SDLC Pipeline
+
+When you open an issue, the pipeline runs autonomously through these stages:
+
+```
+Issue opened
+    │
+    ▼
+┌─────────┐
+│ Triage  │ → AI classifies issue, applies labels, adds pipeline:planning
+└────┬────┘
+     ▼
+┌────────────────┐
+│ Plan & Assign  │ → Creates implementation plan, assigns Copilot coding agent
+└────────┬───────┘
+         ▼
+┌──────────────────────┐
+│ Copilot Implements   │ → Delegates to specialist sub-agents:
+│                      │   backend, frontend, security, testing, docs
+└────────┬─────────────┘   → Posts report on issue, creates PR
+         ▼
+┌──────────────┐
+│ Test & Review│ → Delegates to code-reviewer, security-auditor,
+└──────┬───────┘   testing, docs agents → approves or requests changes
+       ▼
+╔══════════════════╗
+║  YOU MERGE PR    ║  ← manual gate
+╚════════╤═════════╝
+         ▼
+┌────────────────┐
+│ Post-Merge     │ → Detects merge, transitions to deploy
+└────────┬───────┘
+         ▼
+┌────────┐
+│ Deploy │ → Verifies merge, posts summary, closes issue
+└────────┘
+```
+
+### Pipeline Workflows
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `pipeline-triage.md` | Issue opened/reopened | AI classification and routing |
+| `pipeline-implement.md` | `pipeline:planning` label | Plan + assign Copilot agent |
+| `pipeline-review.md` | PR opened/updated | Multi-agent code review |
+| `pipeline-post-merge.md` | PR merged | Transition to deploy stage |
+| `pipeline-deploy.md` | `pipeline:deploying` label | Verify merge, close issue |
+| `pipeline-retry.md` | `pipeline:retry` label | Re-assign Copilot after failure |
+| `pipeline-rollback.md` | `pipeline:failed` label | Handle failed deployments |
+
+### Specialist Agents
+
+The pipeline delegates to these custom agents (defined in `.github/agents/`):
+
+| Agent | Role |
+|-------|------|
+| `backend` | Controllers, Models, Services, Middleware |
+| `frontend` | Views, Razor templates, CSS, JavaScript |
+| `security` | OWASP vulnerabilities, CSRF, XSS, auth |
+| `testing` | Unit tests, integration tests |
+| `docs` | XML documentation, docs/ updates |
+| `code-reviewer` | MVC patterns, code quality, SOLID |
+| `security-auditor` | Security scanning and audit |
+| `build-validator` | Project files, dependencies |
+
+### Other Automated Workflows
 
 - **🔨 Build & Test**: Runs on every push and PR
 - **🚀 Deploy**: Handles production deployments
-- **🤖 Copilot Agents**: Custom agents for code review and quality checks
-
-### Copilot Custom Agents
-
-- **Code Reviewer**: Reviews PRs for MVC best practices
-- **Build Validator**: Ensures successful builds
-- **Security Auditor**: Scans for vulnerabilities (weekly + PRs)
-- **Documentation Helper**: Maintains docs quality
-
-### Getting Started with CI/CD
-
-1. Push your code to trigger automated builds
-2. Create a pull request to activate code review agents
-3. Agents provide feedback and suggestions automatically
-4. Configure deployment secrets for production releases
-
-See `.github/copilot-instructions.md` for detailed agent configuration.
+- **🔍 CodeQL**: Security analysis on every push
 
 ## 🤖 Using Custom Copilot Agents
 
