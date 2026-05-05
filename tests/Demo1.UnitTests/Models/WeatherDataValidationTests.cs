@@ -34,6 +34,20 @@ public class WeatherDataValidationTests
     }
 
     [Fact]
+    public void WeatherData_WithBelowMinimumTemperature_IsInvalid()
+    {
+        var model = new WeatherData
+        {
+            city = "Seattle",
+            temp = WeatherData.MinTemperatureCelsius - 1,
+        };
+
+        var validationResults = Validate(model);
+
+        Assert.Contains(validationResults, result => result.MemberNames.Contains(nameof(WeatherData.temp)));
+    }
+
+    [Fact]
     public void WeatherData_WithTooLongUppercaseCity_IsInvalid()
     {
         var model = new WeatherData

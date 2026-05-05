@@ -217,18 +217,10 @@ public class HomeController : Controller
     {
         WeatherData? weather = null;
         var errors = new List<string>();
-        var requestedWeather = new WeatherData { city = city, temp = 0 };
-        var requestValidationResults = new List<ValidationResult>();
-
-        if (!Validator.TryValidateObject(requestedWeather, new ValidationContext(requestedWeather), requestValidationResults, validateAllProperties: true))
+        if (city.Length > WeatherData.MaxCityLength)
         {
-            errors.AddRange(requestValidationResults
-                .Where(result => result.MemberNames.Contains(nameof(WeatherData.city)))
-                .Select(result => result.ErrorMessage ?? "City must be valid."));
-
-            city = city.Length > WeatherData.MaxCityLength
-                ? city[..WeatherData.MaxCityLength]
-                : city;
+            errors.Add($"The field {nameof(WeatherData.city)} must be a string with a maximum length of {WeatherData.MaxCityLength}.");
+            city = city[..WeatherData.MaxCityLength];
         }
 
         try
@@ -262,7 +254,8 @@ public class HomeController : Controller
                 weather.city = weather.city[..WeatherData.MaxCityLength];
             }
 
-            if (hasTemperatureValidationError)
+            if (hasTemperatureValidationError
+                && (weather.temp < WeatherData.MinTemperatureCelsius || weather.temp > WeatherData.MaxTemperatureCelsius))
             {
                 weather.temp = Math.Clamp(weather.temp, WeatherData.MinTemperatureCelsius, WeatherData.MaxTemperatureCelsius);
             }
