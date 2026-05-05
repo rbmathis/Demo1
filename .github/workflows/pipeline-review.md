@@ -40,6 +40,14 @@ safe-outputs:
       - "review:changes-requested"
     max: 3
     target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed:
+      - "pipeline:implementing"
+      - "pipeline:testing"
+    max: 2
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ---
 
 ## Pipeline — Test & Review Agent
@@ -61,6 +69,9 @@ You are the orchestrating code review agent for an automated AI-SDLC pipeline. W
    - **APPROVE** if the code is clean and follows best practices
    - **REQUEST_CHANGES** if there are security vulnerabilities or critical issues
    - **COMMENT** if there are suggestions but nothing blocking
+7. **Transition pipeline labels** on the linked issue (find it from the PR body, e.g. "Closes #N"):
+   - If APPROVE: remove `pipeline:implementing`, add `pipeline:deploying` and `review:approved` on the issue
+   - If REQUEST_CHANGES: add `review:changes-requested` on the issue (keep `pipeline:implementing`)
 
 ## Review Guidelines
 
