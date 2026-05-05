@@ -4,7 +4,7 @@ description: "Multi-agent code review on pull requests"
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [review_requested, ready_for_review]
   reaction: "eyes"
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
