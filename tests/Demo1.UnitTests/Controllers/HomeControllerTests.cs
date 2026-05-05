@@ -112,4 +112,71 @@ public class HomeControllerTests
         var model = Assert.IsType<ErrorViewModel>(view.Model);
         Assert.Equal("trace-error", model.RequestId);
     }
+
+    [Fact]
+    public async Task GodObjectProfile_Get_Returns_View_With_Profile_And_Stats_Without_Update()
+    {
+        var profileService = new Mock<IUserProfileService>();
+        var profile = new UserProfile { Name = "Demo User" };
+        var stats = new ProfileStats { TotalProfiles = 2, ActiveProfiles = 1 };
+
+        profileService.Setup(s => s.GetProfileAsync("")).ReturnsAsync(profile);
+        profileService.Setup(s => s.GetStats()).Returns(stats);
+
+        var controller = new HomeController(
+            Mock.Of<ILogger<HomeController>>(),
+            Mock.Of<ISearchService>(),
+            Mock.Of<IWeatherService>(),
+            profileService.Object,
+            Mock.Of<IStyleGeneratorService>());
+
+        var result = await controller.GodObjectProfile(action: "update", field: "Name", value: "Updated");
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Same(profile, controller.ViewBag.Profile);
+        Assert.Same(stats, controller.ViewBag.Stats);
+        Assert.Equal("Updates now require a POST request.", controller.ViewBag.Error);
+        profileService.Verify(s => s.UpdateFieldAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        profileService.Verify(s => s.GetProfileAsync(""), Times.Once);
+        profileService.Verify(s => s.GetStats(), Times.Once);
+    }
+
+    [Fact]
+    public async Task GodObjectProfilePost_ActionUpdate_WithField_Performs_Update()
+    {
+        var profileService = new Mock<IUserProfileService>();
+        var initialProfile = new UserProfile { Name = "Before" };
+        var updatedProfile = new UserProfile { Name = "After" };
+        var stats = new ProfileStats { TotalProfiles = 3, ActiveProfiles = 2 };
+
+        profileService.Setup(s => s.GetProfileAsync("")).ReturnsAsync(initialProfile);
+        profileService.Setup(s => s.UpdateFieldAsync("", "Name", "After")).ReturnsAsync(updatedProfile);
+        profileService.Setup(s => s.GetStats()).Returns(stats);
+
+        var controller = new HomeController(
+            Mock.Of<ILogger<HomeController>>(),
+            Mock.Of<ISearchService>(),
+            Mock.Of<IWeatherService>(),
+            profileService.Object,
+            Mock.Of<IStyleGeneratorService>());
+
+        var result = await controller.GodObjectProfilePost("update", "Name", "After");
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Same(updatedProfile, controller.ViewBag.Profile);
+        Assert.Same(stats, controller.ViewBag.Stats);
+        profileService.Verify(s => s.UpdateFieldAsync("", "Name", "After"), Times.Once);
+    }
+
+    [Fact]
+    public void GodObjectProfilePost_Has_ValidateAntiForgeryToken_Attribute()
+    {
+        var method = typeof(HomeController).GetMethod(nameof(HomeController.GodObjectProfilePost));
+
+        Assert.NotNull(method);
+        Assert.NotNull(Attribute.GetCustomAttribute(method!, typeof(ValidateAntiForgeryTokenAttribute)));
+        var actionName = Assert.IsType<ActionNameAttribute>(
+            Attribute.GetCustomAttribute(method!, typeof(ActionNameAttribute)));
+        Assert.Equal("GodObjectProfile", actionName.Name);
+    }
 }

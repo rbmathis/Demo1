@@ -128,14 +128,42 @@ public class HomeController : Controller
     // ╚══════════════════════════════════════════════════════════════════════════════╝
 
     /// <summary>
-    /// Profile management demo - now using proper DI and encapsulation.
-    /// The view still shows "anti-pattern" styling for demo purposes.
+    /// Displays the profile management demo page.
     /// </summary>
+    /// <param name="action">Optional query action value from legacy links.</param>
+    /// <param name="field">Optional query field value from legacy links.</param>
+    /// <param name="value">Optional query value from legacy links.</param>
+    /// <returns>The profile management view.</returns>
+    [HttpGet]
     public async Task<IActionResult> GodObjectProfile(string action = "", string field = "", string value = "")
+    {
+        if (string.Equals(action, "update", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(field))
+        {
+            ViewBag.Error = "Updates now require a POST request.";
+        }
+
+        var profile = await _userProfileService.GetProfileAsync("");
+        ViewBag.Profile = profile;
+        ViewBag.Stats = _userProfileService.GetStats();
+
+        return View();
+    }
+
+    /// <summary>
+    /// Processes profile field updates for the profile management demo page.
+    /// </summary>
+    /// <param name="action">The requested action.</param>
+    /// <param name="field">The profile field to update.</param>
+    /// <param name="value">The new value for the field.</param>
+    /// <returns>The profile management view.</returns>
+    [HttpPost]
+    [ActionName("GodObjectProfile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GodObjectProfilePost(string action, string field, string value)
     {
         var profile = await _userProfileService.GetProfileAsync("");
 
-        if (!string.IsNullOrEmpty(action) && action == "update" && !string.IsNullOrEmpty(field))
+        if (string.Equals(action, "update", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(field))
         {
             try
             {
