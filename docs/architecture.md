@@ -6,7 +6,8 @@ Demo1 is an ASP.NET Core MVC application targeting **.NET 9**. It uses the defau
 
 - **Controllers**: Handle HTTP requests and orchestrate responses
 - **Views**: Razor templates for HTML rendering
-- **Models**: View models and domain models (currently just `ErrorViewModel`)
+- **Models**: View models and domain models (for example `ErrorViewModel` and `HealthInfo`)
+- **Services**: DI-registered application services (for example `IHealthService`/`HealthService`)
 - **Program.cs**: Bootstraps the web host and configures middleware
 
 ## Request Pipeline
@@ -30,10 +31,16 @@ flowchart TD
 Controllers/        MVC controllers
 Models/             View/Domain models
 Views/              Razor views
+Services/           Application service layer (DI)
 wwwroot/            Static assets (css, js, images)
 Properties/         launchSettings.json
 appsettings*.json   Configuration files
 ```
+
+## Health Endpoints
+
+- `GET /health` returns application health metadata from `HealthController`/`IHealthService`.
+- `GET /health/live` and `GET /health/ready` are ASP.NET Core health check endpoints mapped in `Program.cs`.
 
 ## Dependencies
 
