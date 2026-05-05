@@ -40,6 +40,15 @@ safe-outputs:
     name: "copilot"
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    custom-instructions: |
+      You have access to specialized sub-agents in .github/agents/. Delegate to them during implementation:
+      - Use `backend` agent for Controllers, Models, Services, Middleware, and Program.cs changes
+      - Use `frontend` agent for Views, Razor templates, CSS, and JavaScript changes
+      - Use `security` agent when fixing security vulnerabilities (CSRF, XSS, SQL injection, auth)
+      - Use `testing` agent to generate unit tests and integration tests for your changes
+      - Use `docs` agent to update XML documentation comments and docs/ files
+      - Use `build-validator` agent to verify project file changes and dependencies
+      After implementing, ensure all tests pass before creating the PR.
 ---
 
 ## Pipeline — Retry Agent
