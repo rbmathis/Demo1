@@ -32,28 +32,68 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
     custom-instructions: |
-      You are implementing a plan from issue #${{ github.event.inputs.issue_number }}.
+      ## YOUR MISSION
 
-      BEFORE YOU START: Read issue #${{ github.event.inputs.issue_number }} and find the comment titled "Pipeline — Plan". That comment contains your implementation plan with specific files, changes, and acceptance criteria. Follow it precisely.
+      Implement the plan from issue #${{ github.event.inputs.issue_number }}.
 
-      You have access to specialized sub-agents in .github/agents/. You MUST delegate to them:
+      ## STEP 0: READ THE PLAN (do this first)
 
-      1. **Implement** — delegate to the appropriate agents per the plan:
-         - Use `backend` agent for Controllers, Models, Services, Middleware, Program.cs
-         - Use `frontend` agent for Views, Razor templates, CSS, JavaScript
-         - Use `security` agent for security vulnerabilities (CSRF, XSS, SQL injection, auth)
-      2. **Test** (REQUIRED) — Use `testing` agent to generate unit tests and integration tests for ALL changes
-      3. **Document** (REQUIRED) — Use `docs` agent to:
-         - Add/update XML documentation on all new/modified public methods and classes
-         - Update docs/ markdown files if the change affects architecture or APIs
-      4. **Validate** — Use `build-validator` agent to verify the project builds cleanly
-      5. **Report** (REQUIRED) — After creating the PR, post a comment on issue #${{ github.event.inputs.issue_number }} with:
-         - Summary of what was implemented
-         - Files changed (grouped by area)
-         - Which sub-agents were used
-         - Link to the PR
+      Read issue #${{ github.event.inputs.issue_number }} and find the comment titled "📋 Pipeline — Plan". That comment has your implementation plan with specific files, changes, and acceptance criteria. Follow it precisely.
 
-      IMPORTANT: Steps 2, 3, and 5 are mandatory. Never skip testing, documentation, or the issue report.
+      ## STEP 1: IMPLEMENT
+
+      Use the specialized sub-agents in .github/agents/:
+      - `backend` agent for Controllers, Models, Services, Middleware, Program.cs
+      - `frontend` agent for Views, Razor templates, CSS, JavaScript
+      - `security` agent for security vulnerabilities (CSRF, XSS, SQL injection, auth)
+
+      ## STEP 2: TEST (mandatory — do not skip)
+
+      Use `testing` agent to generate unit tests and integration tests for ALL changes.
+
+      ## STEP 3: DOCUMENT (mandatory — do not skip)
+
+      Use `docs` agent to:
+      - Add/update XML documentation on all new/modified public methods and classes
+      - Update docs/ markdown files if the change affects architecture or APIs
+
+      ## STEP 4: VALIDATE
+
+      Use `build-validator` agent to verify the project builds cleanly and tests pass.
+
+      ## STEP 5: REPORT ON THE ISSUE (mandatory — do not skip)
+
+      ⚠️ THIS IS THE MOST IMPORTANT STEP. You MUST do this AFTER creating the PR.
+
+      Post a comment on issue #${{ github.event.inputs.issue_number }} using this EXACT format:
+
+      ```
+      ## 🏗️ Pipeline — Implementation Report
+
+      **Timestamp:** [UTC time]
+      **PR:** #[pr_number]
+      **Branch:** `[branch_name]`
+
+      ### Changes
+
+      | Area | Files | Description |
+      |------|-------|-------------|
+      | [area] | `file1.cs`, `file2.cs` | [what changed] |
+
+      ### Agents Used
+
+      - [agent name] — [what it did]
+
+      ### Test Results
+
+      - [test summary]
+
+      ### Status
+
+      ✅ Implementation complete. Ready for review.
+      ```
+
+      DO NOT CONSIDER YOUR WORK DONE UNTIL YOU HAVE POSTED THIS COMMENT ON ISSUE #${{ github.event.inputs.issue_number }}.
 ---
 
 ## Pipeline — Implement Agent
