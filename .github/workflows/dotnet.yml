@@ -93,3 +93,70 @@ jobs:
 
       - name: Code analysis
         run: dotnet build --configuration Release --verbosity normal
+
+  # ─────────────────────────────────────────────────────────────────────
+  # PIPELINE INTEGRATION: Report build status to linked pipeline issue
+  # ─────────────────────────────────────────────────────────────────────
+  pipeline-report:
+    name: Pipeline build report
+    runs-on: ubuntu-latest
+    needs: [build, security-scan, code-quality]
+    if: github.event_name == 'pull_request'
+    permissions:
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Report to pipeline issue (if applicable)
+        uses: actions/github-script@v7
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          SECURITY_RESULT: ${{ needs.security-scan.result }}
+          QUALITY_RESULT: ${{ needs.code-quality.result }}
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+
+            // Check if this PR is part of the pipeline (has pipeline branch pattern)
+            const branch = pr.head.ref || '';
+            const isPipelinePR = branch.startsWith('feat/issue-');
+            if (!isPipelinePR) {
+              core.info('Not a pipeline PR. Skipping pipeline report.');
+              return;
+            }
+
+            // Extract issue number from branch name
+            const branchMatch = branch.match(/issue-(\d+)/);
+            if (!branchMatch) return;
+            const issueNumber = parseInt(branchMatch[1]);
+
+            const buildResult = process.env.BUILD_RESULT;
+            const securityResult = process.env.SECURITY_RESULT;
+            const qualityResult = process.env.QUALITY_RESULT;
+            const allPassed = buildResult === 'success' && securityResult === 'success' && qualityResult === 'success';
+            const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+
+            // Post CI results to the pipeline issue
+            const comment = [
+              `## 🏗️ Pipeline — CI Status Update`,
+              ``,
+              `**Source:** \`dotnet.yml\` workflow  `,
+              `**Timestamp:** ${timestamp}  `,
+              `**PR:** #${pr.number} (\`${branch}\`)`,
+              ``,
+              `| Job | Status |`,
+              `|-----|--------|`,
+              `| Build & Test | ${buildResult === 'success' ? '✅ Pass' : '❌ Fail'} |`,
+              `| Security Scan | ${securityResult === 'success' ? '✅ Pass' : '❌ Fail'} |`,
+              `| Code Quality | ${qualityResult === 'success' ? '✅ Pass' : '❌ Fail'} |`,
+              ``,
+              allPassed
+                ? `✅ All CI checks passed. Pipeline can proceed.`
+                : `⚠️ CI checks have failures. The pipeline test stage will provide detailed diagnostics.`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issueNumber,
+              body: comment,
+            });

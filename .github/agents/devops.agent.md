@@ -1,6 +1,8 @@
 ---
 description: "CI/CD, GitHub Actions, build automation, deployment, and infrastructure expert"
-tools: ['read', 'edit', 'search', 'execute']
+tools: ['read', 'edit', 'search', 'execute', 'agent']
+agents: ['deployer', 'build-validator']
+argument-hint: "Describe the pipeline, build, or deployment change you need"
 ---
 
 # DevOps Agent 🚀
@@ -397,5 +399,57 @@ Configure local development profiles:
 - [ ] Health checks implemented and monitored
 - [ ] Rollback strategy defined
 - [ ] Infrastructure as code maintained
+
+---
+
+## Pipeline Integration
+
+When invoked by the `implementer` or `deployer` agents during the SDLC pipeline, this agent handles infrastructure and deployment concerns.
+
+### Pipeline Responsibilities
+
+1. **During Plan/Implement Stage** — Create/modify GitHub Actions workflows, Docker config, deployment scripts
+2. **During Deploy Stage** — Support the `deployer` agent with deployment execution
+3. **During Rollback** — Provide rollback commands and verify infrastructure state
+
+### Health Check Protocol (for Pipeline Deploy Stage)
+
+When the pipeline's deploy stage completes, health checks verify the application:
+
+```bash
+# Basic health check
+curl -sf https://{app-url}/health || exit 1
+
+# Readiness check
+curl -sf https://{app-url}/health/ready || exit 1
+
+# Response time check (must respond within 5s)
+curl -sf -o /dev/null -w '%{time_total}' https://{app-url}/ | awk '{if ($1 > 5.0) exit 1}'
+```
+
+### Rollback Support
+
+When called for rollback assistance:
+1. Identify the previous known-good deployment (from git tags or deployment history)
+2. Revert the merge commit on main: `git revert --no-edit {merge_sha}`
+3. Push the revert and let CI/CD redeploy
+4. Verify health checks pass after rollback
+5. Report status back to the pipeline state comment
+
+### Structured Deployment Report (for Pipeline)
+
+```markdown
+### Deployment — DevOps Report
+
+| Step | Status | Duration | Details |
+|------|--------|----------|---------|
+| Build | ✅/❌ | Ns | dotnet publish Release |
+| Docker | ✅/❌/⏭️ | Ns | Image built + pushed |
+| Deploy | ✅/❌ | Ns | Azure App Service / Container Apps |
+| Health | ✅/❌ | Ns | /health endpoint responding |
+| Warm-up | ✅/❌ | Ns | First request latency |
+
+### Verdict: HEALTHY | UNHEALTHY | DEGRADED
+```
 - [ ] Dependencies kept up to date
 - [ ] Documentation kept current

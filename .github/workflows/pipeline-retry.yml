@@ -1,0 +1,272 @@
+name: Pipeline — Retry & Failure Handler
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────
+  # RETRY: Triggered when pipeline:retrying label is applied
+  # Reads failure state, increments attempt counter, re-dispatches
+  # ─────────────────────────────────────────────────────────────────────
+  retry:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'pipeline:retrying'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate retry eligibility and re-dispatch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+            const MAX_RETRIES = 2;
+
+            // ── Parse latest failed state ──
+            const comments = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: issue.number,
+            });
+
+            let failedState = null;
+            for (const comment of comments.data.reverse()) {
+              const match = comment.body.match(/```json\n([\s\S]*?)\n```/);
+              if (match) {
+                try {
+                  const parsed = JSON.parse(match[1]);
+                  if (parsed.pipeline === 'sdlc' && parsed.status === 'failed') {
+                    failedState = parsed;
+                    break;
+                  }
+                } catch { /* skip */ }
+              }
+            }
+
+            if (!failedState) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `## ⚠️ Pipeline — Retry Failed\n\n**Timestamp:** ${timestamp}\n\nCould not find a failed pipeline state to retry from. Use \`/pipeline status\` to check current state.`,
+              });
+              try {
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'pipeline:retrying' });
+              } catch { /* ignore */ }
+              return;
+            }
+
+            const currentAttempt = (failedState.attempt || 1);
+            const failedStage = failedState.stage;
+            const nextAttempt = currentAttempt + 1;
+
+            // ── Check retry budget ──
+            if (nextAttempt > MAX_RETRIES) {
+              // Exhausted retries — escalate to human
+              const narrative = [
+                `## 🚨 Pipeline — Retry Budget Exhausted`,
+                ``,
+                `**Agent:** \`pipeline\`  `,
+                `**Timestamp:** ${timestamp}`,
+                ``,
+                `### Failure Summary`,
+                ``,
+                `Stage \`${failedStage}\` has failed **${currentAttempt} times** (max retries: ${MAX_RETRIES}).`,
+                ``,
+                `### Attempts Made`,
+                ``,
+                `| Attempt | Stage | Result |`,
+                `|---------|-------|--------|`,
+                ...Array.from({length: currentAttempt}, (_, i) => `| ${i + 1} | ${failedStage} | ❌ Failed |`),
+                ``,
+                `### Diagnosis`,
+                ``,
+                `The automated pipeline has been unable to resolve this failure after ${currentAttempt} attempts. `,
+                `This likely requires human investigation — the issue may involve:`,
+                `- Environment-specific configuration not captured in code`,
+                `- External service dependencies`,
+                `- Complex architectural decisions beyond agent capability`,
+                `- Ambiguous or conflicting requirements`,
+                ``,
+                `### 🆘 Human Intervention Required`,
+                ``,
+                `Please review the failure comments above and either:`,
+                `1. Fix the issue manually and use \`/pipeline resume\` to continue`,
+                `2. Update the issue requirements and use \`/pipeline restart\` to start fresh`,
+                `3. Close the issue if the approach is not viable`,
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: narrative,
+              });
+
+              // Post state
+              const state = {
+                pipeline: 'sdlc',
+                stage: failedStage,
+                status: 'exhausted',
+                attempt: currentAttempt,
+                max_retries: MAX_RETRIES,
+                next: 'human',
+                timestamp: new Date().toISOString(),
+              };
+
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `<details>\n<summary>📊 Pipeline State</summary>\n\n\`\`\`json\n${JSON.stringify(state, null, 2)}\n\`\`\`\n\n</details>`,
+              });
+
+              // Update labels
+              try {
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'pipeline:retrying' });
+              } catch { /* ignore */ }
+
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: issue.number,
+                labels: ['pipeline:failed'],
+              });
+
+              return;
+            }
+
+            // ── Retry is allowed — re-dispatch to the failed stage ──
+            const stageToLabelMap = {
+              'test': 'pipeline:testing',
+              'review': 'pipeline:reviewing',
+              'implement': 'pipeline:implementing',
+              'plan': 'pipeline:planning',
+              'deploy': 'pipeline:deploying',
+            };
+
+            const retryLabel = stageToLabelMap[failedStage];
+            if (!retryLabel) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: issue.number,
+                body: `## ⚠️ Pipeline — Cannot Retry\n\n**Timestamp:** ${timestamp}\n\nStage \`${failedStage}\` does not support automatic retry. Manual intervention needed.`,
+              });
+              try {
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'pipeline:retrying' });
+              } catch { /* ignore */ }
+              await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: ['pipeline:failed'] });
+              return;
+            }
+
+            // Post retry narrative
+            const narrative = [
+              `## 🔄 Pipeline — Retry (Attempt ${nextAttempt}/${MAX_RETRIES})`,
+              ``,
+              `**Agent:** \`pipeline\`  `,
+              `**Timestamp:** ${timestamp}`,
+              ``,
+              `### Retrying Stage: \`${failedStage}\``,
+              ``,
+              `Previous attempt failed. The pipeline will try an alternative approach.`,
+              ``,
+              `**Strategy for attempt ${nextAttempt}:**`,
+              failedStage === 'test' ? `- Re-run tests after diagnostics. The testing agent will attempt auto-fix.` : '',
+              failedStage === 'review' ? `- Address review feedback and re-submit for review.` : '',
+              failedStage === 'implement' ? `- Try alternative implementation approach based on failure analysis.` : '',
+              failedStage === 'deploy' ? `- Retry deployment with fresh build.` : '',
+              ``,
+              `### Budget`,
+              ``,
+              `Retries used: ${currentAttempt}/${MAX_RETRIES}. ${MAX_RETRIES - currentAttempt === 0 ? '⚠️ This is the final attempt.' : `${MAX_RETRIES - currentAttempt} retries remaining after this.`}`,
+            ].filter(Boolean).join('\n');
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: narrative,
+            });
+
+            // Post state with incremented attempt
+            const state = {
+              pipeline: 'sdlc',
+              stage: failedStage,
+              status: 'retrying',
+              attempt: nextAttempt,
+              max_retries: MAX_RETRIES,
+              previous_failure: failedState,
+              timestamp: new Date().toISOString(),
+            };
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: `<details>\n<summary>📊 Pipeline State</summary>\n\n\`\`\`json\n${JSON.stringify(state, null, 2)}\n\`\`\`\n\n</details>`,
+            });
+
+            // Remove retrying label and apply stage label to re-trigger
+            try {
+              await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'pipeline:retrying' });
+            } catch { /* ignore */ }
+
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: issue.number,
+              labels: [retryLabel],
+            });
+
+  # ─────────────────────────────────────────────────────────────────────
+  # FAILED: Triggered when pipeline:failed label is applied
+  # Posts final failure notification and optionally notifies maintainers
+  # ─────────────────────────────────────────────────────────────────────
+  notify-failure:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'pipeline:failed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post failure notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+
+            // Check if exhaustion comment already posted (avoid duplicate)
+            const comments = await github.rest.issues.listComments({
+              ...context.repo,
+              issue_number: issue.number,
+              per_page: 5,
+            });
+
+            const recentComments = comments.data.slice(-5);
+            const alreadyNotified = recentComments.some(c =>
+              c.body.includes('Retry Budget Exhausted') || c.body.includes('Human Intervention Required')
+            );
+
+            if (alreadyNotified) {
+              core.info('Failure notification already posted. Skipping.');
+              return;
+            }
+
+            // If we get here, it's a direct failure (not from retry exhaustion)
+            const narrative = [
+              `## 🚨 Pipeline — Failed`,
+              ``,
+              `**Agent:** \`pipeline\`  `,
+              `**Timestamp:** ${timestamp}`,
+              ``,
+              `The automated pipeline encountered a failure that requires human intervention.`,
+              ``,
+              `**To investigate:**`,
+              `1. Review the failure comments above for diagnostic details`,
+              `2. Fix the underlying issue`,
+              `3. Use \`/pipeline resume\` to continue from the last successful stage`,
+              `4. Or use \`/pipeline restart\` to start the pipeline from scratch`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issue.number,
+              body: narrative,
+            });

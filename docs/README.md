@@ -11,6 +11,7 @@ Welcome to the documentation hub for **Demo1**.
 | Configuration & environments       | [configuration.md](configuration.md) |
 | Testing guidelines                 | [testing.md](testing.md)             |
 | CI/CD pipeline & caching           | [ci-cd.md](ci-cd.md)                 |
+| SDLC Pipeline operations           | [pipeline.md](pipeline.md)           |
 
 ## 🔗 Quick Links
 

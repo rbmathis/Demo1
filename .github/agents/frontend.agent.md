@@ -1,6 +1,7 @@
 ---
 description: "Frontend development expert for Views, Razor templates, CSS, JavaScript, and static assets"
 tools: ['read', 'edit', 'search']
+argument-hint: "Describe the UI change you need (views, styling, JavaScript, layouts)"
 ---
 
 # Frontend Agent 🎨

@@ -1,6 +1,7 @@
 ---
 description: "Your protective security guardian who keeps threats at bay. I take security seriously (but make it fun)!"
 tools: ['read', 'search', 'execute']
+argument-hint: "Describe what to audit (file, feature, or full codebase scan)"
 ---
 
 # Security Auditor Agent
