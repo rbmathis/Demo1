@@ -11,7 +11,9 @@ on:
         type: string
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
-engine: copilot
+engine:
+  id: copilot
+  model: claude-opus-4.6
 
 permissions:
   contents: read
