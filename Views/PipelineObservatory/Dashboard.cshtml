@@ -1,0 +1,168 @@
+@model Demo1.Models.PipelineObservatoryViewModel
+@using Demo1.Models
+
+@{
+    ViewData["Title"] = "Pipeline Observatory";
+    var stages = new[] { PipelineStage.Triage, PipelineStage.Plan, PipelineStage.Implement, PipelineStage.Review, PipelineStage.Deploy };
+}
+
+<div class="observatory">
+    <h1 class="h3 mb-3">Pipeline Observatory</h1>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+    {
+        <div class="alert alert-warning" role="alert">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    <div class="row g-3 observatory-board">
+        @foreach (var stage in stages)
+        {
+            var runs = Model.Runs.Where(r => r.CurrentStage == stage).OrderByDescending(r => r.StartedAt).ToList();
+            var stageCount = Model.StageCounts.TryGetValue(stage, out var count) ? count : runs.Count;
+
+            <div class="col-12 col-md-6 col-xl">
+                <section class="observatory-column h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 mb-0">@stage</h2>
+                        <span class="badge text-bg-secondary">@stageCount</span>
+                    </div>
+
+                    <div class="observatory-column-body">
+                        @if (runs.Count == 0)
+                        {
+                            <p class="text-muted small mb-0">No runs in this stage.</p>
+                        }
+                        else
+                        {
+                            @foreach (var run in runs)
+                            {
+                                var badgeClass = run.Outcome switch
+                                {
+                                    PipelineOutcome.Success => "text-bg-success",
+                                    PipelineOutcome.Failure => "text-bg-danger",
+                                    _ => "text-bg-warning"
+                                };
+                                var timingText = run.CompletedAt is not null
+                                    ? $"Completed in {(run.CompletedAt.Value - run.StartedAt).TotalMinutes:0} min"
+                                    : $"Running for {(DateTime.UtcNow - run.StartedAt).TotalMinutes:0} min";
+
+                                <article class="observatory-issue-card observatory-flow-in">
+                                    <h3 class="h6 mb-1">@run.Title</h3>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                        <a asp-controller="PipelineObservatory" asp-action="Issue" asp-route-id="@run.IssueNumber">
+                                            Issue #@run.IssueNumber
+                                        </a>
+                                        <span class="badge @badgeClass">@run.Outcome</span>
+                                    </div>
+                                    <p class="small text-muted mb-0">@timingText</p>
+                                </article>
+                            }
+                        }
+                    </div>
+                </section>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12 col-lg-7">
+            <section class="observatory-panel h-100">
+                <h2 class="h5 mb-3">Agent Activity</h2>
+                <div class="observatory-activity-feed" aria-live="polite">
+                    @if (Model.AgentActivity.Count == 0)
+                    {
+                        <p class="text-muted small mb-0">No recent activity.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-unstyled mb-0">
+                            @foreach (var activity in Model.AgentActivity.OrderByDescending(a => a.Timestamp))
+                            {
+                                <li class="observatory-activity-item">
+                                    <div class="small">
+                                        <strong>@activity.AgentName</strong>
+                                        <span class="text-muted">(@activity.Stage)</span>
+                                    </div>
+                                    <div>@activity.Message</div>
+                                    <div class="small text-muted">
+                                        <time datetime="@activity.Timestamp.ToString("O")">@activity.Timestamp.ToLocalTime().ToString("g")</time>
+                                        ·
+                                        <a asp-controller="PipelineObservatory" asp-action="Issue" asp-route-id="@activity.IssueNumber">
+                                            Issue #@activity.IssueNumber
+                                        </a>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-lg-5">
+            <section class="observatory-panel h-100">
+                <h2 class="h5 mb-3">Stage Prediction</h2>
+                <form id="observatory-predict-form" asp-controller="PipelineObservatory" asp-action="Predict" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="IssueText" class="form-label">Issue text</label>
+                        <textarea id="IssueText" name="IssueText" class="form-control" rows="5" required minlength="5"
+                            maxlength="8000"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Predict Stage</button>
+                </form>
+
+                <div id="observatory-prediction-result" class="observatory-prediction-result mt-3 d-none" aria-live="polite">
+                    <div><strong>Stage:</strong> <span id="observatory-stage"></span></div>
+                    <div><strong>Confidence:</strong> <span id="observatory-confidence"></span></div>
+                    <div><strong>Rationale:</strong> <span id="observatory-rationale"></span></div>
+                </div>
+
+                <div id="observatory-prediction-error" class="alert alert-danger mt-3 d-none" role="alert"></div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const form = document.getElementById("observatory-predict-form");
+            if (!form) return;
+
+            const result = document.getElementById("observatory-prediction-result");
+            const error = document.getElementById("observatory-prediction-error");
+            const stage = document.getElementById("observatory-stage");
+            const confidence = document.getElementById("observatory-confidence");
+            const rationale = document.getElementById("observatory-rationale");
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                error.classList.add("d-none");
+                result.classList.add("d-none");
+
+                try {
+                    const response = await fetch("/pipeline-observatory/predict", {
+                        method: "POST",
+                        body: new FormData(form)
+                    });
+
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload?.error || "Prediction failed.");
+                    }
+
+                    stage.textContent = payload.predictedStage ?? "";
+                    confidence.textContent = payload.confidence != null ? `${(payload.confidence * 100).toFixed(1)}%` : "";
+                    rationale.textContent = payload.rationale ?? "";
+                    result.classList.remove("d-none");
+                } catch (submitError) {
+                    error.textContent = submitError instanceof Error ? submitError.message : "Prediction failed.";
+                    error.classList.remove("d-none");
+                }
+            });
+        })();
+    </script>
+}

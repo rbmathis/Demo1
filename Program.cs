@@ -5,6 +5,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using Octokit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,33 @@ builder.Services.AddSingleton<IWeatherService, MockWeatherService>();
 builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>();
 builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
+builder.Services.AddSingleton<IPredictionService, PredictionService>();
+
+var gitHubOwner = builder.Configuration["GitHub:Owner"]
+    ?? Environment.GetEnvironmentVariable("GITHUB_OWNER")
+    ?? "rbmathis";
+var gitHubRepository = builder.Configuration["GitHub:Repository"]
+    ?? Environment.GetEnvironmentVariable("GITHUB_REPOSITORY_NAME")
+    ?? "Demo1";
+var gitHubToken = builder.Configuration["GitHub:Token"]
+    ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+
+builder.Services.AddSingleton<IGitHubClient>(_ =>
+{
+    var client = new GitHubClient(new ProductHeaderValue("Demo1-AI-Pipeline-Observatory"));
+    if (!string.IsNullOrWhiteSpace(gitHubToken))
+    {
+        client.Credentials = new Credentials(gitHubToken);
+    }
+
+    return client;
+});
+builder.Services.AddSingleton<IGitHubPipelineService>(serviceProvider =>
+    new GitHubPipelineService(
+        serviceProvider.GetRequiredService<IGitHubClient>(),
+        serviceProvider.GetRequiredService<ILogger<GitHubPipelineService>>(),
+        gitHubOwner,
+        gitHubRepository));
 
 // ✅ 12-FACTOR: Configure distributed cache based on environment
 var cacheProvider = builder.Configuration["CacheProvider"] ?? "Memory";

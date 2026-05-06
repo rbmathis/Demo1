@@ -1,0 +1,79 @@
+@model Demo1.Models.PipelineRun
+
+@{
+    ViewData["Title"] = $"Issue #{Model.IssueNumber}";
+}
+
+<div class="observatory">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Issue #@Model.IssueNumber</h1>
+        <a asp-controller="PipelineObservatory" asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+    </div>
+
+    <section class="observatory-panel mb-3">
+        <h2 class="h5">@Model.Title</h2>
+        <dl class="row mb-0 small">
+            <dt class="col-sm-3">Run Id</dt>
+            <dd class="col-sm-9">@Model.Id</dd>
+
+            <dt class="col-sm-3">Current Stage</dt>
+            <dd class="col-sm-9">@Model.CurrentStage</dd>
+
+            <dt class="col-sm-3">Outcome</dt>
+            <dd class="col-sm-9">@Model.Outcome</dd>
+
+            <dt class="col-sm-3">Started</dt>
+            <dd class="col-sm-9">
+                <time datetime="@Model.StartedAt.ToString("O")">@Model.StartedAt.ToLocalTime().ToString("f")</time>
+            </dd>
+
+            @if (Model.CompletedAt is not null)
+            {
+                <dt class="col-sm-3">Completed</dt>
+                <dd class="col-sm-9">
+                    <time datetime="@Model.CompletedAt.Value.ToString("O")">@Model.CompletedAt.Value.ToLocalTime().ToString("f")</time>
+                </dd>
+            }
+        </dl>
+    </section>
+
+    <section class="observatory-panel">
+        <h2 class="h5 mb-3">Stage Timeline</h2>
+        @if (Model.StageTransitions.Count == 0)
+        {
+            <p class="text-muted small mb-0">No transition history available.</p>
+        }
+        else
+        {
+            <ol class="list-group list-group-numbered">
+                @foreach (var transition in Model.StageTransitions.OrderBy(t => t.EnteredAt))
+                {
+                    var durationText = transition.ExitedAt is null
+                        ? "In progress"
+                        : $"{(transition.ExitedAt.Value - transition.EnteredAt).TotalMinutes:0} min";
+
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">@transition.Stage</div>
+                                <div class="small text-muted">Agent: @transition.AgentName</div>
+                            </div>
+                            <span class="badge text-bg-light border">@durationText</span>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            Entered:
+                            <time datetime="@transition.EnteredAt.ToString("O")">@transition.EnteredAt.ToLocalTime().ToString("g")</time>
+                            @if (transition.ExitedAt is not null)
+                            {
+                                <span>
+                                    · Exited:
+                                    <time datetime="@transition.ExitedAt.Value.ToString("O")">@transition.ExitedAt.Value.ToLocalTime().ToString("g")</time>
+                                </span>
+                            }
+                        </div>
+                    </li>
+                }
+            </ol>
+        }
+    </section>
+</div>

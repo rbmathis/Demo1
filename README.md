@@ -13,6 +13,13 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 - **Turnkey pipelines** – CI keeps the runway green with linting, unit tests, and smoke checks.
 - **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
 - **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
+- **Pipeline Observatory** – Visual dashboard for AI-SDLC issue runs plus stage prediction from issue text.
+
+## Pipeline Observatory
+
+- Dashboard: `GET /pipeline-observatory` (also `/pipeline-observatory/dashboard`)
+- Issue drill-down: `GET /pipeline-observatory/issue/{id}`
+- Stage prediction: `POST /pipeline-observatory/predict` (form field: `IssueText`)
 
 ## Getting Started
 
