@@ -32,6 +32,7 @@ public class AppSmokeTests : IClassFixture<WebApplicationFactory<Program>>
     [Theory]
     [InlineData("/")]
     [InlineData("/Home/Privacy")]
+    [InlineData("/Performance/Dashboard")]
     public async Task Get_CommonPages_ReturnsSuccess(string path)
     {
         using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
