@@ -13,6 +13,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 - **Turnkey pipelines** – CI keeps the runway green with linting, unit tests, and smoke checks.
 - **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
 - **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
+- **Rate limiting** – IP-based request throttling with configurable limits and informative response headers. See [`docs/configuration.md`](docs/configuration.md#rate-limiting) for details.
 
 ## Getting Started
 
