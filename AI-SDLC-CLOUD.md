@@ -35,7 +35,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 **Chaining mechanism:** `dispatch-workflow` safe output (not labels). Each stage explicitly dispatches the next, eliminating race conditions.
 
-**State tracking:** Each stage posts a structured comment (🏷️ Triage, 📋 Plan, 🚀 Implement, � Review In Progress, 🏗️ Report, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
+**State tracking:** Each stage posts a structured comment (🏷️ Triage, 📋 Plan, 🚀 Implement, ✅ Code Complete, 🔄 Review In Progress, 🏗️ Report, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
 
 ---
 
@@ -45,7 +45,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `issue_comment: [created]` when `rbmathis` comments `/triage` |
+| **Trigger** | `label_command: pipeline/triage-requested` on issues |
 | **Workflow** | `pipeline-triage.md` |
 | **Engine** | Copilot |
 | **Output** | Classification comment, type labels, dispatches Plan |
@@ -127,6 +127,22 @@ The review agent:
 
 > **Why `review_requested`?** The Copilot coding agent creates draft PRs and pushes multiple commits while working. It fires `review_requested` only when finished. Triggering on `opened`/`synchronize` would run review on incomplete code. The `ready_for_review` trigger covers the case where a human marks a draft PR ready.
 
+### Notification: Code Complete
+
+| Attribute | Value |
+| ----------- | ------- |
+| **Trigger** | `pull_request: [ready_for_review, review_requested]` |
+| **Workflow** | `notify-code-complete.yml` (plain YAML, not agentic) |
+| **Engine** | GitHub Actions (no Copilot) |
+| **Output** | "✅ Code Complete" comment on linked issue |
+
+This lightweight workflow bridges the notification gap between Copilot finishing work and the review workflow starting. It:
+
+- Fires instantly on the same PR events as review (no approval gate needed)
+- Extracts the linked issue from the PR body (`Closes #N`)
+- Posts a "Code Complete" comment to the issue within seconds
+- Runs as standard GitHub Actions (not an agentic workflow), so no first-time approval is required
+
 ### Stage 5: Deploy
 
 | Attribute | Value |
@@ -156,7 +172,8 @@ Issue #100: "Add a /health endpoint"
 ├── 🏷️ Pipeline — Triage        (classification, agents needed)
 ├── 📋 Pipeline — Plan           (implementation steps, files, acceptance criteria)
 ├── 🚀 Pipeline — Implement      (agent assignment confirmation)
-├── 🔄 Pipeline — Review In Progress  (code complete, review started — posted by Review)
+├── ✅ Pipeline — Code Complete   (Copilot finished — posted by notify-code-complete.yml)
+├── 🔄 Pipeline — Review In Progress  (multi-agent review started — posted by Review)
 ├── 🏗️ Pipeline — Implementation Report  (changes table, review verdict — posted by Review)
 └── ✅ Pipeline — Complete        (deployment summary, pipeline history)
 ```
@@ -201,9 +218,10 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 
 | File | Purpose | Trigger |
 | ------ | --------- | --------- |
-| `pipeline-triage.md` | Classify and dispatch | `issue_comment: [created]` when `rbmathis` comments `/triage` |
+| `pipeline-triage.md` | Classify and dispatch | `label_command: pipeline/triage-requested` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
+| `notify-code-complete.yml` | Post "Code Complete" to issue | `pull_request: [ready_for_review, review_requested]` |
 | `pipeline-review.md` | Multi-agent code review + issue report | `pull_request: [review_requested, ready_for_review]` |
 | `pipeline-deploy.md` | Verify merge and close issue | `pull_request: [closed]` |
 
@@ -231,17 +249,18 @@ If code review requests changes:
 ## How It Works End-to-End
 
 ```text
-1. Developer opens an issue describing work needed
+1. Developer applies `pipeline/triage-requested` label to an issue
 2. Triage classifies the issue and dispatches Plan            (~2 min)  [automatic]
 3. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
 4. Implement assigns Copilot coding agent                     (~2 min)  [automatic]
 5. Copilot agent writes code, tests, docs, creates PR        (~5-15 min) [automatic]
-6. ⏸️  HUMAN approves the workflow run (first-time gate)                  [manual]
-7. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
-8. Review posts implementation report on linked issue                    [automatic]
-9. ⏸️  HUMAN reviews PR, merges or requests changes                      [manual]
-10. Deploy verifies merge and posts final summary             (~1 min)  [automatic]
-11. ⏸️  HUMAN closes the issue                                           [manual]
+6. notify-code-complete posts "Code Complete" on issue        (~5 sec)  [automatic]
+7. ⏸️  HUMAN approves the review workflow run (first-time gate)           [manual]
+8. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
+9. Review posts implementation report on linked issue                    [automatic]
+10. ⏸️  HUMAN reviews PR, merges or requests changes                     [manual]
+11. Deploy verifies merge and posts final summary             (~1 min)  [automatic]
+12. ⏸️  HUMAN closes the issue                                           [manual]
 ```
 
 **Human touchpoints (3):**
@@ -277,8 +296,9 @@ dotnet run
 ### Triggering the Pipeline
 
 1. Create a new issue with a descriptive title and body
-2. Watch the pipeline stages execute via issue comments
-3. Each stage posts a structured comment as it completes
+2. Apply the `pipeline/triage-requested` label to the issue
+3. Watch the pipeline stages execute via issue comments
+4. Each stage posts a structured comment as it completes
 
 ---
 
