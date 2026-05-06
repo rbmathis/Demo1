@@ -5,7 +5,7 @@ description: "Classifies issues and kicks off the planning stage"
 on:
   issue_comment:
     types: [created]
-  reaction: "eyes"
+    condition: "contains(event.comment.body, '/triage') && event.comment.user.login == 'rbmathis'"
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
