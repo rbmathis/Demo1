@@ -161,7 +161,7 @@ public class HomeController : Controller
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
+            _logger.LogWarning(ex, "Invalid profile field update attempt.");
             TempData["Error"] = ex.Message;
         }
 
