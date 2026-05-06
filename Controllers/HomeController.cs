@@ -128,30 +128,44 @@ public class HomeController : Controller
     // ╚══════════════════════════════════════════════════════════════════════════════╝
 
     /// <summary>
-    /// Profile management demo - now using proper DI and encapsulation.
-    /// The view still shows "anti-pattern" styling for demo purposes.
+    /// Displays the profile management demo with the current profile and profile statistics.
     /// </summary>
+    /// <param name="action">Unused legacy query parameter retained for compatibility.</param>
+    /// <param name="field">Unused legacy query parameter retained for compatibility.</param>
+    /// <param name="value">Unused legacy query parameter retained for compatibility.</param>
+    /// <returns>The GodObjectProfile view.</returns>
     public async Task<IActionResult> GodObjectProfile(string action = "", string field = "", string value = "")
     {
         var profile = await _userProfileService.GetProfileAsync("");
-
-        if (!string.IsNullOrEmpty(action) && action == "update" && !string.IsNullOrEmpty(field))
-        {
-            try
-            {
-                profile = await _userProfileService.UpdateFieldAsync("", field, value);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
-                ViewBag.Error = ex.Message;
-            }
-        }
 
         ViewBag.Profile = profile;
         ViewBag.Stats = _userProfileService.GetStats();
 
         return View();
+    }
+
+    /// <summary>
+    /// Updates a single profile field and redirects back to the profile page.
+    /// </summary>
+    /// <param name="field">The profile field to update.</param>
+    /// <param name="value">The new value for the field.</param>
+    /// <returns>A redirect to <see cref="GodObjectProfile(string, string, string)"/>.</returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GodObjectProfileUpdate(string field, string value)
+    {
+        try
+        {
+            await _userProfileService.UpdateFieldAsync("", field, value);
+            TempData["Success"] = "Profile updated successfully.";
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(GodObjectProfile));
     }
 
     /// <summary>
