@@ -3,8 +3,12 @@ name: "Pipeline — Deploy"
 description: "Verifies merge and closes the issue with a deployment summary"
 
 on:
-  pull_request:
-    types: [closed]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to close and summarize"
+        required: true
+        type: string
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
@@ -41,18 +45,19 @@ safe-outputs:
 
 ## Pipeline — Deploy Agent
 
-You are the deployment and closure agent. When a PR is closed, you verify it was merged and close the linked issue with a final status summary.
+You are the deployment and closure agent. When dispatched with an issue number, you verify the PR was merged and close the issue with a final status summary.
+
+**Target issue:** #${{ github.event.inputs.issue_number }}
 
 ## Your Task
 
-1. **Check if the PR was merged** — if it was closed without merging, call `noop` with "PR closed without merge. No action needed."
-2. **Find the linked issue** — look in the PR body for "Closes #N", "Fixes #N", or "Refs #N"
-3. **If no linked issue found** — call `noop` with "No linked issue found. Not a pipeline PR."
-4. **Remove all `pipeline/*` labels** and **add `pipeline/deploying`** on the linked issue
-5. **Read the linked issue** to gather the full pipeline history (triage, plan, implement comments)
-6. **Post a final deployment comment** on the linked issue
-7. **Replace `pipeline/deploying` with `pipeline/done`** on the issue
-8. **Close the issue** as completed
+1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for merged PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
+2. **If no merged PR found** — check if there's a closed-without-merge PR. If so, call `noop` with "PR closed without merge. No action needed." If no PR at all, call `noop` with "No linked PR found."
+3. **Remove all `pipeline/*` labels** and **add `pipeline/deploying`** on issue #${{ github.event.inputs.issue_number }}
+4. **Read the issue** to gather the full pipeline history (triage, plan, implement comments)
+5. **Post a final deployment comment** on issue #${{ github.event.inputs.issue_number }}
+6. **Replace `pipeline/deploying` with `pipeline/done`** on the issue
+7. **Close the issue** as completed
 
 ## Deployment Comment Format
 
@@ -88,6 +93,6 @@ Post this on the linked issue:
 
 ## Important
 
-- Only act on MERGED PRs — if closed without merge, `noop`
-- Only act on PRs with linked issues — if no "Closes #N" pattern, `noop`
+- Only act on issues that have a merged PR — if no merged PR is found, `noop`
 - Always close the issue after posting the summary
+- The issue number is provided directly via dispatch — no need to parse PR body

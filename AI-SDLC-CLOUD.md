@@ -23,17 +23,24 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 │                                           Copilot creates PR        │
 │                                                         │           │
 │                                                         ▼           │
-│                            ┌──────────┐             ┌──────────┐   │
-│                            │  DEPLOY  │◀────────────│  REVIEW  │   │
-│                            └──────────┘  PR merged  └──────────┘   │
-│                            verifies merge,           multi-agent    │
-│                            posts summary,            code review    │
-│                            closes issue              on PR          │
+│                                                  ┌─────────────┐   │
+│                                                  │ NOTIFY CODE │   │
+│                                                  │  COMPLETE   │   │
+│                                                  └─────────────┘   │
+│                                                  posts comment,     │
+│                                                  dispatches Review  │
+│                                                         │           │
+│                            ┌──────────┐  dispatch       │           │
+│                            │  DEPLOY  │◀────────────┌───▼──────┐   │
+│                            └──────────┘             │  REVIEW  │   │
+│                            verifies merge,          └──────────┘   │
+│                            posts summary,           multi-agent     │
+│                            closes issue             code review     │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Chaining mechanism:** `dispatch-workflow` safe output (not labels). Each stage explicitly dispatches the next, eliminating race conditions.
+**Chaining mechanism:** `dispatch-workflow` safe output (agentic stages) and `workflow_dispatch` API call (notify-code-complete bridge). Each stage explicitly dispatches the next, eliminating race conditions.
 
 **State tracking:** Each stage posts a structured comment (🏷️ Triage, 📋 Plan, 🚀 Implement, ✅ Code Complete, 🔄 Review In Progress, 🏗️ Report, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
 
@@ -106,15 +113,16 @@ The implement agent:
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `pull_request: [review_requested, ready_for_review]` |
+| **Trigger** | `workflow_dispatch` (dispatched by notify-code-complete with `issue_number` input) |
 | **Workflow** | `pipeline-review.md` |
 | **Engine** | Copilot |
 | **Imports** | code-reviewer, security-auditor, testing, docs agents |
-| **Output** | PR review + implementation report on linked issue |
+| **Output** | PR review + implementation report on linked issue, dispatches Deploy |
 
 The review agent:
 
-- **Posts a "Review In Progress" status comment** on the linked issue immediately (confirms code is complete)
+- Finds the PR associated with the given issue number
+- **Posts a "Review In Progress" status comment** on the issue (confirms code is complete)
 - Reads the PR and changed files
 - Delegates to specialist review agents:
   - `security-auditor` — OWASP Top 10, CSRF, XSS, SQL injection
@@ -123,9 +131,8 @@ The review agent:
   - `docs` — XML documentation and docs/ updates
 - Posts inline review comments on specific lines
 - Submits a consolidated review verdict
-- Posts the **Implementation Report** on the linked issue (changes table, review verdict, branch)
-
-> **Why `review_requested`?** The Copilot coding agent creates draft PRs and pushes multiple commits while working. It fires `review_requested` only when finished. Triggering on `opened`/`synchronize` would run review on incomplete code. The `ready_for_review` trigger covers the case where a human marks a draft PR ready.
+- Posts the **Implementation Report** on the issue (changes table, review verdict, branch)
+- Dispatches `pipeline-deploy` with the issue number
 
 ### Notification: Code Complete
 
@@ -134,28 +141,29 @@ The review agent:
 | **Trigger** | `pull_request: [ready_for_review, review_requested]` |
 | **Workflow** | `notify-code-complete.yml` (plain YAML, not agentic) |
 | **Engine** | GitHub Actions (no Copilot) |
-| **Output** | "✅ Code Complete" comment on linked issue |
+| **Output** | "✅ Code Complete" comment on linked issue + dispatches pipeline-review |
 
-This lightweight workflow bridges the notification gap between Copilot finishing work and the review workflow starting. It:
+This lightweight workflow bridges the async gap between Copilot finishing work and the review stage starting. It:
 
-- Fires instantly on the same PR events as review (no approval gate needed)
+- Fires instantly on the same PR events that indicate coding is done
 - Extracts the linked issue from the PR body (`Closes #N`)
 - Posts a "Code Complete" comment to the issue within seconds
+- **Dispatches `pipeline-review`** with the issue number (the implement→review bridge)
 - Runs as standard GitHub Actions (not an agentic workflow), so no first-time approval is required
 
 ### Stage 5: Deploy
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `pull_request: [closed]` |
+| **Trigger** | `workflow_dispatch` (dispatched by Review with `issue_number` input) |
 | **Workflow** | `pipeline-deploy.md` |
 | **Engine** | Copilot |
 | **Output** | Issue closed with deployment summary |
 
 The deploy agent:
 
-- Checks if the PR was merged (noop if closed without merge)
-- Finds the linked issue from "Closes #N" in PR body
+- Finds the merged PR associated with the given issue number
+- If no merged PR found, noops
 - Reads the full pipeline history from issue comments
 - Posts a final deployment summary with complete pipeline history
 - Closes the issue as completed
@@ -221,9 +229,9 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 | `pipeline-triage.md` | Classify and dispatch | `label_command: pipeline/triage-requested` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
-| `notify-code-complete.yml` | Post "Code Complete" to issue | `pull_request: [ready_for_review, review_requested]` |
-| `pipeline-review.md` | Multi-agent code review + issue report | `pull_request: [review_requested, ready_for_review]` |
-| `pipeline-deploy.md` | Verify merge and close issue | `pull_request: [closed]` |
+| `notify-code-complete.yml` | Post "Code Complete" + dispatch review | `pull_request: [ready_for_review, review_requested]` |
+| `pipeline-review.md` | Multi-agent code review + issue report | `workflow_dispatch` (from notify-code-complete) |
+| `pipeline-deploy.md` | Verify merge and close issue | `workflow_dispatch` (from Review) |
 
 All workflows are [GitHub Agentic Workflows](https://github.github.com/gh-aw/) (`.md` source compiled to `.lock.yml`).
 
@@ -242,7 +250,7 @@ If a stage fails:
 If code review requests changes:
 
 - Copilot coding agent pushes fixes to the PR branch
-- `review_requested` event re-triggers the Review workflow when agent finishes fixes
+- `review_requested` event re-triggers `notify-code-complete.yml`, which dispatches Review again
 
 ---
 
@@ -254,22 +262,21 @@ If code review requests changes:
 3. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
 4. Implement assigns Copilot coding agent                     (~2 min)  [automatic]
 5. Copilot agent writes code, tests, docs, creates PR        (~5-15 min) [automatic]
-6. notify-code-complete posts "Code Complete" on issue        (~5 sec)  [automatic]
+6. notify-code-complete posts comment + dispatches Review     (~5 sec)  [automatic]
 7. ⏸️  HUMAN approves the review workflow run (first-time gate)           [manual]
 8. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
 9. Review posts implementation report on linked issue                    [automatic]
-10. ⏸️  HUMAN reviews PR, merges or requests changes                     [manual]
-11. Deploy verifies merge and posts final summary             (~1 min)  [automatic]
-12. ⏸️  HUMAN closes the issue                                           [manual]
+10. Review dispatches Deploy                                             [automatic]
+11. ⏸️  HUMAN merges PR (Deploy verifies merge before acting)            [manual]
+12. Deploy verifies merge, posts final summary, closes issue  (~1 min)  [automatic]
 ```
 
-**Human touchpoints (3):**
+**Human touchpoints (2):**
 
 1. Approve the review workflow run (one-time per new workflow)
 2. Merge the PR after reviewing the code and the agent's review
-3. Close the issue after confirming the fix is deployed
 
-Everything else is fully autonomous.
+Everything else — including issue closure — is fully autonomous.
 
 ---
 
