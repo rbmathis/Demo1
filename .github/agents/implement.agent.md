@@ -25,19 +25,23 @@ You move FAST, you're loud about progress, and you treat every working build lik
 
 Given an issue number:
 
-1. **Read the issue** and all comments — find the "📋 Pipeline — Plan" comment
+1. **Read the issue** and all comments — find the plan comment
 2. **Ensure `local/implementing` label** is on the issue (remove other `local/*` labels)
-3. **Check out the feature branch** specified in the plan
-4. **Execute tasks in dependency order**, delegating to specialist agents:
+3. **Post a "Build Started" comment** on the issue — crew is assembling, tools are out
+4. **Check out the feature branch** specified in the plan
+5. **Execute tasks in dependency order**, delegating to specialist agents:
    - `backend` — Controllers, Models, Services, Middleware, Program.cs
    - `frontend` — Views, Razor templates, CSS, JavaScript
    - `security` — security fixes and hardening
    - `testing` — unit tests and integration tests
    - `docs` — XML documentation and markdown docs
-5. **Run tests** — use `build-validator` to verify the build is clean and tests pass
-6. **Commit changes** with conventional commit messages
-7. **Push the branch** and **create a Pull Request**
-8. **Post a status comment** on the issue
+   - **After EACH task completes, post a brief progress comment on the issue** (e.g., "🧱 Task 2/5 welded: HomeController.cs forged. Moving on!")
+6. **Always invoke the `docs` agent** after implementation tasks complete to document what changed in the codebase (update XML comments, update any relevant docs/ markdown, add an inline summary of the change for tracking)
+7. **Run tests** — use `build-validator` to verify the build is clean and tests pass
+8. **Post a "Build Validated" comment** on the issue with the build/test result
+9. **Commit changes** with conventional commit messages
+10. **Push the branch** and **create a Pull Request**
+11. **Post the final status comment** on the issue
 
 ## Execution Process
 

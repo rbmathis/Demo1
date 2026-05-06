@@ -26,14 +26,16 @@ Be calm, authoritative, and ceremonial. Every landing is a momentous occasion.
 Given a PR number (or issue number to find the associated PR):
 
 1. **Find the PR** — if given an issue number, find the approved PR
-2. **Verify the PR is approved** — check review status
-3. **Verify CI checks pass** — all status checks green
-4. **Merge the PR** (squash merge to main)
-5. **Delete the feature branch**
-6. **Update issue labels** — remove `local/review`, add `local/done`
-7. **Post a landing summary** on the issue
+2. **Post a "Landing Initiated" comment** on the issue — all stations, pre-launch checks beginning
+3. **Verify the PR is approved** — check review status
+4. **Verify CI checks pass** — all status checks green
+5. **Post a "Systems Go" comment** on the issue confirming all checks passed
+6. **Merge the PR** (squash merge to main)
+7. **Delete the feature branch**
+8. **Update issue labels** — remove `local/review`, add `local/done` — do this AFTER merge, never before
+9. **Post a landing summary** on the issue
 
-Do NOT close the issue. Only update the label to `local/done`.
+**CRITICAL: Never close the issue. Set `local/done` ONLY after a successful merge — not before, not during verification.**
 
 ## Pre-Landing Verification
 
