@@ -17,6 +17,7 @@ builder.Services.AddSingleton<ISearchService, InMemorySearchService>();
 builder.Services.AddSingleton<IWeatherService, MockWeatherService>();
 builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>();
 builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
+builder.Services.AddSingleton<IUptimeService, UptimeService>();
 
 // ✅ 12-FACTOR: Configure distributed cache based on environment
 var cacheProvider = builder.Configuration["CacheProvider"] ?? "Memory";
@@ -160,8 +161,8 @@ if (azureAppConfigRegistered)
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapHealthChecks("/health");
 app.MapHealthChecks("/health/ready");
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
