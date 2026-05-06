@@ -1,6 +1,6 @@
 # AI-Driven Software Development Lifecycle — Local Mode (AI-SDLC-LOCAL)
 
-A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot CLI (`copilot` command) and VS Code Copilot Chat. Issues flow from intake to deployment with minimal human intervention. The local agents use `local/*` labels to track progress — completely isolated from the cloud `pipeline/*` labels that trigger GitHub Actions workflows.
+A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot CLI (`copilot` command) and VS Code Copilot Chat. Issues flow from intake to landed PR with minimal human intervention. The local agents use `local/*` labels to track progress — completely isolated from the cloud `pipeline/*` labels that trigger GitHub Actions workflows.
 
 ---
 
@@ -22,10 +22,10 @@ A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot C
 │                                                         │           │
 │                                                         ▼           │
 │                            ┌──────────┐             ┌──────────┐   │
-│                            │  DEPLOY  │◀────────────│  REVIEW  │   │
+│                            │   LAND   │◀────────────│  REVIEW  │   │
 │                            └──────────┘  approved   └──────────┘   │
 │                            squash merges,            multi-agent    │
-│                            closes issue              code review    │
+│                            updates label             code review    │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -53,7 +53,7 @@ copilot "@pipeline run issue 135"
 ```
 
 The **`@pipeline` agent** is the single entry point. It auto-chains all 5 stages in order:
-triage → plan → implement → review → deploy.
+triage → plan → implement → review → land.
 
 You don't need to invoke `@triage` directly — `@pipeline` handles everything.
 
@@ -66,7 +66,7 @@ copilot "@triage triage issue 135"      # classify only
 copilot "@plan plan issue 135"          # plan only (reads triage comment)
 copilot "@implement implement issue 135" # implement only (reads plan comment)
 copilot "@review review PR 142"          # review a specific PR
-copilot "@deploy deploy PR 142"          # merge and close
+copilot "@land land PR 142"              # merge to main
 ```
 
 This is rarely needed — the pipeline controller handles sequencing, retries, and error reporting automatically.
@@ -164,22 +164,23 @@ The review agent:
 
 **If changes requested:** The pipeline controller can loop back to implement (max 2 cycles).
 
-### Stage 5: Deploy
+### Stage 5: Land
 
 | Attribute | Value |
 |-----------|-------|
-| **Agent** | `deploy` |
-| **Tools** | read, search, execute, github, web |
+| **Agent** | `land` |
+| **Tools** | read, search, execute, github |
 | **Label** | `local/review` → `local/done` |
-| **Output** | PR merged, issue closed |
+| **Output** | PR merged, label updated |
 
-The deploy agent:
+The land agent:
 - Verifies PR is approved and CI checks pass
 - Squash merges to main
 - Deletes the feature branch
 - Updates label to `local/done`
-- Posts deployment summary on the issue
-- Closes the issue as completed
+- Posts landing summary on the issue
+
+Does NOT close the issue — only updates the label.
 
 ---
 
@@ -193,7 +194,7 @@ Local agents use `local/*` labels to avoid triggering GitHub Actions workflows:
 | `local/planning` | Plan in progress | Triage → Plan |
 | `local/implementing` | Code being written | Plan → Implement |
 | `local/review` | PR under review | Review |
-| `local/done` | Pipeline complete | Deploy |
+| `local/done` | Pipeline complete | Land |
 
 The cloud pipeline uses `pipeline/triage-requested` as its trigger — completely separate namespace.
 
@@ -210,7 +211,7 @@ The cloud pipeline uses `pipeline/triage-requested` as its trigger — completel
 | `plan` | `plan.agent.md` | Creates implementation plans |
 | `implement` | `implement.agent.md` | Writes code via specialists |
 | `review` | `review.agent.md` | Multi-dimensional code review |
-| `deploy` | `deploy.agent.md` | Merges and closes |
+| `land` | `land.agent.md` | Merges to main |
 
 ### Specialist Agents (delegated work)
 
@@ -239,7 +240,7 @@ Issue #135: "Add user preferences endpoint"
 ├── 📋 Pipeline — Plan                  (file-level tasks, branch name)
 ├── 🔨 Pipeline — Implement             (PR link, commits summary)
 ├── 🔍 Pipeline — Review                (verdict, findings)
-└── 🚀 Pipeline — Deploy                (merge confirmation, summary)
+└── 🚀 Pipeline — Land                  (merge confirmation, summary)
 ```
 
 ---
@@ -290,7 +291,7 @@ If code review requests changes:
 4. Plan researches codebase and posts plan                 (~1-2 min)
 5. Implement writes code, tests, docs, creates PR         (~3-8 min)
 6. Review runs multi-agent code review                     (~1-2 min)
-7. Deploy merges PR and closes issue                       (~30s)
+7. Land merges PR and updates label                       (~30s)
 ```
 
-**Human touchpoints (1):** Optionally review the PR before the deploy stage merges it. The pipeline can run fully autonomous if desired.
+**Human touchpoints (1):** Optionally review the PR before the land stage merges it. The pipeline can run fully autonomous if desired.
