@@ -81,7 +81,7 @@ After all tasks:
 ### Create PR
 
 - **Title:** Issue title
-- **Body:** Summary + `Closes #{issue-number}`
+- **Body:** Summary + `Refs #{issue-number}` (NOT `Closes` — the pipeline controller manages issue closure)
 - **Labels:** From issue classification
 
 ## Status Comment Format
@@ -116,7 +116,7 @@ We forged {N} pieces across {M} specialist crews. Every weld is solid:
 
 **PR #{number}:** {title}
 **Branch:** `{branch}` → `main`
-**Closes:** #{issue-number}
+**Refs:** #{issue-number}
 
 ---
 *Wrapped, labeled, and ready for inspection! Sending it over to the critics now.* ⚡🔨
