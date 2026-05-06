@@ -18,7 +18,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 
 ### Prerequisites
 
-- .NET 10 SDK (pinned via `global.json` to 10.0.203 with `latestFeature` roll-forward)
+- .NET 10 SDK or later
 - Visual Studio Code with C# Dev Kit extension
 
 ### Running the Application
