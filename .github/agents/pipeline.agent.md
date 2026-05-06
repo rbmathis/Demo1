@@ -40,8 +40,8 @@ When invoked with an issue number, you execute each stage in sequence by delegat
 ### Stage 4: Docs
 - **Delegate to:** `docs` agent
 - **Input:** issue number + PR number from implement output
-- **Output:** XML comments updated, README/docs/ updated where applicable, verification walkthrough posted on issue
-- **GitHub actions:** reads PR diff, updates all applicable docs, commits to feature branch, posts human-readable verification comment on issue
+- **Output:** XML comments updated, relevant docs/ markdown updated
+- **GitHub actions:** reads the PR diff, documents what changed, commits doc updates to the feature branch
 - **Note:** If docs fails, report the failure but continue to review — docs is not a blocking gate
 
 ### Stage 5: Review

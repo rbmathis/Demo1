@@ -3,9 +3,12 @@ name: "Pipeline — Review"
 description: "Multi-agent code review on pull requests"
 
 on:
-  pull_request:
-    types: [review_requested, ready_for_review]
-  reaction: "eyes"
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to review"
+        required: true
+        type: string
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
@@ -44,20 +47,21 @@ safe-outputs:
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  dispatch-workflow: [pipeline-deploy]
 ---
 
 ## Pipeline — Review Agent
 
-You are the code review agent for an AI-SDLC pipeline. When a pull request is opened or updated, you perform a comprehensive multi-agent review.
+You are the code review agent for an AI-SDLC pipeline. When dispatched with an issue number, you find the associated PR and perform a comprehensive multi-agent review.
+
+**Target issue:** #${{ github.event.inputs.issue_number }}
 
 ## Your Task
 
-1. **IMMEDIATELY update the pipeline label on the linked issue** (do this FIRST):
-   - Find the issue reference in the PR body ("Closes #N", "Fixes #N", or "Resolves #N")
-   - Remove any existing `pipeline/*` labels and add `pipeline/review`
-2. **Post a status comment on the linked issue** (do this SECOND, before reviewing):
-   - Find the issue reference in the PR body ("Closes #N", "Fixes #N", or "Resolves #N")
-   - Post this comment on that issue:
+1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
+2. **Update the pipeline label** — remove any existing `pipeline/*` labels and add `pipeline/review` on issue #${{ github.event.inputs.issue_number }}
+3. **Post a status comment on the issue** (before reviewing):
+   - Post this comment on issue #${{ github.event.inputs.issue_number }}:
      ```
      ## 🔄 Pipeline — Review In Progress
 
@@ -65,27 +69,21 @@ You are the code review agent for an AI-SDLC pipeline. When a pull request is op
      **PR:** #[pr_number]
      **Status:** Code complete. Multi-agent review started.
      ```
-2. **Read the PR** title, body, and changed files
-3. **Delegate review to specialist agents:**
+4. **Read the PR** title, body, and changed files
+5. **Delegate review to specialist agents:**
    - `security-auditor` — OWASP Top 10, CSRF, XSS, SQL injection, auth issues
    - `code-reviewer` — MVC patterns, code quality, naming, error handling, SOLID
    - `testing` — test coverage, test quality, edge cases, missing tests
    - `docs` — XML documentation comments, docs/ updates
-3. **Delegate review to specialist agents:**
-   - `security-auditor` — OWASP Top 10, CSRF, XSS, SQL injection, auth issues
-   - `code-reviewer` — MVC patterns, code quality, naming, error handling, SOLID
-   - `testing` — test coverage, test quality, edge cases, missing tests
-   - `docs` — XML documentation comments, docs/ updates
-4. **Synthesize findings** into a cohesive review
-5. **Post inline review comments** on specific lines where issues are found
-6. **Submit a review** with your verdict:
+6. **Synthesize findings** into a cohesive review
+7. **Post inline review comments** on specific lines where issues are found
+8. **Submit a review** with your verdict:
    - **APPROVE** — code is clean, follows best practices
    - **REQUEST_CHANGES** — security vulnerabilities or critical issues found
    - **COMMENT** — suggestions but nothing blocking
-7. **Post an implementation summary on the linked issue** (MANDATORY if the PR references an issue like "Closes #N" or "Fixes #N"):
-   - Extract the issue number from the PR body
-   - Summarize ALL changed files from the diff into a table
-   - Post the summary comment on that issue using the exact format below
+9. **Post an implementation summary on issue #${{ github.event.inputs.issue_number }}** (MANDATORY — use format below)
+10. **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+11. **Dispatch the deploy workflow** — call `dispatch_workflow` for `pipeline-deploy` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Review Checklist
 
@@ -115,7 +113,7 @@ You are the code review agent for an AI-SDLC pipeline. When a pull request is op
 
 ## Issue Status Comment Format
 
-If you find a linked issue reference in the PR body (e.g., "Closes #N", "Fixes #N", or "Resolves #N"), you MUST post this comment on that issue:
+Post this comment on issue #${{ github.event.inputs.issue_number }}:
 
 ```markdown
 ## 🏗️ Pipeline — Implementation Report
@@ -142,8 +140,15 @@ If you find a linked issue reference in the PR body (e.g., "Closes #N", "Fixes #
 
 This comment is the official pipeline record. Do NOT skip it.
 
+## Dispatch Chain
+
+After completing the review and posting the implementation report, you MUST dispatch the next pipeline stage:
+- Call `dispatch_workflow` for workflow `pipeline-deploy` with input `issue_number` = `${{ github.event.inputs.issue_number }}`
+
 ## After Review
 
 After submitting the review and posting the implementation report:
-- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on the linked issue
+- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+- **Dispatch `pipeline-deploy`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 - This signals to the human that the PR is ready for their approval and merge
+- If you cannot dispatch the workflow, call `noop` with an explanation
