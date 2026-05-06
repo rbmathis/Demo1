@@ -1,0 +1,226 @@
+@model Demo1.Models.SecurityLabViewModel
+@{
+    ViewData["Title"] = "Security Headers Playground";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1>🛡️ Security Headers Playground</h1>
+            <p class="lead">Toggle security headers on/off and see attacks succeed or fail in real-time.</p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="card-title mb-0">Protection Score</h5>
+                        <small class="text-muted">Based on active security headers</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="progress" style="width: 200px; height: 24px;" role="progressbar" aria-valuenow="@Model.ProtectionScore" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar @(Model.ProtectionScore == 100 ? "bg-success" : Model.ProtectionScore >= 60 ? "bg-warning" : "bg-danger")"
+                                 id="protection-bar" style="width: @(Model.ProtectionScore)%">
+                            </div>
+                        </div>
+                        <span id="protection-score" class="ms-3 fw-bold fs-4">@Model.ProtectionScore%</span>
+                        <button class="btn btn-outline-secondary btn-sm ms-3" id="btn-reset" title="Reset all headers to defaults">
+                            🔄 Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Panel: Controls -->
+        <div class="col-md-5">
+            <!-- Header Toggles -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🔒 Security Headers</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var header in Model.HeaderStates)
+                    {
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input header-toggle" type="checkbox"
+                                   id="toggle-@header.Key.Replace("-", "")"
+                                   data-header="@header.Key"
+                                   @(header.Value ? "checked" : "")>
+                            <label class="form-check-label" for="toggle-@header.Key.Replace("-", "")">
+                                <code>@header.Key</code>
+                                <span class="badge @(header.Value ? "bg-success" : "bg-danger") ms-2 header-badge"
+                                      data-header="@header.Key">
+                                    @(header.Value ? "ON" : "OFF")
+                                </span>
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Attack Buttons -->
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">⚔️ Attack Scenarios</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var scenario in Model.AttackScenarios)
+                    {
+                        <div class="mb-3 p-2 border rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong>@scenario.Name</strong>
+                                <button class="btn btn-danger btn-sm attack-btn" data-type="@scenario.Type">
+                                    🚀 Launch
+                                </button>
+                            </div>
+                            <small class="text-muted d-block">Blocked by: <code>@scenario.AffectedHeader</code></small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Victim iframe + Explanations -->
+        <div class="col-md-7">
+            <!-- Victim Page iframe -->
+            <div class="card mb-3">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">🎯 Victim Page (iframe)</h5>
+                    <button class="btn btn-outline-light btn-sm" id="btn-refresh-iframe">↻ Refresh</button>
+                </div>
+                <div class="card-body p-0">
+                    <iframe id="victim-iframe" src="/SecurityLab/VictimPage"
+                            style="width:100%; height:300px; border:none;"
+                            title="Security Lab Victim Page"></iframe>
+                </div>
+            </div>
+
+            <!-- Attack Result / Explanation -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📖 Defense Explanation</h5>
+                </div>
+                <div class="card-body" id="explanation-panel">
+                    <p class="text-muted mb-0">Launch an attack to see the explanation here. Toggle headers off to see attacks succeed!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function() {
+    // Header toggle handlers
+    document.querySelectorAll('.header-toggle').forEach(toggle => {
+        toggle.addEventListener('change', async function() {
+            const header = this.dataset.header;
+            const enabled = this.checked;
+
+            const response = await fetch('/SecurityLab/Configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ header: header, enabled: enabled })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                updateScore(data.protectionScore);
+                updateBadges(data.headerStates);
+                refreshIframe();
+            }
+        });
+    });
+
+    // Reset button
+    document.getElementById('btn-reset').addEventListener('click', async function() {
+        const response = await fetch('/SecurityLab/Reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            updateScore(data.protectionScore);
+            updateBadges(data.headerStates);
+            // Reset all toggles to checked
+            document.querySelectorAll('.header-toggle').forEach(t => t.checked = true);
+            refreshIframe();
+        }
+    });
+
+    // Attack buttons
+    document.querySelectorAll('.attack-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const type = this.dataset.type;
+            const response = await fetch(`/SecurityLab/Attack?type=${type}`);
+
+            if (response.ok) {
+                const scenario = await response.json();
+                showExplanation(scenario);
+                injectAttack(scenario);
+            }
+        });
+    });
+
+    // Refresh iframe button
+    document.getElementById('btn-refresh-iframe').addEventListener('click', refreshIframe);
+
+    function updateScore(score) {
+        const scoreEl = document.getElementById('protection-score');
+        const barEl = document.getElementById('protection-bar');
+        scoreEl.textContent = score + '%';
+        barEl.style.width = score + '%';
+        barEl.className = 'progress-bar ' + (score === 100 ? 'bg-success' : score >= 60 ? 'bg-warning' : 'bg-danger');
+    }
+
+    function updateBadges(headerStates) {
+        for (const [header, enabled] of Object.entries(headerStates)) {
+            const badge = document.querySelector(`.header-badge[data-header="${header}"]`);
+            if (badge) {
+                badge.textContent = enabled ? 'ON' : 'OFF';
+                badge.className = `badge ${enabled ? 'bg-success' : 'bg-danger'} ms-2 header-badge`;
+                badge.dataset.header = header;
+            }
+        }
+    }
+
+    function refreshIframe() {
+        const iframe = document.getElementById('victim-iframe');
+        iframe.src = '/SecurityLab/VictimPage?' + Date.now();
+    }
+
+    function showExplanation(scenario) {
+        const panel = document.getElementById('explanation-panel');
+        const headerStates = {};
+        document.querySelectorAll('.header-toggle').forEach(t => {
+            headerStates[t.dataset.header] = t.checked;
+        });
+        const isProtected = headerStates[scenario.affectedHeader] !== false;
+
+        panel.innerHTML = `
+            <h6>${scenario.name}</h6>
+            <p><strong>Expected behavior:</strong> ${scenario.expectedBehavior}</p>
+            <p><strong>Mitigation:</strong> ${scenario.mitigationExplanation}</p>
+            <p><strong>Header:</strong> <code>${scenario.affectedHeader}</code></p>
+            <div class="alert ${isProtected ? 'alert-success' : 'alert-danger'}">
+                ${isProtected
+                    ? '✅ <strong>PROTECTED</strong> — The header is active, this attack should be blocked.'
+                    : '❌ <strong>VULNERABLE</strong> — The header is disabled, this attack may succeed!'}
+            </div>
+        `;
+    }
+
+    function injectAttack(scenario) {
+        const iframe = document.getElementById('victim-iframe');
+        // Refresh the iframe to apply attack with current headers
+        iframe.src = '/SecurityLab/VictimPage?attack=' + encodeURIComponent(scenario.type) + '&t=' + Date.now();
+    }
+})();
+</script>
+}

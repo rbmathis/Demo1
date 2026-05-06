@@ -13,6 +13,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
 
 // ✅ 12-FACTOR: Register application services via dependency injection
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ISecurityLabService, SecurityLabService>();
 builder.Services.AddSingleton<ISearchService, InMemorySearchService>();
 builder.Services.AddSingleton<IWeatherService, MockWeatherService>();
 builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>();
@@ -148,6 +150,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<ServerTimingMiddleware>();
 app.UseSecurityHeaders();
+app.UseSecurityLabHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
 

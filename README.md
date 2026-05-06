@@ -101,6 +101,7 @@ The debugger will launch the application and open it in your default browser.
 - Configuration: [`docs/configuration.md`](docs/configuration.md)
 - Testing guidelines: [`docs/testing.md`](docs/testing.md)
 - CI/CD pipeline: [`docs/ci-cd.md`](docs/ci-cd.md)
+- Security Headers Playground: [`docs/security-lab.md`](docs/security-lab.md) — interactive lab for toggling HTTP security headers and observing attack behaviors
 
 ### XML Documentation
 

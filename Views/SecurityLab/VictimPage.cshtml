@@ -1,0 +1,38 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Victim Page - Security Lab</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; margin: 0; background: #f8f9fa; }
+        .victim-content { max-width: 600px; margin: 0 auto; }
+        .status-bar { background: #e9ecef; padding: 8px 12px; border-radius: 4px; margin-bottom: 16px; font-size: 0.85rem; }
+        .action-area { background: white; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6; }
+        .btn-victim { background: #0d6efd; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        .btn-victim:hover { background: #0b5ed7; }
+        #xss-result { margin-top: 12px; padding: 8px; background: #d4edda; border-radius: 4px; min-height: 24px; }
+        .safe-content { color: #198754; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="victim-content">
+        <div class="status-bar">
+            🎯 <strong>Victim Page</strong> — This page receives the security headers configured in the lab.
+        </div>
+        <div class="action-area">
+            <h4>Sensitive Action Area</h4>
+            <p>This simulates a page with sensitive actions (like a bank transfer button).</p>
+            <button class="btn-victim" onclick="document.getElementById('xss-result').innerText='Button clicked! (legitimate action)'">
+                💸 Transfer Funds
+            </button>
+            <div id="xss-result">
+                <span class="safe-content">✅ No XSS detected — page is clean.</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
