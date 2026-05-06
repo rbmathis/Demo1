@@ -130,9 +130,15 @@ public class HomeController : Controller
     /// <summary>
     /// Displays the profile management demo with the current profile and profile statistics.
     /// </summary>
-    /// <param name="action">Unused legacy query parameter retained for compatibility.</param>
-    /// <param name="field">Unused legacy query parameter retained for compatibility.</param>
-    /// <param name="value">Unused legacy query parameter retained for compatibility.</param>
+    /// <remarks>
+    /// The legacy GET query parameters remain in the action signature so older links, bookmarks, and
+    /// query-string-based requests continue to resolve safely after the CSRF fix moved profile updates
+    /// to the POST-only <see cref="GodObjectProfileUpdate(string, string)"/> action. These values are
+    /// intentionally ignored.
+    /// </remarks>
+    /// <param name="action">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
+    /// <param name="field">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
+    /// <param name="value">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
     /// <returns>The GodObjectProfile view.</returns>
     public async Task<IActionResult> GodObjectProfile(string action = "", string field = "", string value = "")
     {
