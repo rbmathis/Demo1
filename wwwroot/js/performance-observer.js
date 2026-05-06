@@ -246,6 +246,21 @@
         } catch (e) { /* FID not supported */ }
     }
 
+    // Collect TTFB from Navigation Timing API
+    function collectTTFB() {
+        try {
+            var navEntries = performance.getEntriesByType('navigation');
+            if (navEntries && navEntries.length > 0) {
+                var navEntry = navEntries[0];
+                var ttfb = navEntry.responseStart - navEntry.requestStart;
+                if (ttfb >= 0) {
+                    reportMetric('TTFB', ttfb, 'ms');
+                    updateStatus('TTFB', ttfb);
+                }
+            }
+        } catch (e) { /* Navigation Timing not supported */ }
+    }
+
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -256,6 +271,8 @@
     function init() {
         initCharts();
         observeWebVitals();
+        // Collect TTFB after current synchronous stack clears so navigation entry is finalized
+        setTimeout(collectTTFB, 0);
         fetchHistory();
         // Refresh chart data periodically
         setInterval(fetchHistory, 30000);
