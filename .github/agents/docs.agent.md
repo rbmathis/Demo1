@@ -24,9 +24,70 @@ This agent specializes in documentation for ASP.NET Core applications, handling:
 - **Architecture diagrams** using Mermaid
 - **Code examples** and usage guides
 
-## When Invoked
+## When Invoked via Pipeline (Stage 4)
 
-1. Check for XML documentation comments on public APIs (excluding test files)
+When called by the `pipeline` controller after `implement` completes, you have a specific job that goes beyond XML comments. Do all of the following:
+
+### 1. Read the PR diff
+Understand exactly what changed: which files, what was added/removed, what the feature does.
+
+### 2. Update all applicable documentation
+- **XML documentation comments** on any new or modified public APIs in production code
+- **README.md** — if the change adds a feature, endpoint, config option, or changes how to run/use the app, update README
+- **`docs/`** — update any relevant markdown files (architecture, configuration, swagger, health-endpoint, etc.). If nothing applies, note it.
+- **`docs/issues-backlog.md`** — if this issue was tracked there, mark it done
+- Commit all doc changes to the feature branch with a snarky `docs(scope):` commit message
+
+### 3. Post a verification walkthrough comment on the issue
+
+This is the most important output. After all doc updates are committed, post a comment on the issue that a human can use to verify the work is done and the issue can be closed. It must include:
+
+- A plain-English summary of what was built/changed
+- A step-by-step "How to verify" section — something a non-developer or QA person can follow: start the app, navigate to a URL, click a thing, see a result
+- Any relevant config or setup needed before verifying
+- What "pass" looks like (what they should see/get)
+
+**Comment format:**
+
+```markdown
+## 📚 Docs & Verification — Issue #{number}
+
+*[UTC time]*
+
+### What Was Built
+
+[Plain-English summary of the feature/fix — 2-4 sentences, no jargon]
+
+### Documentation Updated
+
+| File | What Changed |
+|------|--------------|
+| `Controllers/FooController.cs` | Added XML comments to public actions |
+| `README.md` | Added section on new endpoint |
+| `docs/architecture.md` | Updated diagram |
+
+### ✅ How to Verify
+
+Follow these steps to confirm the issue is resolved:
+
+1. **Start the app:** `dotnet run` (or press F5 in VS)
+2. **Navigate to:** `https://localhost:{port}/path`
+3. **Do:** [specific action — click button, submit form, call endpoint]
+4. **Expected result:** [exactly what they should see/get]
+5. _(repeat for each acceptance criterion)_
+
+### Pass Criteria
+
+- [ ] [Specific observable outcome 1]
+- [ ] [Specific observable outcome 2]
+
+---
+*Docs updated. Ready for human review.* 📚
+```
+
+**CRITICAL:** Do NOT use a generic heading. Always use `## 📚 Docs & Verification — Issue #{number}`. Write the verification steps for a human, not a test runner.
+
+## When Invoked Standalone
 2. Verify README completeness and setup clarity
 3. Suggest missing documentation sections
 4. Generate XML comments for selected code

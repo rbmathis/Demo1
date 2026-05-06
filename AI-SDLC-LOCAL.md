@@ -21,6 +21,14 @@ A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot C
 │   adds local/triage        creates branch            creates PR     │
 │                                                         │           │
 │                                                         ▼           │
+│                                                      ┌──────────┐  │
+│                                                      │   DOCS   │  │
+│                                                      └──────────┘  │
+│                                                      updates XML    │
+│                                                      comments and   │
+│                                                      docs/ markdown │
+│                                                         │           │
+│                                                         ▼           │
 │                            ┌──────────┐             ┌──────────┐   │
 │                            │   LAND   │◀────────────│  REVIEW  │   │
 │                            └──────────┘  approved   └──────────┘   │
@@ -52,8 +60,8 @@ copilot "@pipeline run issue 135"
 @pipeline run issue 135
 ```
 
-The **`@pipeline` agent** is the single entry point. It auto-chains all 5 stages in order:
-triage → plan → implement → review → land.
+The **`@pipeline` agent** is the single entry point. It auto-chains all 6 stages in order:
+triage → plan → implement → docs → review → land.
 
 You don't need to invoke `@triage` directly — `@pipeline` handles everything.
 
@@ -62,9 +70,10 @@ You don't need to invoke `@triage` directly — `@pipeline` handles everything.
 If you need to re-run or skip to a specific stage (e.g., after a failure):
 
 ```bash
-copilot "@triage triage issue 135"      # classify only
-copilot "@plan plan issue 135"          # plan only (reads triage comment)
+copilot "@triage triage issue 135"       # classify only
+copilot "@plan plan issue 135"           # plan only (reads triage comment)
 copilot "@implement implement issue 135" # implement only (reads plan comment)
+copilot "@docs document issue 135"       # document changes (reads PR diff)
 copilot "@review review PR 142"          # review a specific PR
 copilot "@land land PR 142"              # merge to main
 ```
@@ -121,7 +130,7 @@ The plan agent:
 |-----------|-------|
 | **Agent** | `implement` |
 | **Tools** | read, edit, search, execute, github, agent, todos |
-| **Sub-agents** | backend, frontend, security, testing, docs, devops, build-validator |
+| **Sub-agents** | backend, frontend, security, testing, build-validator |
 | **Label** | `local/implementing` (no change until PR created) |
 | **Output** | Code committed, PR opened |
 
@@ -133,14 +142,32 @@ The implement agent:
   - `frontend` — Views, Razor, CSS, JavaScript
   - `security` — security hardening
   - `testing` — unit + integration tests
-  - `docs` — documentation
 - Validates build: `dotnet build --configuration Release`
 - Runs tests: `dotnet test tests/Demo1.UnitTests`
-- Commits with conventional commit messages
+- Commits with snarky conventional commit messages
 - Creates a Pull Request referencing the issue
 - Posts a status comment on the issue
 
-### Stage 4: Review
+### Stage 4: Docs
+
+| Attribute | Value |
+|-----------|-------|
+| **Agent** | `docs` |
+| **Tools** | read, edit, search, github |
+| **Sub-agents** | _(none)_ |
+| **Label** | no change |
+| **Output** | XML comments updated, docs/ markdown updated |
+
+The docs agent (called by the pipeline controller, not implement):
+- Reads the PR diff to understand what changed
+- Updates XML documentation comments on any new or modified public APIs
+- Adds or updates relevant entries in `docs/` markdown
+- Commits doc updates to the feature branch
+- Posts a summary comment on the issue
+
+> **Non-blocking:** If docs fails, the pipeline continues to review. Documentation is not a quality gate.
+
+### Stage 5: Review
 
 | Attribute | Value |
 |-----------|-------|
@@ -164,7 +191,7 @@ The review agent:
 
 **If changes requested:** The pipeline controller can loop back to implement (max 2 cycles).
 
-### Stage 5: Land
+### Stage 6: Land
 
 | Attribute | Value |
 |-----------|-------|
