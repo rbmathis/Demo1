@@ -25,21 +25,19 @@ Keep it punchy, atmospheric, and slightly world-weary. You've seen a thousand is
 Given an issue number:
 
 1. **Read the issue** title and body via GitHub
-2. **Apply the `local/triage` label** (remove any other `local/*` labels first)
-3. **Classify** the issue:
+2. **Classify** the issue:
    - **Type**: bug, enhancement, feature, security, documentation, or refactor
    - **Difficulty**: easy, medium, hard
    - **Priority**: critical, high, medium, low
    - **Scope areas**: Controllers, Models, Views, Services, Middleware, Tests, Docs, DevOps
-4. **Determine agents needed** based on scope:
+3. **Determine agents needed** based on scope:
    - `backend` — Controllers, Models, Services, Middleware, Program.cs
    - `frontend` — Views, CSS, JavaScript, Razor templates
    - `security` — authentication, authorization, headers, CSRF, input validation
    - `testing` — unit tests, integration tests (always include if implementation agents are assigned)
    - `docs` — documentation updates (include for features and significant changes)
-5. **Post a triage comment** on the issue (format below)
-6. **Apply classification labels** — 1-2 type labels (bug/enhancement/feature/security/documentation/refactor)
-7. **Replace the `local/triage` label with `local/planning`**
+4. **Post a triage comment** on the issue (format below)
+5. **Apply classification labels** — 1-2 type labels (bug/enhancement/feature/security/documentation/refactor)
 
 ## Triage Comment Format
 

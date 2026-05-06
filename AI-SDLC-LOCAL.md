@@ -90,17 +90,15 @@ This is rarely needed — the pipeline controller handles sequencing, retries, a
 |-----------|-------|
 | **Agent** | `triage` |
 | **Tools** | read, search, github |
-| **Label** | `local/triage` → `local/planning` |
+| **Label** | `local/triage` |
 | **Output** | Classification comment, type labels |
 
 The triage agent:
 - Reads the issue title and body via GitHub API
-- Applies `local/triage` label (removes other `local/*` labels)
 - Classifies by type, difficulty, priority, and scope
 - Determines which specialist agents are needed
 - Posts a structured triage comment
 - Applies classification labels (bug, enhancement, feature, etc.)
-- Replaces `local/triage` with `local/planning`
 
 ### Stage 2: Plan
 
@@ -109,7 +107,7 @@ The triage agent:
 | **Agent** | `plan` |
 | **Tools** | read, search, github, agent |
 | **Sub-agents** | backend, frontend, security, devops |
-| **Label** | `local/planning` → `local/implementing` |
+| **Label** | `local/planning` |
 | **Output** | Detailed plan comment, feature branch created |
 
 The plan agent:
@@ -122,7 +120,6 @@ The plan agent:
   - Acceptance criteria
 - Creates the feature branch from main
 - Posts the plan as a structured comment
-- Replaces `local/planning` with `local/implementing`
 
 ### Stage 3: Implement
 
@@ -155,7 +152,7 @@ The implement agent:
 | **Agent** | `docs` |
 | **Tools** | read, edit, search, github |
 | **Sub-agents** | _(none)_ |
-| **Label** | no change |
+| **Label** | `local/docs` |
 | **Output** | XML comments updated, docs/ markdown updated |
 
 The docs agent (called by the pipeline controller, not implement):
@@ -174,12 +171,11 @@ The docs agent (called by the pipeline controller, not implement):
 | **Agent** | `review` |
 | **Tools** | read, search, github, agent |
 | **Sub-agents** | security-auditor, code-reviewer, build-validator |
-| **Label** | `local/implementing` → `local/review` |
+| **Label** | `local/review` |
 | **Output** | PR review posted |
 
 The review agent:
 - Finds the PR (from issue number or PR number)
-- Updates label to `local/review`
 - Reads the PR diff and all changed files
 - Delegates review dimensions:
   - `security-auditor` — OWASP, CSRF, XSS, injection
@@ -197,31 +193,32 @@ The review agent:
 |-----------|-------|
 | **Agent** | `land` |
 | **Tools** | read, search, execute, github |
-| **Label** | `local/review` → `local/done` |
+| **Label** | `local/landing` |
 | **Output** | PR merged, label updated |
 
 The land agent:
 - Verifies PR is approved and CI checks pass
 - Squash merges to main
 - Deletes the feature branch
-- Updates label to `local/done`
 - Posts landing summary on the issue
 
-Does NOT close the issue — only updates the label.
+Does NOT close the issue — the pipeline controller manages final status.
 
 ---
 
 ## Labels (Local vs Cloud)
 
-Local agents use `local/*` labels to avoid triggering GitHub Actions workflows:
+The **pipeline controller** manages all `local/*` label transitions — stage agents do not set labels:
 
-| Label | Stage | Applied By |
-|-------|-------|------------|
-| `local/triage` | Being classified | Triage |
-| `local/planning` | Plan in progress | Triage → Plan |
-| `local/implementing` | Code being written | Plan → Implement |
-| `local/review` | PR under review | Review |
-| `local/done` | Pipeline complete | Land |
+| Label | Stage | Set By Pipeline Before |
+|-------|-------|------------------------|
+| `local/triage` | Being classified | Triage delegation |
+| `local/planning` | Plan in progress | Plan delegation |
+| `local/implementing` | Code being written | Implement delegation |
+| `local/docs` | Documentation update | Docs delegation |
+| `local/review` | PR under review | Review delegation |
+| `local/landing` | Merging to main | Land delegation |
+| `local/done` | Pipeline complete | After Land succeeds |
 
 The cloud pipeline uses `pipeline/triage-requested` as its trigger — completely separate namespace.
 

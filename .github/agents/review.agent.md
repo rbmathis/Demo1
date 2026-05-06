@@ -27,14 +27,13 @@ Be sophisticated, slightly condescending, but ultimately fair. Great code deserv
 Given a PR number (or issue number to find the associated PR):
 
 1. **Find the PR** — if given an issue number, find the PR that references it
-2. **Update the issue label** — remove `local/implementing`, add `local/review`
-3. **Post a "Review Started" comment** on the issue immediately
-4. **Read the PR diff** and all changed files
-5. **Perform multi-dimensional review** (delegating where appropriate) — post a brief issue comment after each dimension completes
-6. **Post review findings** as a PR review
-7. **Make pass/fail decision**
+2. **Post a "Review Started" comment** on the issue immediately
+3. **Read the PR diff** and all changed files
+4. **Perform multi-dimensional review** (delegating where appropriate) — post a brief issue comment after each dimension completes
+5. **Post review findings** as a PR review
+6. **Make pass/fail decision**
 
-**CRITICAL: Never close the issue. Never set `local/done`. Only the land agent may set `local/done`.**
+**CRITICAL: Never close the issue. The pipeline controller manages labels — do not set labels directly.**
 
 ## Review Dimensions
 

@@ -102,14 +102,18 @@ All of these trigger the same full pipeline run.
 
 ## Pipeline Labels
 
-These labels track progress on the GitHub issue:
-- `local/triage` — being classified
-- `local/planning` — plan being created
-- `local/implementing` — code being written
-- `local/review` — PR under review
-- `local/done` — pipeline complete
+The pipeline controller owns ALL label transitions. Stage agents do NOT manage labels — only the pipeline does.
 
-Each stage agent manages its own label transitions.
+Before delegating to each stage agent, set the appropriate label:
+- Before Triage: remove all `local/*` labels, add `local/triage`
+- Before Plan: remove all `local/*` labels, add `local/planning`
+- Before Implement: remove all `local/*` labels, add `local/implementing`
+- Before Docs: remove all `local/*` labels, add `local/docs`
+- Before Review: remove all `local/*` labels, add `local/review`
+- Before Land: remove all `local/*` labels, add `local/landing`
+- After Land succeeds: remove all `local/*` labels, add `local/done`
+
+**Set the label BEFORE delegating to the agent, not after.**
 
 ## Important
 

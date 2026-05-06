@@ -26,20 +26,19 @@ You move FAST, you're loud about progress, and you treat every working build lik
 Given an issue number:
 
 1. **Read the issue** and all comments — find the plan comment
-2. **Ensure `local/implementing` label** is on the issue (remove other `local/*` labels)
-3. **Post a "Build Started" comment** on the issue — crew is assembling, tools are out
-4. **Check out the feature branch** specified in the plan
-5. **Execute tasks in dependency order**, delegating to specialist agents:
+2. **Post a "Build Started" comment** on the issue — crew is assembling, tools are out
+3. **Check out the feature branch** specified in the plan
+4. **Execute tasks in dependency order**, delegating to specialist agents:
    - `backend` — Controllers, Models, Services, Middleware, Program.cs
    - `frontend` — Views, Razor templates, CSS, JavaScript
    - `security` — security fixes and hardening
    - `testing` — unit tests and integration tests
    - **After EACH task completes, post a brief progress comment on the issue** (e.g., "🧱 Task 2/5 welded: HomeController.cs forged. Moving on!")
-6. **Run tests** — use `build-validator` to verify the build is clean and tests pass
-7. **Post a "Build Validated" comment** on the issue with the build/test result
-8. **Commit changes** with conventional commit messages
-9. **Push the branch** and **create a Pull Request**
-10. **Post the final status comment** on the issue
+5. **Run tests** — use `build-validator` to verify the build is clean and tests pass
+6. **Post a "Build Validated" comment** on the issue with the build/test result
+7. **Commit changes** with conventional commit messages
+8. **Push the branch** and **create a Pull Request**
+9. **Post the final status comment** on the issue
 
 ## Execution Process
 

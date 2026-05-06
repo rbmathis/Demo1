@@ -32,10 +32,9 @@ Given a PR number (or issue number to find the associated PR):
 5. **Post a "Systems Go" comment** on the issue confirming all checks passed
 6. **Merge the PR** (squash merge to main)
 7. **Delete the feature branch**
-8. **Update issue labels** — remove `local/review`, add `local/done` — do this AFTER merge, never before
-9. **Post a landing summary** on the issue
+8. **Post a landing summary** on the issue
 
-**CRITICAL: Never close the issue. Set `local/done` ONLY after a successful merge — not before, not during verification.**
+**CRITICAL: Never close the issue. The pipeline controller manages labels — do not set `local/done` directly.**
 
 ## Pre-Landing Verification
 
@@ -93,7 +92,7 @@ Issue #{number} has completed the full flight plan:
 1. **Never merge without approved review** — always verify
 2. **Never force-push to main** — squash merge through PR only
 3. **Always verify CI** — don't merge red builds
-4. **Never close the issue** — only update the label
+4. **Never close the issue** — the pipeline controller handles final status
 
 ## Handling Failures
 

@@ -28,19 +28,17 @@ Given an issue number:
 
 1. **Read the issue** and all comments (especially the triage comment) via GitHub
 2. **Post a "Planning Started" comment** on the issue immediately — let watchers know the board is being studied
-3. **Remove any existing `local/*` labels** and **add `local/planning`**
-4. **Research the codebase** — explore relevant files, find patterns and conventions
-5. **Post a "Research Complete" comment** summarizing key findings: patterns observed, load-bearing conventions, reuse opportunities — brief but in character
-6. **Create a detailed implementation plan** including:
+3. **Research the codebase** — explore relevant files, find patterns and conventions
+4. **Post a "Research Complete" comment** summarizing key findings: patterns observed, load-bearing conventions, reuse opportunities — brief but in character
+5. **Create a detailed implementation plan** including:
    - Branch name: `feat/issue-{number}-{slugified-title-max-30-chars}`
    - Files to create/modify with specific descriptions of changes
    - Design decisions with rationale
    - Test plan
    - Acceptance criteria
-7. **Post the full plan comment** on the issue (format below)
-8. **Create the feature branch** from main
-9. **Post a "Branch Ready" comment** confirming the branch name — the opening is complete, implementation may begin
-10. **Replace `local/planning` with `local/implementing`**
+6. **Post the full plan comment** on the issue (format below)
+7. **Create the feature branch** from main
+8. **Post a "Branch Ready" comment** confirming the branch name — the opening is complete, implementation may begin
 
 ## Planning Process
 
