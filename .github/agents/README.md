@@ -2,17 +2,19 @@
 
 This folder contains **custom agent definitions** for GitHub Copilot. Each file defines a specialized AI persona that can be selected in VS Code's Copilot Chat, in the GitHub Copilot cloud agent on GitHub.com, or invoked as a subagent by the orchestrator.
 
-## Autonomous SDLC Pipeline
+## AI-SDLC Pipeline
 
-This repository implements a **fully-autonomous AI-driven SDLC pipeline**. When an issue is opened, it flows automatically through 8 stages:
+This repository implements a **fully-autonomous AI-driven SDLC pipeline** that runs both remotely (via GitHub Agentic Workflows) and locally (via Copilot CLI).
 
 ```
-📥 Intake → 🏷️ Triage → 🔀 Route → 📋 Plan → 🔨 Implement → 🧪 Test → 👀 Review → 🚀 Deploy
+🏷️ Triage → 📋 Plan → 🔨 Implement → 👀 Review → 🚀 Deploy
 ```
 
-Each stage posts detailed narrative logs and machine-readable state to the issue, providing full transparency of AI thinking and decisions. See [`pipeline-controller.yml`](../.github/workflows/pipeline-controller.yml) for the automation workflow.
+**Local usage (Copilot CLI):** Say "triage issue 135" — the `pipeline` agent auto-chains through all stages.
 
-**Manual commands:** Comment `/pipeline status`, `/pipeline resume`, `/pipeline restart`, or `/pipeline skip {stage}` on any issue.
+**Remote usage (GitHub Actions):** Apply the `pipeline/triage-requested` label to an issue — the `pipeline-triage.md` workflow kicks off the same flow on GitHub runners.
+
+Each stage posts comments on the GitHub issue, providing full transparency of AI thinking and decisions.
 
 ## How Copilot Discovers and Activates These Agents
 
@@ -67,13 +69,56 @@ Instructions, persona, and behavioral guidelines in Markdown...
 
 ## Agents in This Repository
 
-### `orchestrator.agent.md`
+### `pipeline.agent.md`
 
-**Tools:** `read`, `search`, `agent`
-**Agents:** all specialized agents
-**Argument hint:** "Describe your task and I'll route it to the right specialist"
+**Tools:** `read`, `search`, `execute`, `github`, `agent`, `web`
+**Agents:** `triage`, `plan`, `implement`, `review`, `deploy`
+**Argument hint:** "Say 'triage issue 135' to run the full pipeline on an issue"
 
-The primary entry point for complex or ambiguous requests. Analyzes user intent, determines the correct specialist(s) to handle the task, and routes work accordingly. Uses the `agent` tool to invoke subagents. Choose this agent when you are unsure which specialist to use or when a task spans multiple domains (e.g., "add a feature with tests and documentation").
+The entry point for the autonomous pipeline. Auto-chains through all stages (triage → plan → implement → review → deploy) without pausing. Handles retry loops if review requests changes (max 2 cycles). Choose this agent to run the full pipeline on an issue.
+
+---
+
+### `triage.agent.md`
+
+**Tools:** `read`, `search`, `github`
+
+Classifies issues by type, difficulty, priority, and scope. Posts a triage comment and applies labels. Choose this agent to classify a single issue without running the full pipeline.
+
+---
+
+### `plan.agent.md`
+
+**Tools:** `read`, `search`, `github`, `agent`
+**Agents:** `backend`, `frontend`, `security`, `devops`
+
+Researches the codebase, produces detailed implementation plans with file-level task lists, creates feature branches. Choose this agent to plan an issue without implementing it.
+
+---
+
+### `implement.agent.md`
+
+**Tools:** `read`, `edit`, `search`, `execute`, `github`, `agent`, `todos`
+**Agents:** `backend`, `frontend`, `security`, `testing`, `docs`, `devops`, `build-validator`
+
+Executes plans by delegating to specialist agents, writing code, committing, and creating PRs. Choose this agent to implement a planned issue.
+
+---
+
+### `review.agent.md`
+
+**Tools:** `read`, `search`, `github`, `agent`
+**Agents:** `security-auditor`, `code-reviewer`, `build-validator`
+
+Multi-dimensional PR reviewer covering architecture, security, code quality, test coverage, and documentation. Makes approve/request-changes decisions. Choose this agent to review a PR.
+
+---
+
+### `deploy.agent.md`
+
+**Tools:** `read`, `search`, `execute`, `github`, `web`
+
+Merges approved PRs, verifies deployment health, closes issues. Choose this agent to deploy an approved PR.
 
 ---
 
@@ -150,94 +195,30 @@ Analyzes `.csproj` files for correct SDK, target framework, nullable settings, a
 
 ---
 
-### `issue-helper.agent.md`
+## Pipeline Labels
 
-**Tools:** `read`, `search` *(read-only)*
+These labels track pipeline progress on GitHub issues:
 
-SDLC pipeline intake and triage agent. Validates issue quality (intake stage) and classifies issues by type, difficulty, priority, and scope (triage stage). Posts narrative reasoning and machine-readable state to issues. Drives the first two stages of the automated pipeline.
+| Label | Stage |
+|-------|-------|
+| `pipeline/triage-requested` | Trigger: starts the remote pipeline (via GitHub Actions) |
+| `local/triage` | Being classified (local agents) |
+| `local/planning` | Plan being created (local agents) |
+| `local/implementing` | Code being written (local agents) |
+| `local/review` | PR under review (local agents) |
+| `local/done` | Pipeline complete, issue closed (local agents) |
 
----
+## GitHub Actions Workflows
 
-## Pipeline Agents
+The remote pipeline uses GitHub Agentic Workflows (`.github/workflows/pipeline-*.md`):
 
-These agents form the automated SDLC pipeline. They are typically invoked by the `pipeline-controller.yml` workflow or by the orchestrator, not directly by users.
-
-### `pipeline.agent.md`
-
-**Tools:** `read`, `search`, `execute`, `agent`, `web`
-**Agents:** all pipeline-stage agents
-
-State machine controller for the SDLC pipeline. Manages stage transitions, retry logic, failure escalation, and manual override commands (`/pipeline status`, `/pipeline resume`, `/pipeline restart`, `/pipeline skip`).
-
----
-
-### `planner.agent.md`
-
-**Tools:** `read`, `search`, `todos`, `agent`
-**Agents:** `backend`, `frontend`, `security`, `devops`
-
-Decomposes triaged issues into detailed, file-level implementation plans. Researches the codebase for patterns and conventions, documents design decisions, creates feature branches, and produces task lists for the implementer.
-
----
-
-### `implementer.agent.md`
-
-**Tools:** `read`, `edit`, `search`, `execute`, `agent`, `todos`
-**Agents:** `backend`, `frontend`, `security`, `devops`, `docs`
-
-Execution engine that takes plans and produces working code. Delegates to specialist agents, posts progress updates, commits with conventional messages, and creates PRs linked to issues.
-
----
-
-### `reviewer.agent.md`
-
-**Tools:** `read`, `search`, `agent`
-**Agents:** `security-auditor`, `code-reviewer`, `build-validator`
-
-Autonomous PR reviewer covering architecture, security, code quality, test coverage, and documentation. Delegates specialized checks to expert agents. Makes pass/fail decisions with detailed findings. Max 2 review cycles before human escalation.
-
----
-
-### `deployer.agent.md`
-
-**Tools:** `read`, `search`, `execute`, `web`
-
-Manages deployment lifecycle: PR merge, CI/CD monitoring, post-deployment health checks, and auto-rollback on failure. Verifies HTTP health, error rates, and response times before marking deployment complete.
-
-## Pipeline Workflows
-
-The SDLC pipeline is driven by GitHub Actions workflows that trigger on label changes:
-
-| Workflow | Trigger | Stages |
-|----------|---------|--------|
-| [`pipeline-controller.yml`](../workflows/pipeline-controller.yml) | Issue opened / labeled | Intake → Triage → Route |
-| [`pipeline-implement.yml`](../workflows/pipeline-implement.yml) | `pipeline:planning` / `pipeline:implementing` | Plan → Implement |
-| [`pipeline-review.yml`](../workflows/pipeline-review.yml) | `pipeline:testing` on PR / `pipeline:reviewing` on issue | Test → Review |
-| [`pipeline-deploy.yml`](../workflows/pipeline-deploy.yml) | `pipeline:deploying` | Deploy (merge + health check) |
-| [`pipeline-rollback.yml`](../workflows/pipeline-rollback.yml) | `pipeline:rollback` | Rollback (revert + redeploy) |
-| [`pipeline-retry.yml`](../workflows/pipeline-retry.yml) | `pipeline:retrying` / `pipeline:failed` | Retry orchestration + failure notification |
-
-**Supporting workflows (pipeline-aware):**
-| Workflow | Pipeline Enhancement |
-|----------|---------------------|
-| [`dotnet.yml`](../workflows/dotnet.yml) | Reports CI status to linked pipeline issues |
-| [`copilot-agents.yml`](../workflows/copilot-agents.yml) | Validates PR conventions for pipeline branches |
-
-### Pipeline Labels
-
-| Label | Stage | Color |
-|-------|-------|-------|
-| `pipeline:intake` | Intake | Purple |
-| `pipeline:triage` | Triage | Purple |
-| `pipeline:planning` | Plan | Blue |
-| `pipeline:implementing` | Implement | Blue |
-| `pipeline:testing` | Test | Yellow |
-| `pipeline:reviewing` | Review | Yellow |
-| `pipeline:deploying` | Deploy | Green |
-| `pipeline:done` | Complete | Green |
-| `pipeline:retrying` | Retry in progress | Light yellow |
-| `pipeline:rollback` | Rolling back | Red |
-| `pipeline:rolled-back` | Rollback complete | Red |
+| Workflow | Trigger |
+|----------|---------|
+| `pipeline-triage.md` | `pipeline/triage-requested` label applied |
+| `pipeline-plan.md` | Dispatched by triage |
+| `pipeline-implement.md` | Dispatched by plan |
+| `pipeline-review.md` | PR opened / review requested |
+| `pipeline-deploy.md` | PR closed (merged) |
 | `pipeline:blocked` | Needs human | Red |
 | `pipeline:failed` | Failed (exhausted retries) | Red |
 
