@@ -35,7 +35,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 **Chaining mechanism:** `dispatch-workflow` safe output (not labels). Each stage explicitly dispatches the next, eliminating race conditions.
 
-**State tracking:** Each stage posts a structured comment (🏷️ Triage, 📋 Plan, 🚀 Implement, 🔍 Review, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
+**State tracking:** Each stage posts a structured comment (🏷️ Triage, 📋 Plan, 🚀 Implement, � Review In Progress, 🏗️ Report, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
 
 ---
 
@@ -64,7 +64,7 @@ The triage agent:
 |-----------|-------|
 | **Trigger** | `workflow_dispatch` (dispatched by Triage with `issue_number` input) |
 | **Workflow** | `pipeline-plan.md` |
-| **Engine** | Copilot |
+| **Engine** | Copilot (Claude Opus 4.6) |
 | **Output** | Detailed implementation plan comment, dispatches Implement |
 
 The plan agent:
@@ -110,6 +110,7 @@ The implement agent:
 | **Output** | PR review + implementation report on linked issue |
 
 The review agent:
+- **Posts a "Review In Progress" status comment** on the linked issue immediately (confirms code is complete)
 - Reads the PR and changed files
 - Delegates to specialist review agents:
   - `security-auditor` — OWASP Top 10, CSRF, XSS, SQL injection
@@ -150,6 +151,7 @@ Issue #100: "Add a /health endpoint"
 ├── 🏷️ Pipeline — Triage        (classification, agents needed)
 ├── 📋 Pipeline — Plan           (implementation steps, files, acceptance criteria)
 ├── 🚀 Pipeline — Implement      (agent assignment confirmation)
+├── 🔄 Pipeline — Review In Progress  (code complete, review started — posted by Review)
 ├── 🏗️ Pipeline — Implementation Report  (changes table, review verdict — posted by Review)
 └── ✅ Pipeline — Complete        (deployment summary, pipeline history)
 ```
