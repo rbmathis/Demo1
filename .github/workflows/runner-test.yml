@@ -1,0 +1,12 @@
+name: Runner Test
+on: workflow_dispatch
+jobs:
+  test:
+    runs-on: ${{ vars.PIPELINE_RUNNER }}
+    steps:
+      - run: |
+          echo "✅ Runner works!"
+          echo "OS: $(uname -a)"
+          echo "Node: $(node --version 2>/dev/null || echo 'not found')"
+          echo "Runner: $RUNNER_NAME"
+          echo "Labels: $RUNNER_LABELS"
