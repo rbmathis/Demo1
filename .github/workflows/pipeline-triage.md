@@ -3,9 +3,7 @@ name: "Pipeline — Triage"
 description: "Classifies issues and kicks off the planning stage"
 
 on:
-  issue_comment:
-    types: [created]
-    condition: "contains(event.comment.body, '/triage') && event.comment.user.login == 'rbmathis'"
+  slash_command: triage
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot

@@ -105,3 +105,43 @@ The project includes three main workflows:
 4. Documentation Helper checks run on main branch updates
 
 The agents provide automated feedback through GitHub Actions and can hand off tasks between each other for comprehensive code review.
+
+## GitHub Agentic Workflows (gh-aw) Reference
+
+This project uses `gh aw` to compile `.md` workflow definitions into `.lock.yml` files. When editing pipeline workflows:
+
+- **Documentation**: https://github.github.com/gh-aw/introduction/overview/
+- **Compile command**: `gh aw compile` (all) or `gh aw compile <workflow-id>` (specific)
+- **Source files**: `.github/workflows/pipeline-*.md`
+- **Compiled output**: `.github/workflows/pipeline-*.lock.yml` (DO NOT edit directly)
+
+### Key Reference Pages
+
+| Topic | URL |
+|-------|-----|
+| Triggers | https://github.github.com/gh-aw/reference/triggers/ |
+| Command Triggers | https://github.github.com/gh-aw/reference/command-triggers/ |
+| Frontmatter | https://github.github.com/gh-aw/reference/frontmatter/ |
+| Frontmatter (Full) | https://github.github.com/gh-aw/reference/frontmatter-full/ |
+| Safe Outputs | https://github.github.com/gh-aw/reference/safe-outputs/ |
+| Workflow Structure | https://github.github.com/gh-aw/reference/workflow-structure/ |
+| AI Engines | https://github.github.com/gh-aw/reference/engines/ |
+| Tools | https://github.github.com/gh-aw/reference/tools/ |
+| Inline Reference | https://raw.githubusercontent.com/github/gh-aw/main/.github/aw/github-agentic-workflows.md |
+
+### Trigger Syntax
+
+| Trigger | Syntax | Notes |
+|---------|--------|-------|
+| Slash command | `slash_command: triage` | Fires when user comments `/triage` on an issue. No leading `/` in the value. |
+| Issue comment | `issue_comment: { types: [created] }` | Cannot combine with `slash_command` in same workflow. |
+| PR events | `pull_request_target: { types: [review_requested, ready_for_review] }` | Use `pull_request_target` for agent workflows. |
+| Dispatch | `workflow_dispatch:` | Manual/API trigger. |
+
+### Key Rules
+
+- `command:` is **deprecated** — use `slash_command:` instead
+- `condition:` is **not valid** on trigger blocks — use `slash_command` or agent-level verification
+- After editing any `.md` workflow, always run `gh aw compile` before pushing
+- The `.lock.yml` must be committed alongside the `.md` source
+

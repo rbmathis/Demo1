@@ -21,6 +21,8 @@ Build, test, check coverage, commit with attitude, and open a PR with maximum sa
 
 Run `git diff --stat` and `git diff --cached --stat` to understand what changed. Use this to generate a contextually relevant snarky commit message and PR title if the user didn't provide them.
 
+**Determine if .NET code changed:** Check if any changed files match these patterns: `*.cs`, `*.csproj`, `*.sln`, `*.razor`, `*.cshtml`. If **none** of the changed files are .NET code (e.g., only `.md`, `.yml`, `.json`, `.js`, `.css`, or config files changed), skip Step 3 (Quality Gates) entirely and note "⏭️ Skipped (no .NET changes)" in the PR body.
+
 ### Step 2: Pick Messages
 
 If the user provided a custom commit message and/or PR title, use those. Otherwise, generate creative ones based on the actual changes. Style guidelines:
@@ -32,7 +34,9 @@ If the user provided a custom commit message and/or PR title, use those. Otherwi
   - Commit: `"Refactored auth middleware — it's prettier than your portfolio now 💅"`
   - PR: `"🔥 Security so tight it makes Fort Knox jealous"`
 
-### Step 3: Run Quality Gates
+### Step 3: Run Quality Gates (only if .NET code changed)
+
+**Skip this entire step if no .NET files were modified** (see Step 1). Only run these gates when `.cs`, `.csproj`, `.sln`, `.razor`, or `.cshtml` files are in the diff.
 
 Execute these in order. Stop on failure (except coverage and lint, which warn only).
 
@@ -84,13 +88,17 @@ Check current branch:
 git branch --show-current
 ```
 
-If on `main` or `master`:
+If on `main` or `master` **and .NET code changed**:
 1. Create a feature branch: `feature/snarky-<timestamp>` (e.g., `feature/snarky-20260505-143022`)
 2. Switch to it
 
+If on `main` or `master` **and NO .NET code changed** (docs/config only):
+- Still create a feature branch (never commit directly to main) unless the user says "skip branch"
+- If the user explicitly says "skip branch", commit directly to the current branch
+
 If already on a feature branch, stay on it.
 
-**Never commit directly to main or master.**
+**Default: Never commit directly to main or master** (unless user explicitly overrides).
 
 ### Step 5: Commit
 
@@ -120,9 +128,9 @@ PR body template:
 This PR contains commits that are too good for main branch right now.
 
 ## ✅ Quality Checks
-- ✅ Build: Passed
-- ✅ Tests: Green
-- [✅/⚠️] Coverage: [result]
+- [✅/⏭️] Build: [Passed / Skipped (no .NET changes)]
+- [✅/⏭️] Tests: [Green / Skipped (no .NET changes)]
+- [✅/⚠️/⏭️] Coverage: [result / Skipped (no .NET changes)]
 
 ## 💅 Commit Messages
 `<commit message>`
