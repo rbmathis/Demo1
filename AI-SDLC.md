@@ -45,7 +45,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 | Attribute | Value |
 |-----------|-------|
-| **Trigger** | `issues: [opened, reopened]` |
+| **Trigger** | `issue_comment: [created]` when `rbmathis` comments `/triage` |
 | **Workflow** | `pipeline-triage.md` |
 | **Engine** | Copilot |
 | **Output** | Classification comment, type labels, dispatches Plan |
@@ -196,7 +196,7 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 
 | File | Purpose | Trigger |
 |------|---------|---------|
-| `pipeline-triage.md` | Classify and dispatch | `issues: [opened, reopened]` |
+| `pipeline-triage.md` | Classify and dispatch | `issue_comment: [created]` when `rbmathis` comments `/triage` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
 | `pipeline-review.md` | Multi-agent code review + issue report | `pull_request: [review_requested, ready_for_review]` |

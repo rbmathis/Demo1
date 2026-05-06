@@ -188,7 +188,7 @@ Issue opened
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `pipeline-triage.md` | Issue opened/reopened | AI classification and routing |
+| `pipeline-triage.md` | Issue comment `/triage` by `rbmathis` | AI classification and routing |
 | `pipeline-implement.md` | `pipeline:planning` label | Plan + assign Copilot agent |
 | `pipeline-review.md` | PR opened/updated | Multi-agent code review |
 | `pipeline-post-merge.md` | PR merged | Transition to deploy stage |

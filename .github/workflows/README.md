@@ -201,8 +201,8 @@ copilot-agents.yml
   ├─ on: push to main ────────────────────► build-validator-agent
   └─ on: weekly schedule ─────────────────► security-auditor-agent
 
-issue-triage-agent.yml
-  └─ on: issue opened ────────────────────► classify, label, comment
+pipeline-triage.md
+  └─ on: issue comment `/triage` by `rbmathis` ─► classify, label, comment
 ```
 
 ## References
