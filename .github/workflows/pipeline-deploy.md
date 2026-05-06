@@ -23,6 +23,16 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
+  add-labels:
+    allowed: ["pipeline/deploying", "pipeline/done"]
+    max: 1
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    max: 7
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   close-issue:
     max: 1
     target: "*"
@@ -38,9 +48,11 @@ You are the deployment and closure agent. When a PR is closed, you verify it was
 1. **Check if the PR was merged** — if it was closed without merging, call `noop` with "PR closed without merge. No action needed."
 2. **Find the linked issue** — look in the PR body for "Closes #N", "Fixes #N", or "Refs #N"
 3. **If no linked issue found** — call `noop` with "No linked issue found. Not a pipeline PR."
-4. **Read the linked issue** to gather the full pipeline history (triage, plan, implement comments)
-5. **Post a final deployment comment** on the linked issue
-6. **Close the issue** as completed
+4. **Remove all `pipeline/*` labels** and **add `pipeline/deploying`** on the linked issue
+5. **Read the linked issue** to gather the full pipeline history (triage, plan, implement comments)
+6. **Post a final deployment comment** on the linked issue
+7. **Replace `pipeline/deploying` with `pipeline/done`** on the issue
+8. **Close the issue** as completed
 
 ## Deployment Comment Format
 

@@ -34,6 +34,16 @@ safe-outputs:
     target: "*"
     max: 1
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  add-labels:
+    allowed: ["pipeline/planning", "pipeline/implementing"]
+    max: 1
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    max: 7
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   dispatch-workflow: [pipeline-implement]
 ---
 
@@ -46,7 +56,8 @@ You are the planning agent for an AI-SDLC pipeline. You create detailed, actiona
 ## Your Task
 
 1. **Read the issue** (#${{ github.event.inputs.issue_number }}) — title, body, and all comments
-2. **Find the triage comment** — look for the comment containing "Pipeline — Triage" to understand classification, scope, and agents needed
+2. **Remove any existing `pipeline/*` labels** and **add `pipeline/planning`** to issue #${{ github.event.inputs.issue_number }}
+3. **Find the triage comment** — look for the comment containing "Pipeline — Triage" to understand classification, scope, and agents needed
 3. **Analyze the codebase** — use GitHub tools to explore relevant files and understand the current state
 4. **Create a detailed implementation plan** including:
    - Branch name: `feat/issue-${{ github.event.inputs.issue_number }}-{slugified-title-max-30-chars}`
@@ -103,4 +114,5 @@ Post this as a comment on issue #${{ github.event.inputs.issue_number }}:
 - Always include testing and documentation steps
 - The plan should be detailed enough for Copilot coding agent to execute without ambiguity
 - After posting the plan, ALWAYS dispatch `pipeline-implement`
+- **Before dispatching**, replace `pipeline/planning` with `pipeline/implementing` on the issue
 - If you cannot determine a plan, post what you know and dispatch anyway

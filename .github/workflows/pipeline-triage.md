@@ -22,8 +22,13 @@ safe-outputs:
     max: 1
     target: "triggering"
   add-labels:
-    allowed: [bug, enhancement, feature, security, documentation, refactor]
-    max: 2
+    allowed: [bug, enhancement, feature, security, documentation, refactor, "pipeline/triage", "pipeline/planning"]
+    max: 3
+    target: "triggering"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    max: 7
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   dispatch-workflow: [pipeline-plan]
@@ -36,8 +41,9 @@ You are the intake agent for an AI-SDLC pipeline. When `rbmathis` comments `/tri
 ## Your Task
 
 1. **Verify** the workflow was triggered by an issue comment from `rbmathis` with the exact body `/triage`; if not, stop without taking any action
-2. **Read the issue** title and body carefully
-3. **Classify** the issue:
+2. **Apply the `pipeline/triage` label** to the issue immediately (remove any other `pipeline/*` labels first)
+3. **Read the issue** title and body carefully
+4. **Classify** the issue:
    - **Type**: bug, enhancement, feature, security, documentation, or refactor
    - **Difficulty**: easy, medium, hard
    - **Priority**: critical, high, medium, low
@@ -50,7 +56,8 @@ You are the intake agent for an AI-SDLC pipeline. When `rbmathis` comments `/tri
    - `docs` — documentation updates (include for features and significant changes)
 5. **Post a triage comment** with your analysis (format below)
 6. **Apply classification labels** — apply 1-2 type labels (bug/enhancement/feature/security/documentation/refactor). These are classification only, NOT pipeline triggers.
-7. **Dispatch the plan workflow** — call `dispatch_workflow` for `pipeline-plan` with input `issue_number` set to the triggering issue number as a string.
+7. **Replace the `pipeline/triage` label with `pipeline/planning`** — remove `pipeline/triage`, add `pipeline/planning`
+8. **Dispatch the plan workflow** — call `dispatch_workflow` for `pipeline-plan` with input `issue_number` set to the triggering issue number as a string.
 
 ## Triage Comment Format
 

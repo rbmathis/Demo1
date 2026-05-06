@@ -27,6 +27,16 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
+  add-labels:
+    allowed: ["pipeline/implementing"]
+    max: 1
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    max: 7
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   assign-to-agent:
     name: "copilot"
     target: "*"
@@ -73,9 +83,10 @@ You are the implementation coordinator. You read the plan from the issue and ass
 ## Your Task
 
 1. **Read the issue** (#${{ github.event.inputs.issue_number }}) — title, body, and all comments
-2. **Find the plan comment** — look for the comment containing "Pipeline — Plan" with the implementation steps
-3. **Post a status comment** confirming you're assigning the coding agent
-4. **Assign Copilot coding agent** to issue #${{ github.event.inputs.issue_number }}
+2. **Ensure `pipeline/implementing` label is on the issue** (remove any other `pipeline/*` labels)
+3. **Find the plan comment** — look for the comment containing "Pipeline — Plan" with the implementation steps
+4. **Post a status comment** confirming you're assigning the coding agent
+5. **Assign Copilot coding agent** to issue #${{ github.event.inputs.issue_number }}
 
 ## Status Comment Format
 

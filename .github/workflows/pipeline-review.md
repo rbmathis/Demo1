@@ -34,6 +34,16 @@ safe-outputs:
   add-comment:
     max: 2
     target: "*"
+  add-labels:
+    allowed: ["pipeline/review", "pipeline/awaiting-merge"]
+    max: 1
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+  remove-labels:
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    max: 7
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ---
 
 ## Pipeline — Review Agent
@@ -42,7 +52,10 @@ You are the code review agent for an AI-SDLC pipeline. When a pull request is op
 
 ## Your Task
 
-1. **IMMEDIATELY post a status comment on the linked issue** (do this FIRST, before reviewing):
+1. **IMMEDIATELY update the pipeline label on the linked issue** (do this FIRST):
+   - Find the issue reference in the PR body ("Closes #N", "Fixes #N", or "Resolves #N")
+   - Remove any existing `pipeline/*` labels and add `pipeline/review`
+2. **Post a status comment on the linked issue** (do this SECOND, before reviewing):
    - Find the issue reference in the PR body ("Closes #N", "Fixes #N", or "Resolves #N")
    - Post this comment on that issue:
      ```
@@ -128,3 +141,9 @@ If you find a linked issue reference in the PR body (e.g., "Closes #N", "Fixes #
 ```
 
 This comment is the official pipeline record. Do NOT skip it.
+
+## After Review
+
+After submitting the review and posting the implementation report:
+- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on the linked issue
+- This signals to the human that the PR is ready for their approval and merge
