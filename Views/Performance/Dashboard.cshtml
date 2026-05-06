@@ -1,0 +1,73 @@
+@model IEnumerable<Demo1.Models.PerformanceBudget>
+@{
+    ViewData["Title"] = "Performance Dashboard";
+}
+
+<div class="container-fluid">
+    <h1 class="mb-4">Core Web Vitals Dashboard</h1>
+
+    <!-- Traffic-light Status Cards -->
+    <div class="row mb-4" id="status-cards">
+        @foreach (var budget in Model)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card" id="card-@budget.MetricName">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@budget.MetricName</h5>
+                        <div class="status-indicator mb-2" id="status-@budget.MetricName"
+                             style="width: 30px; height: 30px; border-radius: 50%; background-color: #6c757d; margin: 0 auto;"
+                             aria-label="Status indicator for @budget.MetricName">
+                        </div>
+                        <p class="card-text fs-4" id="value-@budget.MetricName">--</p>
+                        <small class="text-muted">
+                            Warning: @budget.WarningThreshold@budget.Unit |
+                            Error: @budget.ErrorThreshold@budget.Unit
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Chart Canvases -->
+    <div class="row mb-4">
+        @foreach (var budget in Model)
+        {
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@budget.MetricName History</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chart-@budget.MetricName" aria-label="@budget.MetricName performance chart" role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Suggestions Panel -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Performance Suggestions</h5>
+                </div>
+                <div class="card-body" id="suggestions-panel">
+                    <p class="text-muted">Collecting metrics... Suggestions will appear when thresholds are exceeded.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget data for JavaScript -->
+<script id="budget-data" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))
+</script>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="~/js/performance-observer.js" asp-append-version="true"></script>
+}
