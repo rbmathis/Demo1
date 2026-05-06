@@ -1204,7 +1204,15 @@ jobs:
   pre_activation:
     runs-on: ubuntu-slim
     outputs:
-      activated: ${{ steps.check_membership.outputs.is_team_member == 'true' && github.event_name == 'issue_comment' && github.event.action == 'created' && github.event.comment.user.login == 'rbmathis' && github.event.comment.body == '/triage' && !github.event.issue.pull_request }}
+      activated: >-
+        ${{
+          steps.check_membership.outputs.is_team_member == 'true' &&
+          github.event_name == 'issue_comment' &&
+          github.event.action == 'created' &&
+          github.event.comment.user.login == 'rbmathis' &&
+          github.event.comment.body == '/triage' &&
+          !github.event.issue.pull_request
+        }}
       matched_command: ''
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
     steps:
