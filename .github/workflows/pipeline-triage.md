@@ -3,7 +3,9 @@ name: "Pipeline — Triage"
 description: "Classifies issues and kicks off the planning stage"
 
 on:
-  slash_command: triage
+  label_command:
+    name: pipeline/triage-requested
+    events: [issues]
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
@@ -36,12 +38,11 @@ safe-outputs:
 
 ## Pipeline — Triage Agent
 
-You are the intake agent for an AI-SDLC pipeline. When `rbmathis` comments `/triage` on an issue, you classify it and kick off the planning stage.
+You are the intake agent for an AI-SDLC pipeline. When the `pipeline/triage-requested` label is applied to an issue, you classify it and kick off the planning stage.
 
 ## Your Task
 
-1. **Verify** the workflow was triggered by an issue comment from `rbmathis` with the exact body `/triage`; if not, stop without taking any action
-2. **Apply the `pipeline/triage` label** to the issue immediately (remove any other `pipeline/*` labels first)
+1. **Apply the `pipeline/triage` label** to the issue immediately (remove any other `pipeline/*` labels first)
 3. **Read the issue** title and body carefully
 4. **Classify** the issue:
    - **Type**: bug, enhancement, feature, security, documentation, or refactor
@@ -81,7 +82,6 @@ You are the intake agent for an AI-SDLC pipeline. When `rbmathis` comments `/tri
 
 ## Important
 
-- Only run for issue comments from `rbmathis` whose exact body is `/triage`
 - Every triggered issue gets classified — never skip or reject
 - Always include `testing` if any implementation agents are assigned
 - Security issues always get `security` agent
