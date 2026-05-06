@@ -119,7 +119,7 @@ public class InMemoryUserProfileService : IUserProfileService
 
     public Task<UserProfile> UpdateFieldAsync(string userId, string fieldName, string value)
     {
-        _logger.LogInformation("Updating field {Field} for user {UserId}", fieldName, userId);
+        _logger.LogInformation("Updating profile field for user {UserId}", userId);
 
         if (!AllowedFields.Contains(fieldName))
         {

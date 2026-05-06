@@ -128,30 +128,50 @@ public class HomeController : Controller
     // ╚══════════════════════════════════════════════════════════════════════════════╝
 
     /// <summary>
-    /// Profile management demo - now using proper DI and encapsulation.
-    /// The view still shows "anti-pattern" styling for demo purposes.
+    /// Displays the profile management demo with the current profile and profile statistics.
     /// </summary>
+    /// <remarks>
+    /// The legacy GET query parameters remain in the action signature so older links, bookmarks, and
+    /// query-string-based requests continue to resolve safely after the CSRF fix moved profile updates
+    /// to the POST-only <see cref="GodObjectProfileUpdate(string, string)"/> action. These values are
+    /// intentionally ignored.
+    /// </remarks>
+    /// <param name="action">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
+    /// <param name="field">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
+    /// <param name="value">Unused legacy query parameter retained so older GET query strings can be safely ignored.</param>
+    /// <returns>The GodObjectProfile view.</returns>
     public async Task<IActionResult> GodObjectProfile(string action = "", string field = "", string value = "")
     {
         var profile = await _userProfileService.GetProfileAsync("");
-
-        if (!string.IsNullOrEmpty(action) && action == "update" && !string.IsNullOrEmpty(field))
-        {
-            try
-            {
-                profile = await _userProfileService.UpdateFieldAsync("", field, value);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogWarning(ex, "Invalid field update attempt: {Field}", field);
-                ViewBag.Error = ex.Message;
-            }
-        }
 
         ViewBag.Profile = profile;
         ViewBag.Stats = _userProfileService.GetStats();
 
         return View();
+    }
+
+    /// <summary>
+    /// Updates a single profile field and redirects back to the profile page.
+    /// </summary>
+    /// <param name="field">The profile field to update.</param>
+    /// <param name="value">The new value for the field.</param>
+    /// <returns>A redirect to <see cref="GodObjectProfile(string, string, string)"/>.</returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GodObjectProfileUpdate(string field, string value)
+    {
+        try
+        {
+            await _userProfileService.UpdateFieldAsync("", field, value);
+            TempData["Success"] = "Profile updated successfully.";
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid profile field update attempt.");
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(GodObjectProfile));
     }
 
     /// <summary>
