@@ -115,6 +115,82 @@ The application includes a custom `SecurityHeadersMiddleware` that adds the foll
 - Configured via `appsettings*.json` under `Logging`.
 - Inject `ILogger<T>` into controllers/services.
 
+## Rate Limiting
+
+The application includes built-in rate limiting using `Microsoft.AspNetCore.RateLimiting` to prevent API abuse and DDoS attacks.
+
+### Configuration
+
+Add or modify the `RateLimiting` section in `appsettings.json`:
+
+```json
+{
+  "RateLimiting": {
+    "PermitLimit": 100,
+    "WindowInSeconds": 60,
+    "QueueLimit": 0
+  }
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `PermitLimit` | 100 | Maximum number of requests allowed within the time window |
+| `WindowInSeconds` | 60 | Duration of the rate limiting window in seconds |
+| `QueueLimit` | 0 | Number of requests to queue when the limit is reached (0 = reject immediately) |
+
+### How It Works
+
+- **IP-based partitioning**: Each client IP address gets its own rate limit window. Requests are tracked per IP using a fixed-window algorithm.
+- **Fixed window**: The window resets after `WindowInSeconds` elapses. All requests within a window count toward the `PermitLimit`.
+- **Queue processing**: If `QueueLimit` > 0, excess requests are queued (oldest first) instead of being immediately rejected.
+
+### Response Headers
+
+Every response includes rate limit headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | The maximum number of requests permitted in the current window |
+| `X-RateLimit-Remaining` | The number of requests remaining in the current window |
+
+When a request is rejected (rate limited):
+
+| Header | Description |
+|--------|-------------|
+| `Retry-After` | Number of seconds the client should wait before retrying |
+
+### Rate Limited Response
+
+When the rate limit is exceeded, the server responds with:
+
+- **Status**: `429 Too Many Requests`
+- **Body**: `Too many requests. Please try again later.`
+- **Headers**: `Retry-After`, `X-RateLimit-Limit`, `X-RateLimit-Remaining: 0`
+
+### Customizing Limits
+
+To adjust rate limits per environment, override the settings in environment-specific configuration:
+
+```json
+// appsettings.Production.json
+{
+  "RateLimiting": {
+    "PermitLimit": 200,
+    "WindowInSeconds": 60,
+    "QueueLimit": 10
+  }
+}
+```
+
+Or use environment variables:
+
+```
+RateLimiting__PermitLimit=200
+RateLimiting__WindowInSeconds=60
+RateLimiting__QueueLimit=10
+```
+
 ## Deployment
 
 - Publish output is produced by `dotnet publish` (see GitHub Actions `dotnet.yml`).

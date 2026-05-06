@@ -1,16 +1,52 @@
 using Demo1.Middleware;
+using Demo1.Models;
 using Demo1.Telemetry;
 using Demo1.Services;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.FeatureManagement;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
+
+// ✅ Rate Limiting: Configure IP-based rate limiting using built-in middleware
+builder.Services.Configure<RateLimitingOptions>(
+    builder.Configuration.GetSection(RateLimitingOptions.SectionName));
+
+var rateLimitOptions = builder.Configuration
+    .GetSection(RateLimitingOptions.SectionName)
+    .Get<RateLimitingOptions>() ?? new RateLimitingOptions();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimitOptions.PermitLimit,
+                Window = TimeSpan.FromSeconds(rateLimitOptions.WindowInSeconds),
+                QueueLimit = rateLimitOptions.QueueLimit,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }));
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.Headers["Retry-After"] =
+            rateLimitOptions.WindowInSeconds.ToString();
+        context.HttpContext.Response.Headers["X-RateLimit-Limit"] =
+            rateLimitOptions.PermitLimit.ToString();
+        context.HttpContext.Response.Headers["X-RateLimit-Remaining"] = "0";
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests. Please try again later.", cancellationToken);
+    };
+});
 
 // ✅ 12-FACTOR: Register application services via dependency injection
 builder.Services.AddHttpContextAccessor();
@@ -153,6 +189,8 @@ app.UseSecurityHeaders();
 app.UseSecurityLabHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
+app.UseRateLimiter();
+app.UseRateLimitHeaders();
 
 // 🔥 ANTI-PATTERN: Session middleware - kept for demo pages only
 app.UseSession();
