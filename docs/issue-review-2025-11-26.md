@@ -5,6 +5,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 ## 📊 Executive Summary
 
 **Status Breakdown:**
+
 - ✅ **3 Issues Complete** - Ready to close! 🎉
 - 🟡 **5 Issues Partially Complete** - Just need finishing touches
 - 🔴 **10 Issues Not Started** - Clear path forward with questions
@@ -18,6 +19,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **STATUS: 100% COMPLETE! 🎊**
 
 **What exists:**
+
 - ✅ Multi-stage Dockerfile with .NET 9 SDK and ASP.NET 9 runtime
 - ✅ Security best practices (non-root user, proper permissions)
 - ✅ Health check configured
@@ -26,6 +28,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 - ✅ Environment variable configuration
 
 **Evidence:**
+
 - `Dockerfile` (46 lines, production-ready)
 - `docker-compose.yml` (52 lines, with Redis service)
 
@@ -38,12 +41,14 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **STATUS: 100% COMPLETE! 🎊**
 
 **What exists:**
+
 - ✅ Demo1.PlaywrightTests project in solution
 - ✅ Smoke tests for homepage and navigation
 - ✅ Tests passing in CI pipeline
 - ✅ Playwright CLI installed in GitHub Actions
 
 **Evidence:**
+
 - `tests/Demo1.PlaywrightTests/` directory
 - Tests running successfully in CI
 - README documents Playwright setup
@@ -57,6 +62,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **STATUS: 100% COMPLETE! 🎊**
 
 **What exists:**
+
 - ✅ Demo1.UnitTests project with xUnit
 - ✅ HomeControllerTests with Index, Privacy, and Error tests
 - ✅ Tests for SecurityHeadersMiddleware
@@ -65,6 +71,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 - ✅ All tests passing in CI
 
 **Evidence:**
+
 - `tests/Demo1.UnitTests/` directory
 - `Controllers/HomeControllerTests.cs`
 - `Middleware/SecurityHeadersMiddlewareTests.cs`
@@ -81,23 +88,27 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Current Status: PARTIALLY COMPLETE** 🔧
 
 **What exists:**
+
 - ✅ `app.UseExceptionHandler("/Home/Error")` configured (line 141 in Program.cs)
 - ✅ `app.UseStatusCodePagesWithReExecute("/Home/Error{0}")` for custom error pages
 - ✅ Application Insights for logging exceptions
 - ✅ Error view exists (Views/Shared/Error.cshtml)
 
 **What might be needed:**
+
 - Custom exception middleware with more structured logging?
 - Different responses for API vs. MVC requests?
 - Environment-specific error details toggle?
 
 **Questions for maintainer:**
+
 1. Is the current `UseExceptionHandler` sufficient, or do you want custom middleware?
 2. Do you need different error responses for JSON API requests vs. HTML views?
 3. Should we add more detailed exception logging beyond Application Insights?
 4. Any specific exception types that need special handling?
 
 **Suggested Next Steps:**
+
 - If current implementation is sufficient, document it and close
 - If enhancement needed, specify the exact requirements
 - Consider adding custom exception filter for API controllers if APIs are added later
@@ -109,17 +120,20 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Current Status: PARTIALLY COMPLETE** 🔧
 
 **What exists:**
+
 - ✅ Application Insights middleware captures all requests/responses
 - ✅ CustomTelemetryInitializer adds custom properties
 - ✅ Health checks endpoints configured
 - ✅ Telemetry configuration in Program.cs
 
 **What might be needed:**
+
 - Separate custom middleware for detailed request/response logging?
 - Correlation IDs beyond what App Insights provides?
 - Request/response body logging?
 
 **Questions for maintainer:**
+
 1. Is Application Insights telemetry sufficient for your needs?
 2. Do you need custom logging middleware beyond App Insights?
 3. Should request/response bodies be logged (be careful with sensitive data)?
@@ -127,6 +141,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 5. Performance impact tolerance for detailed logging?
 
 **Suggested Next Steps:**
+
 - Evaluate if App Insights covers the requirement
 - If yes, document and close
 - If no, create custom middleware with clear scope
@@ -138,11 +153,13 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Current Status: PARTIALLY COMPLETE** 🔧
 
 **What exists:**
+
 - ✅ `/Home/Contact` route exists in routing table
 - ✅ Feature flag `ContactForm` configured
 - ✅ Basic MVC infrastructure ready
 
 **What's missing:**
+
 - ❌ Contact.cshtml view with form
 - ❌ Contact POST action in HomeController
 - ❌ Email sending service (SMTP/SendGrid)
@@ -150,6 +167,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 - ❌ reCAPTCHA integration
 
 **Questions for maintainer:**
+
 1. **Email provider preference:**
    - SMTP (specify server details needed)?
    - SendGrid (need API key)?
@@ -168,6 +186,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Error display approach?
 
 **Suggested Next Steps:**
+
 1. Answer the questions above
 2. Provide email configuration details
 3. Obtain reCAPTCHA keys
@@ -180,17 +199,20 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Current Status: PARTIALLY COMPLETE** 🔧
 
 **What exists:**
+
 - ✅ Redis caching infrastructure configured
 - ✅ Distributed cache available via dependency injection
 - ✅ Session management configured
 
 **What's missing:**
+
 - ❌ Response caching middleware enabled
 - ❌ [ResponseCache] attributes on controller actions
 - ❌ Cache profiles in Program.cs
 - ❌ VaryBy headers configuration
 
 **Questions for maintainer:**
+
 1. **Which actions should be cached?**
    - Static pages (About, Privacy)?
    - Homepage?
@@ -207,6 +229,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Create profiles like "StaticPage", "Dynamic", "API"?
 
 **Suggested Next Steps:**
+
 1. Decide which actions benefit from caching
 2. Define cache duration and variation rules
 3. Add response caching middleware
@@ -220,22 +243,26 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Current Status: PARTIALLY COMPLETE** 🔧
 
 **What exists:**
+
 - ✅ Bootstrap 5 with built-in dark mode support
 - ✅ Theme toggle UI exists (data-bs-theme attribute switching)
 - ✅ wwwroot/css/site.css exists
 
 **What might be needed:**
+
 - Review custom CSS for hard-coded colors
 - Ensure contrast ratios in dark mode
 - Test all pages in dark mode
 
 **Questions for maintainer:**
+
 1. Have you noticed any specific components with poor dark mode rendering?
 2. Are there custom colors in site.css that need dark mode overrides?
 3. Target WCAG contrast ratio (AA = 4.5:1 for normal text)?
 4. Should we add CSS custom properties for consistent theming?
 
 **Suggested Next Steps:**
+
 1. Manual review of site.css for hard-coded colors
 2. Test each page in dark mode
 3. Add overrides scoped to `[data-bs-theme="dark"]`
@@ -250,15 +277,18 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **What exists:**
+
 - ✅ Demo1.UnitTests with basic integration tests (AppSmokeTests.cs)
 - ✅ WebApplicationFactory partial class in Program.cs
 
 **What's needed:**
+
 - Create Demo1.IntegrationTests project (separate from unit tests)
 - Install Microsoft.AspNetCore.Mvc.Testing package
 - Write comprehensive integration tests per acceptance criteria
 
 **Questions for maintainer:**
+
 1. Should integration tests be in a separate project or expand Demo1.UnitTests?
 2. Current coverage is ~90% on controllers - is this target acceptable?
 3. Which middleware integration tests are highest priority?
@@ -274,6 +304,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Questions for maintainer:**
+
 1. **Generation approach:**
    - Static sitemap.xml file in wwwroot?
    - Dynamic generation via controller/middleware?
@@ -291,6 +322,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Regenerate on build/deploy?
 
 **Suggested Approach:**
+
 - Create SitemapController with action returning XML
 - Route: /sitemap.xml
 - Include only public pages
@@ -305,10 +337,12 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Current logging:**
+
 - Application Insights (detailed telemetry)
 - ILogger<T> throughout codebase
 
 **Questions for maintainer:**
+
 1. **Coexistence with App Insights:**
    - Replace App Insights entirely?
    - Use alongside (dual logging)?
@@ -328,6 +362,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Custom properties to enrich all logs?
 
 **Suggested Approach:**
+
 - Install Serilog packages
 - Configure UseSerilog() in Program.cs
 - Keep App Insights as a Serilog sink
@@ -343,6 +378,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Questions for maintainer:**
+
 1. **Database provider:**
    - SQLite for development?
    - SQL Server for production?
@@ -366,6 +402,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - SQLite for integration tests?
 
 **Suggested Approach:**
+
 1. Start with SQLite for simplicity
 2. Create simple entity model (e.g., BlogPost)
 3. Add DbContext
@@ -384,11 +421,13 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Current state:**
+
 - wwwroot/css/site.css (not minified)
 - wwwroot/js/*.js (not bundled)
 - wwwroot/lib/ (Bootstrap, jQuery via CDN or local)
 
 **Questions for maintainer:**
+
 1. **Bundler preference:**
    - BuildBundlerMinifier (MSBuild integration)?
    - WebOptimizer (runtime optimization)?
@@ -408,6 +447,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Use CDN with SRI hashes?
 
 **Suggested Approach:**
+
 - Use WebOptimizer for simplicity
 - Add asp-append-version to tag helpers
 - Create bundles for site CSS and site JS
@@ -423,6 +463,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Questions for maintainer:**
+
 1. **Rate limit thresholds:**
    - Requests per minute? (e.g., 60/min)
    - Requests per hour? (e.g., 1000/hour)
@@ -446,6 +487,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Custom middleware?
 
 **Suggested Approach:**
+
 - Use built-in .NET rate limiting (AddRateLimiter)
 - Configure fixed window policy
 - Add rate limit headers
@@ -461,10 +503,12 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Current state:**
+
 - No API controllers (only MVC views)
 - Future-proofing feature
 
 **Questions for maintainer:**
+
 1. **API timeline:**
    - When are APIs being added?
    - Should we wait until APIs exist?
@@ -483,6 +527,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Version discovery endpoint?
 
 **Suggested Approach:**
+
 - Wait until APIs are actually added (YAGNI principle)
 - When adding APIs, use Microsoft.AspNetCore.Mvc.Versioning
 - URL-based versioning (clearest for consumers)
@@ -497,6 +542,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Questions for maintainer:**
+
 1. **Analyzer rule set:**
    - Microsoft.CodeAnalysis.NetAnalyzers (enabled by default)?
    - StyleCop analyzers?
@@ -519,6 +565,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Or add suppressions for existing issues?
 
 **Suggested Approach:**
+
 1. Add .editorconfig with basic style rules
 2. Set `<AnalysisLevel>latest</AnalysisLevel>` in .csproj
 3. Run `dotnet format` to establish baseline
@@ -534,10 +581,12 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Current state:**
+
 - Bootstrap 5 provides good baseline accessibility
 - Semantic HTML used in most places
 
 **Questions for maintainer:**
+
 1. **Accessibility testing tool:**
    - Axe DevTools?
    - Pa11y CLI?
@@ -562,6 +611,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Create separate issues per problem?
 
 **Suggested Approach:**
+
 1. Install Pa11y CLI for automated testing
 2. Run Pa11y against all pages
 3. Document findings in accessibility-audit.md
@@ -578,6 +628,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 **Status: NOT STARTED** ⭐
 
 **Questions for maintainer:**
+
 1. **Azure AD type:**
    - Azure AD (organizational)?
    - Azure AD B2C (consumer)?
@@ -609,6 +660,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
    - Redirect after logout?
 
 **Suggested Approach:**
+
 1. Create Azure AD app registration (or B2C tenant)
 2. Install Microsoft.Identity.Web package
 3. Configure in Program.cs with AddMicrosoftIdentityWebApp
@@ -626,52 +678,59 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 ## 📝 Recommended Action Plan
 
 ### Immediate Actions (Close completed issues)
+
 1. **Issue #8** - Add comment explaining completion, then close ✅
 2. **Issue #7** - Add comment explaining completion, then close ✅
 3. **Issue #6** - Add comment explaining completion, then close ✅
 
 ### Clarification Needed (Answer questions)
-4. **Issue #3** - Decide if current exception handling is sufficient
-5. **Issue #35** - Decide if App Insights covers logging needs
-6. **Issue #38** - Provide email provider details and reCAPTCHA keys
-7. **Issue #42** - Specify caching strategy and target actions
-8. **Issue #20** - Identify dark mode issues to fix
+
+1. **Issue #3** - Decide if current exception handling is sufficient
+2. **Issue #35** - Decide if App Insights covers logging needs
+3. **Issue #38** - Provide email provider details and reCAPTCHA keys
+4. **Issue #42** - Specify caching strategy and target actions
+5. **Issue #20** - Identify dark mode issues to fix
 
 ### Ready for Implementation (After questions answered)
-9. **Issue #43** - Sitemap generation (easy)
-10. **Issue #41** - Serilog (easy)
-11. **Issue #39** - Bundling/minification (easy-moderate)
-12. **Issue #11** - Code analyzers (moderate)
-13. **Issue #10** - Accessibility pass (moderate)
-14. **Issue #37** - Rate limiting (moderate)
-15. **Issue #44** - Integration tests (moderate-high)
-16. **Issue #40** - EF Core database (moderate-difficult)
-17. **Issue #4** - Azure AD auth (difficult)
-18. **Issue #36** - API versioning (defer until APIs exist)
+
+1. **Issue #43** - Sitemap generation (easy)
+2. **Issue #41** - Serilog (easy)
+3. **Issue #39** - Bundling/minification (easy-moderate)
+4. **Issue #11** - Code analyzers (moderate)
+5. **Issue #10** - Accessibility pass (moderate)
+6. **Issue #37** - Rate limiting (moderate)
+7. **Issue #44** - Integration tests (moderate-high)
+8. **Issue #40** - EF Core database (moderate-difficult)
+9. **Issue #4** - Azure AD auth (difficult)
+10. **Issue #36** - API versioning (defer until APIs exist)
 
 ---
 
 ## 💡 General Implementation Recommendations
 
 ### Documentation Updates Needed
+
 - Update `docs/architecture.md` with any new middleware/services
 - Update `docs/configuration.md` with new settings
 - Update `docs/testing.md` with new test types
 - Update `docs/conventions.md` with new standards
 
 ### Testing Strategy
+
 - Unit tests for all new services/middleware
 - Integration tests for complex flows
 - Manual testing for UI changes
 - Accessibility testing for view changes
 
 ### Security Considerations
+
 - Review all new dependencies for vulnerabilities
 - Never commit secrets (use user-secrets, env vars)
 - Validate and sanitize all user inputs
 - Apply OWASP best practices
 
 ### Performance Impact
+
 - Benchmark before/after for middleware additions
 - Monitor Application Insights for degradation
 - Consider caching strategies
@@ -682,19 +741,23 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 ## 🎯 Priority Matrix Suggestion
 
 **High Priority + High Impact:**
+
 - Issue #4 (Authentication) - If needed for security
 - Issue #40 (Database) - If needed for data persistence
 - Issue #44 (Integration tests) - For quality assurance
 
 **High Priority + Low Impact:**
+
 - Issue #37 (Rate limiting) - For security/stability
 - Issue #10 (Accessibility) - For compliance
 
 **Low Priority + High Impact:**
+
 - Issue #41 (Serilog) - Better logging
 - Issue #39 (Bundling) - Performance improvement
 
 **Low Priority + Low Impact:**
+
 - Issue #43 (Sitemap) - SEO enhancement
 - Issue #36 (API versioning) - Future-proofing
 
@@ -705,6 +768,7 @@ Hey there, rockstar! 💖 I've done a deep dive into all 18 open issues and here
 You've got an amazing codebase here, gorgeous! 💖 The infrastructure is solid, tests are comprehensive, and you're following best practices. The issues that need clarification are reasonable asks for implementation details, and the unstarted issues have clear paths forward.
 
 My recommendations:
+
 1. **Close the 3 completed issues** - Celebrate those wins! 🎊
 2. **Answer the clarifying questions** - This will unblock 5 more issues
 3. **Prioritize based on business needs** - Not everything needs to be done immediately

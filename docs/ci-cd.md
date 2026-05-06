@@ -11,10 +11,12 @@ The project uses GitHub Actions workflows to automate building, testing, securit
 ### 1. Build and Test (`dotnet.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` branch
 
 **Jobs:**
+
 - `lint-docs`: Validates Markdown documentation
 - `build`: Compiles, tests, and publishes the application (reusable workflow)
 - `security-scan`: Scans dependencies for vulnerabilities
@@ -23,10 +25,12 @@ The project uses GitHub Actions workflows to automate building, testing, securit
 ### 2. Deploy (`deploy.yml`)
 
 **Triggers:**
+
 - Push to `main` branch
 - Git tags matching `v*` pattern
 
 **Jobs:**
+
 - `build`: Builds and tests the application
 - `docker`: Creates and publishes Docker images
 - `deploy-azure`: Deploys to Azure Web Apps (when configured)
@@ -37,6 +41,7 @@ The project uses GitHub Actions workflows to automate building, testing, securit
 A reusable workflow that can be called by other workflows to standardize build and test steps.
 
 **Inputs:**
+
 - `dotnet-version`: .NET SDK version (default: "9.0.x")
 - `install-playwright`: Whether to install Playwright browsers (default: "true")
 
@@ -53,11 +58,13 @@ To optimize CI/CD performance and reduce build times, the project implements com
 **Invalidation:** Cache is invalidated when any `.csproj` or `.sln` file changes.
 
 **Benefits:**
+
 - Reduces `dotnet restore` time by ~70-80%
 - Minimizes network bandwidth usage
 - Speeds up parallel jobs that share the same dependencies
 
 **Implemented in:**
+
 - `build-and-test.yml` (main build job)
 - `dotnet.yml` (security-scan and code-quality jobs)
 
@@ -70,11 +77,13 @@ To optimize CI/CD performance and reduce build times, the project implements com
 **Invalidation:** Cache is invalidated when project files change.
 
 **Benefits:**
+
 - Avoids reinstalling global .NET tools (e.g., Playwright CLI)
 - Reduces tool installation time
 - Consistent tool versions across builds
 
 **Implemented in:**
+
 - `build-and-test.yml`
 - `dotnet.yml` (security-scan and code-quality jobs)
 
@@ -87,11 +96,13 @@ To optimize CI/CD performance and reduce build times, the project implements com
 **Invalidation:** Cache is invalidated when the Playwright test project file changes.
 
 **Benefits:**
+
 - Avoids downloading browser binaries (~200-500 MB) on every run
 - Reduces CI time by 2-5 minutes per run
 - Lower bandwidth usage and faster test execution
 
 **Implemented in:**
+
 - `build-and-test.yml` (conditional on `install-playwright` input)
 
 ### Docker Build Cache
@@ -101,15 +112,18 @@ To optimize CI/CD performance and reduce build times, the project implements com
 **Mode:** `max` (caches all layers)
 
 **Benefits:**
+
 - Reuses Docker layers across builds
 - Reduces Docker build time by ~50-70%
 - Speeds up image creation for deployments
 - Efficient storage with automatic cleanup
 
 **Implemented in:**
+
 - `deploy.yml` (docker job)
 
 **How it works:**
+
 - First build: All layers are built and cached
 - Subsequent builds: Only changed layers are rebuilt
 - GitHub Actions automatically manages cache lifecycle
@@ -117,12 +131,14 @@ To optimize CI/CD performance and reduce build times, the project implements com
 ## 📊 Performance Impact
 
 ### Before Caching (PR #33 baseline)
+
 - Full restore: ~45-60 seconds
 - Tool installation: ~30-45 seconds
 - Playwright browser download: ~2-5 minutes
 - Docker build: ~3-5 minutes
 
 ### After Complete Caching (This PR)
+
 - Cached restore: ~5-10 seconds (85-90% faster)
 - Cached tools: ~5 seconds (90% faster)
 - Cached Playwright browsers: ~10-15 seconds (80-90% faster)
@@ -150,10 +166,12 @@ Cache not found for input keys: Linux-nuget-abc123...
 ### Manual Cache Invalidation
 
 Caches are automatically invalidated when:
+
 - Project files (`.csproj`, `.sln`) change
 - Cache storage limit is reached (GitHub rotates old caches)
 
 To force cache refresh:
+
 1. Make a minor change to a `.csproj` or `.sln` file
 2. Or wait for natural cache expiration (7 days for unused caches)
 

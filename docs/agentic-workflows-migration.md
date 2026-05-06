@@ -12,9 +12,10 @@ The `gh aw secrets bootstrap` analysis confirmed only **one secret** needs manua
 
 This is a fine-grained PAT that powers the Copilot AI engine in the workflows.
 
-**Create it at:** https://github.com/settings/personal-access-tokens/new
+**Create it at:** <https://github.com/settings/personal-access-tokens/new>
 
 **Configuration:**
+
 - Token name: `Agentic Workflows Copilot`
 - Expiration: 90 days (recommended for testing)
 - Resource owner: Your personal account
@@ -22,6 +23,7 @@ This is a fine-grained PAT that powers the Copilot AI engine in the workflows.
 - Permissions → **Copilot Requests: Read-only**
 
 **Set it:**
+
 ```bash
 gh aw secrets set COPILOT_GITHUB_TOKEN --value "github_pat_YOUR_TOKEN_HERE"
 ```
@@ -29,6 +31,7 @@ gh aw secrets set COPILOT_GITHUB_TOKEN --value "github_pat_YOUR_TOKEN_HERE"
 > **Note:** Must start with `github_pat_`. Classic PATs (`ghp_...`) are not supported.
 
 ### Auto-Managed Secrets (no action needed)
+
 - `GH_AW_GITHUB_TOKEN` — Auto-provisioned by gh-aw infrastructure
 - `GH_AW_GITHUB_MCP_SERVER_TOKEN` — Auto-provisioned by gh-aw infrastructure  
 - `GH_AW_AGENT_TOKEN` — Used for `assign-to-agent`; same as COPILOT_GITHUB_TOKEN
@@ -39,6 +42,7 @@ gh aw secrets set COPILOT_GITHUB_TOKEN --value "github_pat_YOUR_TOKEN_HERE"
 1. **Set the secret** (see above)
 2. **Merge PR #85** into main
 3. **Delete old YAML pipelines** (they trigger on same events and will conflict):
+
    ```bash
    git rm .github/workflows/pipeline-controller.yml
    git rm .github/workflows/pipeline-implement.yml
@@ -49,6 +53,7 @@ gh aw secrets set COPILOT_GITHUB_TOKEN --value "github_pat_YOUR_TOKEN_HERE"
    git commit -m "chore: remove old YAML pipelines (replaced by gh-aw)"
    git push
    ```
+
 4. **Test the pipeline** — Open a new issue and watch:
    - `pipeline-triage.lock.yml` fires → classifies issue → applies `pipeline:planning` label
    - `pipeline-implement.lock.yml` fires → creates plan → assigns Copilot coding agent
@@ -56,7 +61,7 @@ gh aw secrets set COPILOT_GITHUB_TOKEN --value "github_pat_YOUR_TOKEN_HERE"
 
 ## Architecture Overview
 
-```
+```text
 Issue Opened
     │
     ▼

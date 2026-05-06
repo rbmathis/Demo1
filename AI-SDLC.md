@@ -6,7 +6,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 ## Architecture Overview
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────────┐
 │                                                                      │
 │   Issue Opened                                                       │
@@ -44,13 +44,14 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 ### Stage 1: Triage
 
 | Attribute | Value |
-|-----------|-------|
+| ----------- | ------- |
 | **Trigger** | `issue_comment: [created]` when `rbmathis` comments `/triage` |
 | **Workflow** | `pipeline-triage.md` |
 | **Engine** | Copilot |
 | **Output** | Classification comment, type labels, dispatches Plan |
 
 The triage agent:
+
 - Reads the issue title and body
 - Classifies by type, difficulty, priority, and scope
 - Determines which specialist agents are needed
@@ -61,13 +62,14 @@ The triage agent:
 ### Stage 2: Plan
 
 | Attribute | Value |
-|-----------|-------|
+| ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Triage with `issue_number` input) |
 | **Workflow** | `pipeline-plan.md` |
 | **Engine** | Copilot (Claude Opus 4.6) |
 | **Output** | Detailed implementation plan comment, dispatches Implement |
 
 The plan agent:
+
 - Reads the issue and triage comment
 - Analyzes the codebase to understand current state
 - Creates a detailed implementation plan including:
@@ -81,13 +83,14 @@ The plan agent:
 ### Stage 3: Implement
 
 | Attribute | Value |
-|-----------|-------|
+| ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Plan with `issue_number` input) |
 | **Workflow** | `pipeline-implement.md` |
 | **Engine** | Copilot |
 | **Output** | Copilot coding agent assigned, PR created |
 
 The implement agent:
+
 - Reads the issue and finds the plan comment
 - Posts a status comment confirming agent assignment
 - Assigns Copilot coding agent to the issue with custom instructions:
@@ -102,7 +105,7 @@ The implement agent:
 ### Stage 4: Review
 
 | Attribute | Value |
-|-----------|-------|
+| ----------- | ------- |
 | **Trigger** | `pull_request: [review_requested, ready_for_review]` |
 | **Workflow** | `pipeline-review.md` |
 | **Engine** | Copilot |
@@ -110,6 +113,7 @@ The implement agent:
 | **Output** | PR review + implementation report on linked issue |
 
 The review agent:
+
 - **Posts a "Review In Progress" status comment** on the linked issue immediately (confirms code is complete)
 - Reads the PR and changed files
 - Delegates to specialist review agents:
@@ -126,13 +130,14 @@ The review agent:
 ### Stage 5: Deploy
 
 | Attribute | Value |
-|-----------|-------|
+| ----------- | ------- |
 | **Trigger** | `pull_request: [closed]` |
 | **Workflow** | `pipeline-deploy.md` |
 | **Engine** | Copilot |
 | **Output** | Issue closed with deployment summary |
 
 The deploy agent:
+
 - Checks if the PR was merged (noop if closed without merge)
 - Finds the linked issue from "Closes #N" in PR body
 - Reads the full pipeline history from issue comments
@@ -145,7 +150,7 @@ The deploy agent:
 
 The issue itself serves as the pipeline's state file. Each stage appends a structured comment:
 
-```
+```text
 Issue #100: "Add a /health endpoint"
 │
 ├── 🏷️ Pipeline — Triage        (classification, agents needed)
@@ -165,7 +170,7 @@ Downstream stages read upstream comments to understand context — no separate s
 Labels are used for **classification only**, never as pipeline triggers:
 
 | Label | Purpose | Applied By |
-|-------|---------|-----------|
+| ------- | --------- | ----------- |
 | `bug` | Issue type | Triage |
 | `enhancement` | Issue type | Triage |
 | `feature` | Issue type | Triage |
@@ -180,7 +185,7 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 ## Agent Roster
 
 | Agent | Role | Used In |
-|-------|------|---------|
+| ------- | ------ | --------- |
 | `backend` | Controllers, Models, Services, Middleware | Implement |
 | `frontend` | Views, Razor, CSS, JavaScript | Implement |
 | `security` | Auth, headers, OWASP | Implement |
@@ -195,7 +200,7 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 ## Workflow Files
 
 | File | Purpose | Trigger |
-|------|---------|---------|
+| ------ | --------- | --------- |
 | `pipeline-triage.md` | Classify and dispatch | `issue_comment: [created]` when `rbmathis` comments `/triage` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
@@ -211,11 +216,13 @@ All workflows are [GitHub Agentic Workflows](https://github.github.com/gh-aw/) (
 Failures are logged as comments on the issue. There are no automatic retry or rollback mechanisms — the issue comment history provides full telemetry of what happened and where it stopped.
 
 If a stage fails:
+
 - The workflow's conclusion comment is posted on the issue
 - A human can investigate and re-run the workflow manually from the Actions tab
 - The issue remains open with full context of what was attempted
 
 If code review requests changes:
+
 - Copilot coding agent pushes fixes to the PR branch
 - `review_requested` event re-triggers the Review workflow when agent finishes fixes
 
@@ -223,7 +230,7 @@ If code review requests changes:
 
 ## How It Works End-to-End
 
-```
+```text
 1. Developer opens an issue describing work needed
 2. Triage classifies the issue and dispatches Plan            (~2 min)  [automatic]
 3. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
@@ -238,6 +245,7 @@ If code review requests changes:
 ```
 
 **Human touchpoints (3):**
+
 1. Approve the review workflow run (one-time per new workflow)
 2. Merge the PR after reviewing the code and the agent's review
 3. Close the issue after confirming the fix is deployed
@@ -249,10 +257,12 @@ Everything else is fully autonomous.
 ## Local Development
 
 ### Prerequisites
+
 - .NET 9 SDK
 - GitHub repository with Actions enabled
 
 ### Testing Locally
+
 ```bash
 # Build
 dotnet build --configuration Release
@@ -265,6 +275,7 @@ dotnet run
 ```
 
 ### Triggering the Pipeline
+
 1. Create a new issue with a descriptive title and body
 2. Watch the pipeline stages execute via issue comments
 3. Each stage posts a structured comment as it completes

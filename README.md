@@ -14,7 +14,6 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 - **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
 - **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
 
-
 ## Getting Started
 
 ### Prerequisites
@@ -37,6 +36,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
    ```
 
 3. **Run with hot reload (development):**
+
    ```bash
    dotnet watch run
    ```
@@ -150,7 +150,7 @@ This project uses an **AI-SDLC Pipeline** powered by [GitHub Agentic Workflows](
 
 When you open an issue, the pipeline runs autonomously through these stages:
 
-```
+```text
 Issue opened
     │
     ▼
@@ -187,7 +187,7 @@ Issue opened
 ### Pipeline Workflows
 
 | Workflow | Trigger | Purpose |
-|----------|---------|---------|
+| ---------- | --------- | --------- |
 | `pipeline-triage.md` | Issue comment `/triage` by `rbmathis` | AI classification and routing |
 | `pipeline-implement.md` | `pipeline:planning` label | Plan + assign Copilot agent |
 | `pipeline-review.md` | PR opened/updated | Multi-agent code review |
@@ -201,7 +201,7 @@ Issue opened
 The pipeline delegates to these custom agents (defined in `.github/agents/`):
 
 | Agent | Role |
-|-------|------|
+| ------- | ------ |
 | `backend` | Controllers, Models, Services, Middleware |
 | `frontend` | Views, Razor templates, CSS, JavaScript |
 | `security` | OWASP vulnerabilities, CSRF, XSS, auth |
@@ -226,6 +226,7 @@ This project includes custom GitHub Copilot agents that you can chat with direct
 Use `@agent-name` in Copilot Chat to invoke them:
 
 #### @code-reviewer 💖
+
 Reviews your code for quality and best practices.
 
 ```bash

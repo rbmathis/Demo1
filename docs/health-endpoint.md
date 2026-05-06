@@ -13,12 +13,12 @@ No authentication is required. The endpoint is publicly accessible for platform 
 
 ## Response Fields
 
-| Field         | Type       | Description |
-| ------------- | ---------- | ----------- |
-| `version`     | `string`   | Application version read from the `VERSION` file. |
-| `uptime`      | `string`   | Human-readable application uptime value. |
-| `timestamp`   | `datetime` | Current UTC timestamp when the response is generated. |
-| `environment` | `string`   | Current hosting environment name (for example, `Development` or `Production`). |
+| Field         | Type       | Description                                                                      |
+| ------------- | ---------- | -------------------------------------------------------------------------------- |
+| `version`     | `string`   | Application version read from the `VERSION` file.                                |
+| `uptime`      | `string`   | Human-readable application uptime value.                                         |
+| `timestamp`   | `datetime` | Current UTC timestamp when the response is generated.                            |
+| `environment` | `string`   | Current hosting environment name (for example, `Development` or `Production`).   |
 
 ## Example Response
 
