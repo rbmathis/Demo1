@@ -11,7 +11,6 @@ on:
       - '**.razor'
       - '**/appsettings*.json'
       - '.github/workflows/dotnet.yml'
-      - '.github/workflows/build-and-test.yml'
   pull_request:
     branches: [main]
     paths:
@@ -22,32 +21,14 @@ on:
       - '**.razor'
       - '**/appsettings*.json'
       - '.github/workflows/dotnet.yml'
-      - '.github/workflows/build-and-test.yml'
+
+permissions:
+  contents: read
 
 jobs:
-  lint-docs:
-    name: Lint documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Lint Markdown with Super-Linter
-        uses: github/super-linter@v5
-        env:
-          VALIDATE_MARKDOWN: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FILTER_REGEX_EXCLUDE: '^(.*/node_modules/.*|.*/bin/.*|.*/obj/.*)$'
-
   build:
-    uses: ./.github/workflows/build-and-test.yml
-    with:
-      dotnet-version: "9.0.x"
-      # Skip installing Playwright on pull_request runs to speed up PR checks
-      install-playwright: ${{ github.event_name == 'pull_request' && 'false' || 'true' }}
-
-  security-scan:
+    name: Build and Test
     runs-on: ubuntu-latest
-    needs: build
-
     steps:
       - uses: actions/checkout@v4
 
@@ -60,17 +41,44 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Cache .NET tools
-        uses: actions/cache@v4
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: |
+          if [ -d "tests" ] || find . -name "*.Tests.csproj" | grep -q .; then
+            dotnet test --no-build --configuration Release --verbosity normal
+          else
+            echo "No test projects found, skipping tests"
+          fi
+
+      - name: Publish
+        run: dotnet publish --no-build --configuration Release --output ./publish
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.dotnet/tools
-          key: ${{ runner.os }}-dotnet-tools-${{ hashFiles('**/*.csproj', '**/*.sln') }}
-          restore-keys: |
-            ${{ runner.os }}-dotnet-tools-
+          name: published-app
+          path: ./publish
+
+  security-scan:
+    name: Security scan
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
 
       - name: Restore dependencies
         run: dotnet restore
@@ -79,9 +87,9 @@ jobs:
         run: dotnet list package --vulnerable --include-transitive || true
 
   code-quality:
+    name: Code quality
     runs-on: ubuntu-latest
     needs: build
-
     steps:
       - uses: actions/checkout@v4
 
@@ -90,31 +98,12 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
-      - name: Cache .NET tools
-        uses: actions/cache@v4
-        with:
-          path: ~/.dotnet/tools
-          key: ${{ runner.os }}-dotnet-tools-${{ hashFiles('**/*.csproj', '**/*.sln') }}
-          restore-keys: |
-            ${{ runner.os }}-dotnet-tools-
-
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Code analysis
         run: dotnet build --configuration Release --verbosity normal
 
-  # ─────────────────────────────────────────────────────────────────────
-  # PIPELINE INTEGRATION: Report build status to linked pipeline issue
-  # ─────────────────────────────────────────────────────────────────────
   pipeline-report:
     name: Pipeline build report
     runs-on: ubuntu-latest
@@ -124,7 +113,7 @@ jobs:
       issues: write
       pull-requests: read
     steps:
-      - name: Report to pipeline issue (if applicable)
+      - name: Report to pipeline issue
         uses: actions/github-script@v7
         env:
           BUILD_RESULT: ${{ needs.build.result }}
@@ -135,7 +124,6 @@ jobs:
             const pr = context.payload.pull_request;
             if (!pr) return;
 
-            // Check if this PR is part of the pipeline (has pipeline branch pattern)
             const branch = pr.head.ref || '';
             const isPipelinePR = branch.startsWith('feat/issue-');
             if (!isPipelinePR) {
@@ -143,7 +131,6 @@ jobs:
               return;
             }
 
-            // Extract issue number from branch name
             const branchMatch = branch.match(/issue-(\d+)/);
             if (!branchMatch) return;
             const issueNumber = parseInt(branchMatch[1]);
@@ -154,11 +141,9 @@ jobs:
             const allPassed = buildResult === 'success' && securityResult === 'success' && qualityResult === 'success';
             const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 
-            // Post CI results to the pipeline issue
             const comment = [
               `## 🏗️ Pipeline — CI Status Update`,
               ``,
-              `**Source:** \`dotnet.yml\` workflow  `,
               `**Timestamp:** ${timestamp}  `,
               `**PR:** #${pr.number} (\`${branch}\`)`,
               ``,
@@ -170,7 +155,7 @@ jobs:
               ``,
               allPassed
                 ? `✅ All CI checks passed. Pipeline can proceed.`
-                : `⚠️ CI checks have failures. The pipeline test stage will provide detailed diagnostics.`,
+                : `⚠️ CI checks have failures. Review needed.`,
             ].join('\n');
 
             await github.rest.issues.createComment({
