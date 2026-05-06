@@ -7,7 +7,7 @@ This folder contains **custom agent definitions** for GitHub Copilot. Each file 
 This repository implements a **fully-autonomous AI-driven SDLC pipeline** that runs both remotely (via GitHub Agentic Workflows) and locally (via Copilot CLI).
 
 ```
-🏷️ Triage → 📋 Plan → 🔨 Implement → 👀 Review → 🚀 Deploy
+🏷️ Triage → 📋 Plan → 🔨 Implement → 👀 Review → 🚀 Land
 ```
 
 **Local usage (Copilot CLI):** Say "triage issue 135" — the `pipeline` agent auto-chains through all stages.
@@ -72,10 +72,10 @@ Instructions, persona, and behavioral guidelines in Markdown...
 ### `pipeline.agent.md`
 
 **Tools:** `read`, `search`, `execute`, `github`, `agent`, `web`
-**Agents:** `triage`, `plan`, `implement`, `review`, `deploy`
-**Argument hint:** "Say 'triage issue 135' to run the full pipeline on an issue"
+**Agents:** `triage`, `plan`, `implement`, `review`, `land`
+**Argument hint:** "Say 'run issue 135' to run the full pipeline on an issue"
 
-The entry point for the autonomous pipeline. Auto-chains through all stages (triage → plan → implement → review → deploy) without pausing. Handles retry loops if review requests changes (max 2 cycles). Choose this agent to run the full pipeline on an issue.
+The entry point for the autonomous pipeline. Auto-chains through all stages (triage → plan → implement → review → land) without pausing. Handles retry loops if review requests changes (max 2 cycles). Choose this agent to run the full pipeline on an issue.
 
 ---
 
@@ -114,11 +114,11 @@ Multi-dimensional PR reviewer covering architecture, security, code quality, tes
 
 ---
 
-### `deploy.agent.md`
+### `land.agent.md`
 
-**Tools:** `read`, `search`, `execute`, `github`, `web`
+**Tools:** `read`, `search`, `execute`, `github`
 
-Merges approved PRs, verifies deployment health, closes issues. Choose this agent to deploy an approved PR.
+Merges approved PRs to main and updates the issue label to `local/done`. Does not close the issue. Choose this agent to land an approved PR.
 
 ---
 
