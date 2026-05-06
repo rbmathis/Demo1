@@ -14,10 +14,7 @@ runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
 imports:
-  - .github/agents/code-reviewer.agent.md
-  - .github/agents/security-auditor.agent.md
-  - .github/agents/testing.agent.md
-  - .github/agents/docs.agent.md
+  - .github/agents/review.agent.md
 
 permissions:
   contents: read
