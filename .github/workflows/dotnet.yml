@@ -3,8 +3,26 @@ name: .NET Build and Test
 on:
   push:
     branches: [main, develop]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
+      - '**.cshtml'
+      - '**.razor'
+      - '**/appsettings*.json'
+      - '.github/workflows/dotnet.yml'
+      - '.github/workflows/build-and-test.yml'
   pull_request:
     branches: [main]
+    paths:
+      - '**.cs'
+      - '**.csproj'
+      - '**.sln'
+      - '**.cshtml'
+      - '**.razor'
+      - '**/appsettings*.json'
+      - '.github/workflows/dotnet.yml'
+      - '.github/workflows/build-and-test.yml'
 
 jobs:
   lint-docs:
