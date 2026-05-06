@@ -1,6 +1,7 @@
 using Demo1.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using IOFile = System.IO.File;
 
 namespace Demo1.Controllers;
 
@@ -11,7 +12,9 @@ namespace Demo1.Controllers;
 [Route("health")]
 public class HealthController : Controller
 {
+    // Hard upper bound to avoid reading unexpectedly large files.
     private const int MaxVersionFileBytes = 4 * 1024;
+    // Version strings should be concise and predictable for monitoring output.
     private const int MaxVersionLength = 64;
     private readonly IUptimeService _uptimeService;
     private readonly IWebHostEnvironment _environment;
@@ -78,7 +81,7 @@ public class HealthController : Controller
                 return "unknown";
             }
 
-            using var stream = System.IO.File.OpenRead(fullPath);
+            using var stream = IOFile.OpenRead(fullPath);
             using var reader = new StreamReader(stream);
             var version = (reader.ReadLine() ?? string.Empty).Trim();
             if (version.Length > MaxVersionLength)

@@ -66,6 +66,7 @@ public class HealthControllerTests
     public void Get_WithVersionFile_Returns_Version_FromContentRoot()
     {
         const string expectedVersion = "9.9.9-test";
+        // Include a trailing newline to verify trimmed VERSION file content.
         var contentRootPath = CreateTemporaryContentRoot($"{expectedVersion}{Environment.NewLine}");
         try
         {

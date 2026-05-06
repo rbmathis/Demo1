@@ -161,8 +161,8 @@ if (azureAppConfigRegistered)
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapHealthChecks("/health/ready");
 app.MapControllers();
+app.MapHealthChecks("/health/ready");
 
 app.MapControllerRoute(
     name: "default",
