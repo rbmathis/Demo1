@@ -217,7 +217,7 @@ If a stage fails:
 
 If code review requests changes:
 - Copilot coding agent pushes fixes to the PR branch
-- `synchronize` event re-triggers the Review workflow automatically
+- `review_requested` event re-triggers the Review workflow when agent finishes fixes
 
 ---
 
@@ -225,16 +225,24 @@ If code review requests changes:
 
 ```
 1. Developer opens an issue describing work needed
-2. Triage classifies the issue and dispatches Plan          (~2 min)
-3. Plan analyzes the codebase and posts implementation plan (~3 min)
-4. Implement assigns Copilot coding agent                   (~2 min)
-5. Copilot agent writes code, tests, docs, creates PR      (~5-15 min)
-6. Review runs multi-agent code review on the PR            (~3 min)
-7. Developer merges PR (or agent auto-merges if approved)
-8. Deploy verifies merge and closes issue with summary      (~1 min)
+2. Triage classifies the issue and dispatches Plan            (~2 min)  [automatic]
+3. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
+4. Implement assigns Copilot coding agent                     (~2 min)  [automatic]
+5. Copilot agent writes code, tests, docs, creates PR        (~5-15 min) [automatic]
+6. ⏸️  HUMAN approves the workflow run (first-time gate)                  [manual]
+7. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
+8. Review posts implementation report on linked issue                    [automatic]
+9. ⏸️  HUMAN reviews PR, merges or requests changes                      [manual]
+10. Deploy verifies merge and posts final summary             (~1 min)  [automatic]
+11. ⏸️  HUMAN closes the issue                                           [manual]
 ```
 
-**Total human intervention for happy path: merge the PR**
+**Human touchpoints (3):**
+1. Approve the review workflow run (one-time per new workflow)
+2. Merge the PR after reviewing the code and the agent's review
+3. Close the issue after confirming the fix is deployed
+
+Everything else is fully autonomous.
 
 ---
 
