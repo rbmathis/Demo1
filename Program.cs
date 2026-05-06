@@ -18,6 +18,7 @@ builder.Services.AddSingleton<IWeatherService, MockWeatherService>();
 builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>();
 builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
+builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
 
 // ✅ 12-FACTOR: Configure distributed cache based on environment
 var cacheProvider = builder.Configuration["CacheProvider"] ?? "Memory";
@@ -145,6 +146,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ServerTimingMiddleware>();
 app.UseSecurityHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
 app.UseRouting();
