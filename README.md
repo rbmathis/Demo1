@@ -18,7 +18,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 
 ### Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK or later
 - Visual Studio Code with C# Dev Kit extension
 
 ### Running the Application
@@ -101,11 +101,12 @@ The debugger will launch the application and open it in your default browser.
 - Configuration: [`docs/configuration.md`](docs/configuration.md)
 - Testing guidelines: [`docs/testing.md`](docs/testing.md)
 - CI/CD pipeline: [`docs/ci-cd.md`](docs/ci-cd.md)
+- Build performance: [`docs/build-performance.md`](docs/build-performance.md) — SDK pinning, shared compilation, and analyzer suppression
 - Security Headers Playground: [`docs/security-lab.md`](docs/security-lab.md) — interactive lab for toggling HTTP security headers and observing attack behaviors
 
 ### XML Documentation
 
-- The project generates XML docs on build: `bin/<Configuration>/<TargetFramework>/Demo1.xml`
+- XML docs are generated in **Release builds only** (see [`docs/build-performance.md`](docs/build-performance.md) for rationale): `bin/Release/<TargetFramework>/Demo1.xml`
 - All **public** APIs should include `///` XML comments (enforced by the Documentation Helper CI agent)
 
 ## Additional Notes
