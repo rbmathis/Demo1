@@ -2,19 +2,6 @@
 
 Prioritized list of improvements for this repository, ordered by severity and impact.
 
----
-
-## 1. CSRF Vulnerability — State Mutations via GET
-
-**Severity:** Critical
-**Area:** `Controllers/HomeController.cs`, `Views/Home/GodObjectProfile.cshtml`
-
-The `GodObjectProfile` action mutates state via GET query parameters (`?action=update&field=Name&value=...`). Links like `<a href="?action=update&field=Name&value=UpdatedName">` can be exploited by attackers embedding these URLs in external pages.
-
-**Fix:**
-- Convert state-changing operations to POST requests
-- Add `[HttpPost]` and `[ValidateAntiForgeryToken]` attributes
-- Use form submissions instead of anchor links for mutations
 
 ---
 
