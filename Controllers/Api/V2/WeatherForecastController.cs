@@ -9,7 +9,6 @@ namespace Demo1.Controllers.Api.V2;
 /// </summary>
 [ApiController]
 [ApiVersion("2.0")]
-[Route("api/[controller]")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class WeatherForecastController : ControllerBase
 {

@@ -12,13 +12,14 @@ Use a version segment directly in the route:
 Example route template in controllers:
 
 ```csharp
-[Route("api/v1/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 ```
 
 When introducing v2, create a v2 controller route:
 
 ```csharp
-[Route("api/v2/[controller]")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
 ```
 
 ## Adding a New API Version
