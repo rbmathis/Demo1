@@ -35,22 +35,22 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   create-pull-request-review-comment:
     max: 5
-  commit-files:
+  push-to-pull-request-branch:
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-deliver]
+  dispatch-workflow: [pipeline-finish]
 ---
 
 ## Pipeline — Docs Agent
 
-You are the documentation agent. After code has been reviewed and approved, you add XML documentation and update docs/ files, then dispatch delivery.
+You are the documentation agent. After code has been reviewed and approved, you add XML documentation and update docs/ files, then dispatch finish.
 
 **Target issue:** #${{ github.event.inputs.issue_number }}
 
@@ -68,7 +68,7 @@ You are the documentation agent. After code has been reviewed and approved, you 
    - If configuration changed → update `docs/configuration.md`
 6. **Commit documentation changes** to the PR's feature branch
 7. **Post a documentation summary comment** on issue #${{ github.event.inputs.issue_number }} (format below)
-8. **Dispatch `pipeline-deliver`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+8. **Dispatch `pipeline-finish`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Documentation Standards
 
@@ -107,7 +107,7 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 
 ## Important
 
-- Documentation is non-blocking — if you cannot document something, note it in the comment but still dispatch deliver
+- Documentation is non-blocking — if you cannot document something, note it in the comment but still dispatch finish
 - Never modify implementation code — only add documentation comments and docs/ files
-- Always dispatch `pipeline-deliver` after completing (even if docs were minimal)
+- Always dispatch `pipeline-finish` after completing (even if docs were minimal)
 - Keep XML docs concise — don't over-document obvious getters/setters

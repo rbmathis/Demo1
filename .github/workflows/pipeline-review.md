@@ -3,6 +3,9 @@ name: "Pipeline — Review"
 description: "Multi-agent code review on pull requests"
 
 on:
+  label_command:
+    name: cloud/review
+    events: [issues]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -40,7 +43,7 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -80,7 +83,7 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
    - **COMMENT** — suggestions but nothing blocking
 9. **Post an implementation summary on issue #${{ github.event.inputs.issue_number }}** (MANDATORY — use format below)
 10. **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-11. **Dispatch the deploy workflow** — call `dispatch_workflow` for `pipeline-deploy` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+11. **Dispatch the next stage** — based on your verdict, dispatch either `pipeline-docs` (on approve/comment) or `pipeline-implement` (on request changes) — see Dispatch Chain below
 
 ## Review Checklist
 

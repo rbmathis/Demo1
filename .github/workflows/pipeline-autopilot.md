@@ -35,7 +35,7 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -53,11 +53,11 @@ You are the Autopilot — the single entry point for the cloud AI-SDLC pipeline.
 Once you dispatch triage, the pipeline auto-chains through all stages:
 
 ```
-TRIAGE → PLAN → IMPLEMENT → (notify-code-complete) → REVIEW ─┬─ DOCS → DELIVER → DEPLOY
-                                                               └─ (rework loop, max 2)
+TRIAGE → PLAN → IMPLEMENT → ⏸️ (human applies cloud/review label) → REVIEW ─┬─ DOCS → FINISH
+                                                                              └─ (rework loop, max 2)
 ```
 
-Each stage dispatches the next. You don't need to wait or monitor — the chain is self-sustaining.
+Each stage dispatches the next. The only manual step is applying the `cloud/review` label after Copilot finishes coding.
 
 ## Your Task
 

@@ -33,7 +33,7 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/deploying", "cloud/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/done"]
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -106,9 +106,15 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 ## 🚀 Pipeline — Implement
 
 **Timestamp:** [UTC time]
-**Status:** Assigning Copilot coding agent
+**Status:** Copilot coding agent assigned
 
-The plan has been reviewed and the coding agent is being assigned to execute the implementation.
+The plan has been reviewed and the coding agent has been assigned to execute the implementation.
+
+### ⏸️ Pipeline paused — waiting for Copilot to finish
+
+The coding agent works asynchronously. When it finishes, a PR will be created and you will receive a notification that the PR is ready for review.
+
+**To resume the pipeline:** apply the `cloud/review` label to this issue. That will trigger the automated review stage, and the rest of the pipeline (review → docs → merge → close) will run automatically.
 ```
 
 ## Important

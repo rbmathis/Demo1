@@ -45,24 +45,24 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 │                   │ (rework)  │              └──────────┘                 │
 │                   └───────────┘              adds XML docs,               │
 │                                              updates docs/,               │
-│                                              dispatches Deliver            │
+│                                              dispatches Finish            │
 │                                                    │                      │
 │                                                    ▼                      │
-│                   ┌──────────┐              ┌──────────┐                 │
-│                   │  DEPLOY  │◀─────────────│ DELIVER  │                 │
-│                   └──────────┘              └──────────┘                 │
-│                   verifies merge,           squash merges PR,            │
-│                   posts summary,            deletes branch,              │
-│                   closes issue              dispatches Deploy             │
+│                                              ┌──────────┐                 │
+│                                              │  FINISH  │                 │
+│                                              └──────────┘                 │
+│                                              squash merges PR,            │
+│                                              deletes branch,              │
+│                                              closes issue                 │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Chaining mechanism:** `dispatch-workflow` safe output (agentic stages) and `workflow_dispatch` API call (notify-code-complete bridge). Each stage explicitly dispatches the next, eliminating race conditions.
+**Chaining mechanism:** `dispatch-workflow` safe output (agentic stages). Each stage explicitly dispatches the next, eliminating race conditions. The one exception is the Implement→Review gap: after Copilot coding agent finishes, a human applies the `cloud/review` label to resume the pipeline.
 
 **Review loop:** If review requests changes, it re-dispatches implement (max 2 rework cycles). After 2 failures, the pipeline halts for human intervention.
 
-**State tracking:** Each stage posts a structured comment (✈️ Autopilot, 🏷️ Triage, 📋 Plan, 🚀 Implement, ✅ Code Complete, 🔄 Review, 📚 Docs, 🚀 Delivered, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
+**State tracking:** Each stage posts a structured comment (✈️ Autopilot, 🏷️ Triage, 📋 Plan, 🚀 Implement, ✅ Code Complete, 🔄 Review, 📚 Docs, ✅ Complete) to the issue. Downstream stages read upstream comments to understand context.
 
 ---
 
@@ -151,7 +151,7 @@ The implement agent:
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `workflow_dispatch` (dispatched by notify-code-complete with `issue_number` input) |
+| **Trigger** | `cloud/review` label on issue, or `workflow_dispatch` with `issue_number` input |
 | **Workflow** | `pipeline-review.md` |
 | **Engine** | Copilot |
 | **Imports** | code-reviewer, security-auditor, testing, docs agents |
@@ -174,7 +174,7 @@ The review agent:
 
 ### Review Loop (Rework)
 
-If the review agent submits `REQUEST_CHANGES`, it re-dispatches `pipeline-implement`. The coding agent reads the review comments and fixes the issues, creating a new commit on the same PR. The notify-code-complete bridge fires again, dispatching review. This loop repeats up to 2 times before halting.
+If the review agent submits `REQUEST_CHANGES`, it re-dispatches `pipeline-implement`. The coding agent reads the review comments and fixes the issues, creating a new commit on the same PR. When Copilot finishes, the user applies the `cloud/review` label again to restart review. This loop repeats up to 2 times before halting.
 
 ### Stage 5: Docs
 
@@ -184,7 +184,7 @@ If the review agent submits `REQUEST_CHANGES`, it re-dispatches `pipeline-implem
 | **Workflow** | `pipeline-docs.md` |
 | **Engine** | Copilot |
 | **Imports** | docs agent |
-| **Output** | XML docs + markdown updates committed, dispatches Deliver |
+| **Output** | XML docs + markdown updates committed, dispatches Finish |
 
 The docs agent:
 
@@ -194,59 +194,35 @@ The docs agent:
 - Updates docs/ markdown if architecture or APIs changed
 - Commits documentation to the feature branch
 - Posts a documentation summary comment on the issue
-- Dispatches `pipeline-deliver` with the issue number
+- Dispatches `pipeline-finish` with the issue number
 
-### Stage 6: Deliver
+### ⏸️ Human Touchpoint: Resume After Copilot Finishes
+
+After the Implement stage assigns Copilot coding agent, the agent works asynchronously for 5–15 minutes. When finished, it creates a PR and marks it ready for review. GitHub sends an email notification.
+
+**To resume the pipeline:** Apply the `cloud/review` label to the issue. This triggers the Review stage, and the rest of the pipeline (Review → Docs → Finish) runs automatically.
+
+> **Why manual?** GitHub's anti-recursion rule prevents workflows triggered by GitHub App tokens (which Copilot uses) from triggering other `on: pull_request` workflows. The label is the simplest reliable bridge.
+
+### Stage 6: Finish
 
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Docs with `issue_number` input) |
-| **Workflow** | `pipeline-deliver.md` |
-| **Engine** | Copilot |
-| **Output** | PR squash-merged, branch deleted, dispatches Deploy |
+| **Workflow** | `pipeline-finish.yml` (plain YAML, not agentic) |
+| **Engine** | GitHub Actions (no Copilot) |
+| **Output** | PR squash-merged, branch deleted, issue closed |
 
-The deliver agent:
+The finish workflow:
 
 - Finds the approved PR for the issue
-- Verifies pre-merge conditions (approved, CI green, no conflicts)
 - Squash-merges the PR to main
 - Deletes the feature branch
-- Posts a delivery comment on the issue
-- Dispatches `pipeline-deploy` with the issue number
-
-### Stage 7: Deploy
-
-| Attribute | Value |
-| ----------- | ------- |
-| **Trigger** | `pull_request: [ready_for_review, review_requested]` |
-| **Workflow** | `notify-code-complete.yml` (plain YAML, not agentic) |
-| **Engine** | GitHub Actions (no Copilot) |
-| **Output** | "✅ Code Complete" comment on linked issue + dispatches pipeline-review |
-
-This lightweight workflow bridges the async gap between Copilot finishing work and the review stage starting. It:
-
-- Fires instantly on the same PR events that indicate coding is done
-- Extracts the linked issue from the PR body (`Closes #N`)
-- Posts a "Code Complete" comment to the issue within seconds
-- **Dispatches `pipeline-review`** with the issue number (the implement→review bridge)
-- Runs as standard GitHub Actions (not an agentic workflow), so no first-time approval is required
-
-### Stage 7: Deploy
-
-| Attribute | Value |
-| ----------- | ------- |
-| **Trigger** | `workflow_dispatch` (dispatched by Deliver with `issue_number` input) |
-| **Workflow** | `pipeline-deploy.md` |
-| **Engine** | Copilot |
-| **Output** | Issue closed with deployment summary |
-
-The deploy agent:
-
-- Finds the merged PR associated with the given issue number
-- If no merged PR found, noops
-- Reads the full pipeline history from issue comments
-- Posts a final deployment summary with complete pipeline history
+- Removes all `cloud/*` labels and adds `cloud/done`
+- Posts a completion comment on the issue
 - Closes the issue as completed
+
+> **Note:** Finish is plain YAML (not agentic) — it requires no Copilot engine or first-time approval gate.
 
 ---
 
@@ -261,12 +237,11 @@ Issue #100: "Add a /health endpoint"
 ├── 🏷️ Pipeline — Triage        (classification, agents needed)
 ├── 📋 Pipeline — Plan           (implementation steps, files, acceptance criteria)
 ├── 🚀 Pipeline — Implement      (agent assignment confirmation)
-├── ✅ Pipeline — Code Complete   (Copilot finished — posted by notify-code-complete.yml)
+├── ✅ Pipeline — Code Complete   (Copilot finished — user applies cloud/review label)
 ├── 🔄 Pipeline — Review In Progress  (multi-agent review started)
 ├── 🏗️ Pipeline — Implementation Report  (changes table, review verdict)
 ├── 📚 Pipeline — Documentation   (XML docs and markdown updates)
-├── 🚀 Pipeline — Delivered       (PR merged, branch deleted)
-└── ✅ Pipeline — Complete        (deployment summary, pipeline history)
+└── ✅ Pipeline — Complete        (PR merged, branch deleted, issue closed)
 ```
 
 Downstream stages read upstream comments to understand context — no separate state files, no label-based state machine, no JSON blocks to parse.
@@ -300,9 +275,7 @@ Labels serve two purposes: **issue classification** and **stage tracking**.
 | `cloud/review` | Review | Multi-agent review in progress |
 | `cloud/awaiting-merge` | Review | Review approved, awaiting next stage |
 | `cloud/documenting` | Docs | Adding documentation |
-| `cloud/delivering` | Deliver | Merging PR |
-| `cloud/deploying` | Deploy | Verifying and closing |
-| `cloud/done` | Deploy | Pipeline complete |
+| `cloud/done` | Finish | Pipeline complete |
 
 Stage labels are mutually exclusive — each stage removes prior `cloud/*` labels before applying its own. Stage transitions still use `dispatch-workflow`; labels provide at-a-glance status.
 
@@ -331,13 +304,11 @@ Stage labels are mutually exclusive — each stage removes prior `cloud/*` label
 | `pipeline-triage.md` | Classify and dispatch | `label_command: cloud/triage-requested` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
-| `notify-code-complete.yml` | Post "Code Complete" + dispatch review | `pull_request: [ready_for_review, review_requested]` |
-| `pipeline-review.md` | Multi-agent code review + issue report | `workflow_dispatch` (from notify-code-complete) |
+| `pipeline-review.md` | Multi-agent code review + issue report | `label_command: cloud/review` or `workflow_dispatch` |
 | `pipeline-docs.md` | Add XML docs and update markdown | `workflow_dispatch` (from Review on approve) |
-| `pipeline-deliver.md` | Squash-merge PR, delete branch | `workflow_dispatch` (from Docs) |
-| `pipeline-deploy.md` | Verify merge, post summary, close issue | `workflow_dispatch` (from Deliver) |
+| `pipeline-finish.yml` | Squash-merge PR, close issue | `workflow_dispatch` (from Docs) |
 
-All workflows are [GitHub Agentic Workflows](https://github.github.com/gh-aw/) (`.md` source compiled to `.lock.yml`).
+Agentic workflows (`.md` source) are compiled to `.lock.yml` via [gh-aw](https://github.github.com/gh-aw/). `pipeline-finish.yml` is plain YAML.
 
 ---
 
@@ -355,7 +326,7 @@ If code review requests changes:
 
 - Review dispatches `pipeline-implement` for rework (max 2 cycles)
 - Copilot coding agent reads review comments and pushes fixes
-- `review_requested` event re-triggers `notify-code-complete.yml`, which dispatches Review again
+- `review_requested` event cannot re-trigger workflows due to GitHub's app token anti-recursion rule, so the user must apply the `cloud/review` label again
 - After 2 failed rework cycles, the pipeline halts for human intervention
 
 ---
@@ -369,20 +340,21 @@ If code review requests changes:
 4. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
 5. Implement assigns Copilot coding agent                     (~2 min)  [automatic]
 6. Copilot agent writes code, tests, creates PR              (~5-15 min) [automatic]
-7. notify-code-complete posts comment + dispatches Review     (~5 sec)  [automatic]
-8. ⏸️  HUMAN approves the review workflow run (first-time gate)           [manual]
-9. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
-10. Review posts implementation report on linked issue                   [automatic]
-11. Review dispatches Docs (on approve) or Implement (on request changes)
-12. Docs adds XML documentation, dispatches Deliver           (~2 min)  [automatic]
-13. Deliver squash-merges PR, deletes branch, dispatches Deploy (~1 min) [automatic]
-14. Deploy verifies merge, posts final summary, closes issue  (~1 min)  [automatic]
+7. ⏸️  User receives email that PR is ready for review                     [notification]
+8. User applies `cloud/review` label to the issue                         [manual — ~5 sec]
+9. ⏸️  HUMAN approves the review workflow run (first-time gate)            [manual]
+10. Review runs multi-agent code review on the PR              (~3 min)  [automatic]
+11. Review posts implementation report on linked issue                    [automatic]
+12. Review dispatches Docs (on approve) or Implement (on request changes)
+13. Docs adds XML documentation, dispatches Finish             (~2 min)  [automatic]
+14. Finish squash-merges PR, deletes branch, closes issue      (~30 sec) [automatic]
 ```
 
-**Human touchpoints (1-2):**
+**Human touchpoints (2-3):**
 
-1. Approve the review workflow run (one-time per new workflow)
-2. *(Optional)* If review requests changes after 2 rework cycles, human intervenes
+1. Apply `cloud/review` label after Copilot finishes coding (you'll get an email)
+2. Approve the review workflow run (one-time per new workflow)
+3. *(Optional)* If review requests changes after 2 rework cycles, human intervenes
 
 Everything else — including PR merge and issue closure — is fully autonomous.
 
@@ -411,7 +383,7 @@ dotnet run
 ### Triggering the Pipeline
 
 1. Create a new issue with a descriptive title and body
-2. Apply the `cloud/triage-requested` label to the issue
+2. Apply the `cloud/autopilot` label to the issue (or `cloud/triage-requested` to skip autopilot)
 3. Watch the pipeline stages execute via issue comments
 4. Each stage posts a structured comment as it completes
 

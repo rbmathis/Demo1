@@ -29,7 +29,7 @@ safe-outputs:
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/deploying", "cloud/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/done"]
     max: 7
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
