@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"4bbb7056df844a448cfe6c70c4171849087c4ac59280d0aabed1558f65b478c8","compiler_version":"v0.71.1","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"781139b9e1779027b456f5672a703441bdf33f5ff5f5853787a4173798599bea","compiler_version":"v0.71.1","strict":true,"agent_id":"copilot","agent_model":"claude-opus-4.6"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/cache/save","sha":"27d5ce7f107fe9357f9df03efb73ab90386fccae","version":"v5.0.5"},{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"v0.71.1","version":"v0.71.1"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.28","digest":"sha256:a8834e285807654bf680154faa710d43fe4365a0868142f5c20e48c85e137a7a","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.25.28@sha256:a8834e285807654bf680154faa710d43fe4365a0868142f5c20e48c85e137a7a"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.28","digest":"sha256:93290f2393752252911bd7c39a047f776c0b53063575e7bde4e304962a9a61cb","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.28@sha256:93290f2393752252911bd7c39a047f776c0b53063575e7bde4e304962a9a61cb"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.28","digest":"sha256:844c18280f82cd1b06345eb2f4e91966b34185bfc51c9f237c3e022e848fb474","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.25.28@sha256:844c18280f82cd1b06345eb2f4e91966b34185bfc51c9f237c3e022e848fb474"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.0"},{"image":"ghcr.io/github/github-mcp-server:v1.0.2"},{"image":"node:lts-alpine","digest":"sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f","pinned_image":"node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -22,7 +22,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Reads the plan from the issue and assigns Copilot coding agent
+# Creates a detailed implementation plan and saves it to the issue
 #
 # Secrets used:
 #   - COPILOT_GITHUB_TOKEN
@@ -48,7 +48,7 @@
 #   - ghcr.io/github/github-mcp-server:v1.0.2
 #   - node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f
 
-name: "Pipeline — Implement"
+name: "Pipeline — Plan"
 "on":
   workflow_dispatch:
     inputs:
@@ -58,7 +58,7 @@ name: "Pipeline — Implement"
         required: false
         type: string
       issue_number:
-        description: Issue number to implement
+        description: Issue number to plan
         required: true
         type: string
 
@@ -67,7 +67,7 @@ permissions: {}
 concurrency:
   group: "gh-aw-${{ github.workflow }}"
 
-run-name: "Pipeline — Implement"
+run-name: "Pipeline — Plan"
 
 jobs:
   activation:
@@ -96,11 +96,11 @@ jobs:
         env:
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
-          GH_AW_INFO_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || 'auto' }}
+          GH_AW_INFO_MODEL: "claude-opus-4.6"
           GH_AW_INFO_VERSION: "1.0.35"
           GH_AW_INFO_AGENT_VERSION: "1.0.35"
           GH_AW_INFO_CLI_VERSION: "v0.71.1"
-          GH_AW_INFO_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_INFO_WORKFLOW_NAME: "Pipeline — Plan"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
@@ -146,7 +146,7 @@ jobs:
         id: check-lock-file
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
-          GH_AW_WORKFLOW_FILE: "pipeline-implement.lock.yml"
+          GH_AW_WORKFLOW_FILE: "cloud-plan.lock.yml"
           GH_AW_CONTEXT_WORKFLOW_REF: "${{ github.workflow_ref }}"
         with:
           script: |
@@ -181,17 +181,17 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_2d8a4d29503058d4_EOF'
+          cat << 'GH_AW_PROMPT_30ef58181e42054b_EOF'
           <system>
-          GH_AW_PROMPT_2d8a4d29503058d4_EOF
+          GH_AW_PROMPT_30ef58181e42054b_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/cache_memory_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_2d8a4d29503058d4_EOF'
+          cat << 'GH_AW_PROMPT_30ef58181e42054b_EOF'
           <safe-output-tools>
-          Tools: add_comment, add_labels, remove_labels(max:7), assign_to_agent, missing_tool, missing_data, noop
+          Tools: add_comment(max:2), update_issue, add_labels, remove_labels(max:7), dispatch_workflow, missing_tool, missing_data, noop
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -221,12 +221,12 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_2d8a4d29503058d4_EOF
+          GH_AW_PROMPT_30ef58181e42054b_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_2d8a4d29503058d4_EOF'
+          cat << 'GH_AW_PROMPT_30ef58181e42054b_EOF'
           </system>
-          {{#runtime-import .github/workflows/pipeline-implement.md}}
-          GH_AW_PROMPT_2d8a4d29503058d4_EOF
+          {{#runtime-import .github/workflows/cloud-plan.md}}
+          GH_AW_PROMPT_30ef58181e42054b_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -316,7 +316,7 @@ jobs:
       GH_AW_ASSETS_BRANCH: ""
       GH_AW_ASSETS_MAX_SIZE_KB: 0
       GH_AW_MCP_LOG_DIR: /tmp/gh-aw/mcp-logs/safeoutputs
-      GH_AW_WORKFLOW_ID_SANITIZED: pipelineimplement
+      GH_AW_WORKFLOW_ID_SANITIZED: cloudplan
     outputs:
       agentic_engine_timeout: ${{ steps.detect-copilot-errors.outputs.agentic_engine_timeout || 'false' }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
@@ -438,21 +438,45 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << GH_AW_SAFE_OUTPUTS_CONFIG_04f2271782971fcc_EOF
-          {"add_comment":{"max":1,"target":"*"},"add_labels":{"allowed":["cloud/implementing"],"github-token":"${COPILOT_GITHUB_TOKEN}","max":1,"target":"*"},"assign_to_agent":{"custom-instructions":"## YOUR MISSION\n\nImplement the plan from issue #${{ github.event.inputs.issue_number }}.\n\n## STEP 0: READ THE PLAN (do this first)\n\nRead issue #${{ github.event.inputs.issue_number }} and find the comment titled \"📋 Pipeline — Plan\". That comment has your implementation plan with specific files, changes, and acceptance criteria. Follow it precisely.\n\n## STEP 1: IMPLEMENT\n\nUse the specialized sub-agents in .github/agents/:\n- `backend` agent for Controllers, Models, Services, Middleware, Program.cs\n- `frontend` agent for Views, Razor templates, CSS, JavaScript\n- `security` agent for security vulnerabilities (CSRF, XSS, SQL injection, auth)\n\n## STEP 2: TEST (mandatory — do not skip)\n\nUse `testing` agent to generate unit tests and integration tests for ALL changes.\n\n## STEP 3: DOCUMENT (mandatory — do not skip)\n\nUse `docs` agent to:\n- Add/update XML documentation on all new/modified public methods and classes\n- Update docs/ markdown files if the change affects architecture or APIs\n\n## STEP 4: VALIDATE\n\nUse `build-validator` agent to verify the project builds cleanly and tests pass.\n\n## CRITICAL: PR BODY REQUIREMENT\n\nWhen creating the pull request, the PR body MUST include a closing keyword line:\n\n`\nCloses #${{ github.event.inputs.issue_number }}\n`\n\nThis line is required for the pipeline to automatically detect the linked issue and trigger the review stage. Do not omit it.\n\nNOTE: Do NOT post an implementation report on the issue. The review pipeline handles that automatically.\n","github-token":"${COPILOT_GITHUB_TOKEN}","max":1,"name":"copilot","target":"*"},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"remove_labels":{"allowed":["cloud/triage","cloud/planning","cloud/implementing","cloud/review","cloud/awaiting-merge","cloud/done"],"github-token":"${COPILOT_GITHUB_TOKEN}","max":7,"target":"*"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_04f2271782971fcc_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << GH_AW_SAFE_OUTPUTS_CONFIG_4d8958779d7b78cb_EOF
+          {"add_comment":{"max":2,"target":"*"},"add_labels":{"allowed":["cloud/planning","cloud/implementing"],"github-token":"${COPILOT_GITHUB_TOKEN}","max":1,"target":"*"},"create_report_incomplete_issue":{},"dispatch_workflow":{"aw_context_workflows":["cloud-implement"],"max":1,"workflow_files":{"cloud-implement":".lock.yml"},"workflows":["cloud-implement"]},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"remove_labels":{"allowed":["cloud/triage","cloud/planning","cloud/implementing","cloud/review","cloud/awaiting-merge","cloud/done"],"github-token":"${COPILOT_GITHUB_TOKEN}","max":7,"target":"*"},"report_incomplete":{},"update_issue":{"allow_body":true,"github-token":"${COPILOT_GITHUB_TOKEN}","max":1,"target":"*"}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_4d8958779d7b78cb_EOF
       - name: Write Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
             {
               "description_suffixes": {
-                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
-                "add_labels": " CONSTRAINTS: Maximum 1 label(s) can be added. Only these labels are allowed: [\"cloud/implementing\"]. Target: *.",
-                "assign_to_agent": " CONSTRAINTS: Maximum 1 issue(s) can be assigned to agent.",
-                "remove_labels": " CONSTRAINTS: Maximum 7 label(s) can be removed. Only these labels can be removed: [cloud/triage cloud/planning cloud/implementing cloud/review cloud/awaiting-merge cloud/done]. Target: *."
+                "add_comment": " CONSTRAINTS: Maximum 2 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
+                "add_labels": " CONSTRAINTS: Maximum 1 label(s) can be added. Only these labels are allowed: [\"cloud/planning\" \"cloud/implementing\"]. Target: *.",
+                "remove_labels": " CONSTRAINTS: Maximum 7 label(s) can be removed. Only these labels can be removed: [cloud/triage cloud/planning cloud/implementing cloud/review cloud/awaiting-merge cloud/done]. Target: *.",
+                "update_issue": " CONSTRAINTS: Maximum 1 issue(s) can be updated. Target: *. Body updates are allowed."
               },
               "repo_params": {},
-              "dynamic_tools": []
+              "dynamic_tools": [
+                {
+                  "_workflow_name": "cloud-implement",
+                  "description": "Dispatch the 'cloud-implement' workflow with workflow_dispatch trigger. This workflow must support workflow_dispatch and be in .github/workflows/ directory in the same repository.",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "aw_context": {
+                        "default": "",
+                        "description": "Agent caller context (used internally by Agentic Workflows).",
+                        "type": "string"
+                      },
+                      "issue_number": {
+                        "description": "Issue number to implement",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "issue_number"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "cloud_implement"
+                }
+              ]
             }
           GH_AW_VALIDATION_JSON: |
             {
@@ -496,31 +520,6 @@ jobs:
                     "maxLength": 256
                   }
                 }
-              },
-              "assign_to_agent": {
-                "defaultMax": 1,
-                "fields": {
-                  "agent": {
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 128
-                  },
-                  "issue_number": {
-                    "issueNumberOrTemporaryId": true
-                  },
-                  "pull_number": {
-                    "optionalPositiveInteger": true
-                  },
-                  "pull_request_repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  },
-                  "repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  }
-                },
-                "customValidation": "requiresOneOf:issue_number,pull_number"
               },
               "missing_data": {
                 "defaultMax": 20,
@@ -613,6 +612,60 @@ jobs:
                     "maxLength": 1024
                   }
                 }
+              },
+              "update_issue": {
+                "defaultMax": 1,
+                "fields": {
+                  "assignees": {
+                    "type": "array",
+                    "itemType": "string",
+                    "itemSanitize": true,
+                    "itemMaxLength": 39
+                  },
+                  "body": {
+                    "type": "string",
+                    "sanitize": true,
+                    "maxLength": 65000
+                  },
+                  "issue_number": {
+                    "issueOrPRNumber": true
+                  },
+                  "labels": {
+                    "type": "array",
+                    "itemType": "string",
+                    "itemSanitize": true,
+                    "itemMaxLength": 128
+                  },
+                  "milestone": {
+                    "optionalPositiveInteger": true
+                  },
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "replace",
+                      "append",
+                      "prepend",
+                      "replace-island"
+                    ]
+                  },
+                  "repo": {
+                    "type": "string",
+                    "maxLength": 256
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "sanitize": true,
+                    "maxLength": 128
+                  }
+                },
+                "customValidation": "requiresOneOf:status,title,body"
               }
             }
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
@@ -694,7 +747,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_3895317e39db93cd_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_01ef2f03756843e8_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -735,7 +788,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_3895317e39db93cd_EOF
+          GH_AW_MCP_CONFIG_01ef2f03756843e8_EOF
       - name: Clean git credentials
         continue-on-error: true
         run: bash "${RUNNER_TEMP}/gh-aw/actions/clean_git_credentials.sh"
@@ -756,7 +809,7 @@ jobs:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_API_KEY: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || 'claude-sonnet-4.6' }}
+          COPILOT_MODEL: claude-opus-4.6
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
@@ -945,12 +998,13 @@ jobs:
       needs.activation.outputs.stale_lock_file_failed == 'true')
     runs-on: ubuntu-slim
     permissions:
+      actions: write
       contents: read
       discussions: write
       issues: write
       pull-requests: write
     concurrency:
-      group: "gh-aw-conclusion-pipeline-implement"
+      group: "gh-aw-conclusion-cloud-plan"
       cancel-in-progress: false
     outputs:
       incomplete_count: ${{ steps.report_incomplete.outputs.incomplete_count }}
@@ -985,7 +1039,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_REPORT_AS_ISSUE: "true"
@@ -1001,7 +1055,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
@@ -1018,7 +1072,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1032,7 +1086,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_REPORT_INCOMPLETE_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1046,10 +1100,10 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+          GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "pipeline-implement"
+          GH_AW_WORKFLOW_ID: "cloud-plan"
           GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS: "168"
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
@@ -1058,8 +1112,6 @@ jobs:
           GH_AW_MCP_POLICY_ERROR: ${{ needs.agent.outputs.mcp_policy_error }}
           GH_AW_AGENTIC_ENGINE_TIMEOUT: ${{ needs.agent.outputs.agentic_engine_timeout }}
           GH_AW_MODEL_NOT_SUPPORTED_ERROR: ${{ needs.agent.outputs.model_not_supported_error }}
-          GH_AW_ASSIGNMENT_ERRORS: ${{ needs.safe_outputs.outputs.assign_to_agent_assignment_errors }}
-          GH_AW_ASSIGNMENT_ERROR_COUNT: ${{ needs.safe_outputs.outputs.assign_to_agent_assignment_error_count }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
           GH_AW_GROUP_REPORTS: "false"
@@ -1158,8 +1210,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         env:
-          WORKFLOW_NAME: "Pipeline — Implement"
-          WORKFLOW_DESCRIPTION: "Reads the plan from the issue and assigns Copilot coding agent"
+          WORKFLOW_NAME: "Pipeline — Plan"
+          WORKFLOW_DESCRIPTION: "Creates a detailed implementation plan and saves it to the issue"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1201,7 +1253,7 @@ jobs:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_API_KEY: dummy-byok-key-for-offline-mode
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ vars.GH_AW_MODEL_DETECTION_COPILOT || 'claude-sonnet-4.6' }}
+          COPILOT_MODEL: claude-opus-4.6
           GH_AW_PHASE: detection
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_VERSION: v0.71.1
@@ -1247,25 +1299,23 @@ jobs:
     if: (!cancelled()) && needs.agent.result != 'skipped' && needs.detection.result == 'success'
     runs-on: ubuntu-slim
     permissions:
+      actions: write
       contents: read
       discussions: write
       issues: write
       pull-requests: write
     timeout-minutes: 15
     env:
-      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/pipeline-implement"
+      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/cloud-plan"
       GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
       GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
       GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: ${{ needs.agent.outputs.model }}
+      GH_AW_ENGINE_MODEL: "claude-opus-4.6"
       GH_AW_ENGINE_VERSION: "1.0.35"
-      GH_AW_WORKFLOW_ID: "pipeline-implement"
-      GH_AW_WORKFLOW_NAME: "Pipeline — Implement"
+      GH_AW_WORKFLOW_ID: "cloud-plan"
+      GH_AW_WORKFLOW_NAME: "Pipeline — Plan"
     outputs:
-      assign_to_agent_assigned: ${{ steps.process_safe_outputs.outputs.assign_to_agent_assigned }}
-      assign_to_agent_assignment_error_count: ${{ steps.process_safe_outputs.outputs.assign_to_agent_assignment_error_count }}
-      assign_to_agent_assignment_errors: ${{ steps.process_safe_outputs.outputs.assign_to_agent_assignment_errors }}
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
       comment_id: ${{ steps.process_safe_outputs.outputs.comment_id }}
@@ -1313,8 +1363,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"cloud/implementing\"],\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":1,\"target\":\"*\"},\"assign_to_agent\":{\"custom-instructions\":\"## YOUR MISSION\\n\\nImplement the plan from issue #${{ github.event.inputs.issue_number }}.\\n\\n## STEP 0: READ THE PLAN (do this first)\\n\\nRead issue #${{ github.event.inputs.issue_number }} and find the comment titled \\\"📋 Pipeline — Plan\\\". That comment has your implementation plan with specific files, changes, and acceptance criteria. Follow it precisely.\\n\\n## STEP 1: IMPLEMENT\\n\\nUse the specialized sub-agents in .github/agents/:\\n- `backend` agent for Controllers, Models, Services, Middleware, Program.cs\\n- `frontend` agent for Views, Razor templates, CSS, JavaScript\\n- `security` agent for security vulnerabilities (CSRF, XSS, SQL injection, auth)\\n\\n## STEP 2: TEST (mandatory — do not skip)\\n\\nUse `testing` agent to generate unit tests and integration tests for ALL changes.\\n\\n## STEP 3: DOCUMENT (mandatory — do not skip)\\n\\nUse `docs` agent to:\\n- Add/update XML documentation on all new/modified public methods and classes\\n- Update docs/ markdown files if the change affects architecture or APIs\\n\\n## STEP 4: VALIDATE\\n\\nUse `build-validator` agent to verify the project builds cleanly and tests pass.\\n\\n## CRITICAL: PR BODY REQUIREMENT\\n\\nWhen creating the pull request, the PR body MUST include a closing keyword line:\\n\\n`\\nCloses #${{ github.event.inputs.issue_number }}\\n`\\n\\nThis line is required for the pipeline to automatically detect the linked issue and trigger the review stage. Do not omit it.\\n\\nNOTE: Do NOT post an implementation report on the issue. The review pipeline handles that automatically.\\n\",\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":1,\"name\":\"copilot\",\"target\":\"*\"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"remove_labels\":{\"allowed\":[\"cloud/triage\",\"cloud/planning\",\"cloud/implementing\",\"cloud/review\",\"cloud/awaiting-merge\",\"cloud/done\"],\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":7,\"target\":\"*\"},\"report_incomplete\":{}}"
-          GH_AW_ASSIGN_TO_AGENT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":2,\"target\":\"*\"},\"add_labels\":{\"allowed\":[\"cloud/planning\",\"cloud/implementing\"],\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":1,\"target\":\"*\"},\"create_report_incomplete_issue\":{},\"dispatch_workflow\":{\"aw_context_workflows\":[\"cloud-implement\"],\"max\":1,\"workflow_files\":{\"cloud-implement\":\".lock.yml\"},\"workflows\":[\"cloud-implement\"]},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"remove_labels\":{\"allowed\":[\"cloud/triage\",\"cloud/planning\",\"cloud/implementing\",\"cloud/review\",\"cloud/awaiting-merge\",\"cloud/done\"],\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":7,\"target\":\"*\"},\"report_incomplete\":{},\"update_issue\":{\"allow_body\":true,\"github-token\":\"${{ secrets.COPILOT_GITHUB_TOKEN }}\",\"max\":1,\"target\":\"*\"}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1343,7 +1392,7 @@ jobs:
     runs-on: ubuntu-slim
     permissions: {}
     env:
-      GH_AW_WORKFLOW_ID_SANITIZED: pipelineimplement
+      GH_AW_WORKFLOW_ID_SANITIZED: cloudplan
     steps:
       - name: Setup Scripts
         id: setup

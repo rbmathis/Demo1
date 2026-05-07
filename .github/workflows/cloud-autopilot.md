@@ -39,7 +39,7 @@ safe-outputs:
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-triage]
+  dispatch-workflow: [cloud-triage]
 ---
 
 ## Pipeline — Autopilot
@@ -67,7 +67,7 @@ Each stage dispatches the next. The only manual step is applying the `cloud/revi
    - A body with enough context to classify and plan
 3. **Remove any existing `cloud/*` labels** from the issue (clean slate)
 4. **Post an autopilot engagement comment** on issue #${{ github.event.inputs.issue_number }} (format below)
-5. **Apply the `cloud/triage-requested` label** OR **dispatch `pipeline-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+5. **Apply the `cloud/triage-requested` label** OR **dispatch `cloud-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Autopilot Comment Format
 

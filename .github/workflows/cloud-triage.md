@@ -33,7 +33,7 @@ safe-outputs:
     max: 7
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-plan]
+  dispatch-workflow: [cloud-plan]
 ---
 
 ## Pipeline — Triage Agent
@@ -58,7 +58,7 @@ You are the intake agent for an AI-SDLC pipeline. When the `cloud/triage-request
 5. **Post a triage comment** with your analysis (format below)
 6. **Apply classification labels** — apply 1-2 type labels (bug/enhancement/feature/security/documentation/refactor). These are classification only, NOT pipeline triggers.
 7. **Replace the `cloud/triage` label with `cloud/planning`** — remove `cloud/triage`, add `cloud/planning`
-8. **Dispatch the plan workflow** — call `dispatch_workflow` for `pipeline-plan` with input `issue_number` set to the triggering issue number as a string.
+8. **Dispatch the plan workflow** — call `dispatch_workflow` for `cloud-plan` with input `issue_number` set to the triggering issue number as a string.
 
 ## Triage Comment Format
 
@@ -85,5 +85,5 @@ You are the intake agent for an AI-SDLC pipeline. When the `cloud/triage-request
 - Every triggered issue gets classified — never skip or reject
 - Always include `testing` if any implementation agents are assigned
 - Security issues always get `security` agent
-- After posting the triage comment and labels, ALWAYS dispatch `pipeline-plan`
+- After posting the triage comment and labels, ALWAYS dispatch `cloud-plan`
 - If you cannot dispatch the workflow, call `noop` with an explanation

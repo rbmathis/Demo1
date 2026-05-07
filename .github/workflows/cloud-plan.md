@@ -44,7 +44,7 @@ safe-outputs:
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-implement]
+  dispatch-workflow: [cloud-implement]
 ---
 
 ## Pipeline — Plan Agent
@@ -66,7 +66,7 @@ You are the planning agent for an AI-SDLC pipeline. You create detailed, actiona
    - Acceptance criteria (what "done" looks like)
    - Testing requirements (what tests to write)
 5. **Post the plan as a comment** on the issue (format below)
-6. **Dispatch the implement workflow** — call `dispatch_workflow` for `pipeline-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+6. **Dispatch the implement workflow** — call `dispatch_workflow` for `cloud-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Plan Comment Format
 
@@ -113,6 +113,6 @@ Post this as a comment on issue #${{ github.event.inputs.issue_number }}:
 - Be specific about file paths and exact changes needed
 - Always include testing and documentation steps
 - The plan should be detailed enough for Copilot coding agent to execute without ambiguity
-- After posting the plan, ALWAYS dispatch `pipeline-implement`
+- After posting the plan, ALWAYS dispatch `cloud-implement`
 - **Before dispatching**, replace `cloud/planning` with `cloud/implementing` on the issue
 - If you cannot determine a plan, post what you know and dispatch anyway

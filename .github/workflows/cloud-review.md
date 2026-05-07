@@ -47,7 +47,7 @@ safe-outputs:
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-docs, pipeline-implement]
+  dispatch-workflow: [cloud-docs, cloud-implement]
 ---
 
 ## Pipeline — Review Agent
@@ -83,7 +83,7 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
    - **COMMENT** — suggestions but nothing blocking
 9. **Post an implementation summary on issue #${{ github.event.inputs.issue_number }}** (MANDATORY — use format below)
 10. **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-11. **Dispatch the next stage** — based on your verdict, dispatch either `pipeline-docs` (on approve/comment) or `pipeline-implement` (on request changes) — see Dispatch Chain below
+11. **Dispatch the next stage** — based on your verdict, dispatch either `cloud-docs` (on approve/comment) or `cloud-implement` (on request changes) — see Dispatch Chain below
 
 ## Review Checklist
 
@@ -146,18 +146,18 @@ After completing the review and posting the implementation report, dispatch the 
 
 ### If APPROVE:
 - **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-- **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+- **Dispatch `cloud-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 - This moves the pipeline to the documentation stage before delivery
 
 ### If REQUEST_CHANGES:
 - **Keep `cloud/review` label** on issue #${{ github.event.inputs.issue_number }}
 - **Check the rework count** — read issue comments and count how many "Pipeline — Implementation Report" comments exist with verdict "REQUEST_CHANGES"
-- **If fewer than 2 rework cycles:** Dispatch `pipeline-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}` — the coding agent will read the review comments and fix the issues
+- **If fewer than 2 rework cycles:** Dispatch `cloud-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}` — the coding agent will read the review comments and fix the issues
 - **If 2 or more rework cycles already:** Do NOT dispatch. Post a comment: "⚠️ Pipeline halted — maximum rework cycles (2) reached. Human intervention required."
 
 ### If COMMENT:
 - **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-- **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+- **Dispatch `cloud-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 - Comments are advisory — they don't block the pipeline
 
 ## After Review

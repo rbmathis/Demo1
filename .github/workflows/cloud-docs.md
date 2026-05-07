@@ -45,7 +45,7 @@ safe-outputs:
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-finish]
+  dispatch-workflow: [cloud-finish]
 ---
 
 ## Pipeline — Docs Agent
@@ -68,7 +68,7 @@ You are the documentation agent. After code has been reviewed and approved, you 
    - If configuration changed → update `docs/configuration.md`
 6. **Commit documentation changes** to the PR's feature branch
 7. **Post a documentation summary comment** on issue #${{ github.event.inputs.issue_number }} (format below)
-8. **Dispatch `pipeline-finish`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+8. **Dispatch `cloud-finish`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Documentation Standards
 
@@ -109,5 +109,5 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 
 - Documentation is non-blocking — if you cannot document something, note it in the comment but still dispatch finish
 - Never modify implementation code — only add documentation comments and docs/ files
-- Always dispatch `pipeline-finish` after completing (even if docs were minimal)
+- Always dispatch `cloud-finish` after completing (even if docs were minimal)
 - Keep XML docs concise — don't over-document obvious getters/setters

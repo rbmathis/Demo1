@@ -73,7 +73,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `cloud/autopilot` label on issue, or `workflow_dispatch` |
-| **Workflow** | `pipeline-autopilot.md` |
+| **Workflow** | `cloud-autopilot.md` |
 | **Engine** | Copilot |
 | **Output** | Validates issue, posts engagement comment, dispatches Triage |
 
@@ -82,7 +82,7 @@ The autopilot:
 - Validates the issue has enough information to proceed
 - Removes any stale `cloud/*` labels
 - Posts an "Autopilot Engaged" comment with the full pipeline stage table
-- Dispatches `pipeline-triage` (or applies `cloud/triage-requested` label)
+- Dispatches `cloud-triage` (or applies `cloud/triage-requested` label)
 
 > **Note:** The autopilot is optional — you can still trigger the pipeline by applying `cloud/triage-requested` directly.
 
@@ -91,7 +91,7 @@ The autopilot:
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `label_command: cloud/triage-requested` on issues |
-| **Workflow** | `pipeline-triage.md` |
+| **Workflow** | `cloud-triage.md` |
 | **Engine** | Copilot |
 | **Output** | Classification comment, type labels, dispatches Plan |
 
@@ -102,14 +102,14 @@ The triage agent:
 - Determines which specialist agents are needed
 - Posts a structured triage comment with classification table
 - Applies classification labels (bug, enhancement, feature, security, etc.)
-- Dispatches `pipeline-plan` with the issue number
+- Dispatches `cloud-plan` with the issue number
 
 ### Stage 2: Plan
 
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Triage with `issue_number` input) |
-| **Workflow** | `pipeline-plan.md` |
+| **Workflow** | `cloud-plan.md` |
 | **Engine** | Copilot (Claude Opus 4.6) |
 | **Output** | Detailed implementation plan comment, dispatches Implement |
 
@@ -123,14 +123,14 @@ The plan agent:
   - Agent delegation order
   - Acceptance criteria and testing requirements
 - Posts the plan as a structured comment on the issue
-- Dispatches `pipeline-implement` with the issue number
+- Dispatches `cloud-implement` with the issue number
 
 ### Stage 3: Implement
 
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Plan with `issue_number` input) |
-| **Workflow** | `pipeline-implement.md` |
+| **Workflow** | `cloud-implement.md` |
 | **Engine** | Copilot |
 | **Output** | Copilot coding agent assigned, PR created |
 
@@ -152,7 +152,7 @@ The implement agent:
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `cloud/review` label on issue, or `workflow_dispatch` with `issue_number` input |
-| **Workflow** | `pipeline-review.md` |
+| **Workflow** | `cloud-review.md` |
 | **Engine** | Copilot |
 | **Imports** | code-reviewer, security-auditor, testing, docs agents |
 | **Output** | PR review + implementation report on linked issue, dispatches Deploy |
@@ -169,19 +169,19 @@ The review agent:
 - Posts inline review comments on specific lines
 - Submits a consolidated review verdict
 - Posts the **Implementation Report** on the issue (changes table, review verdict, branch)
-- **If APPROVE/COMMENT:** Dispatches `pipeline-docs` with the issue number
-- **If REQUEST_CHANGES:** Dispatches `pipeline-implement` for rework (max 2 cycles, then halts)
+- **If APPROVE/COMMENT:** Dispatches `cloud-docs` with the issue number
+- **If REQUEST_CHANGES:** Dispatches `cloud-implement` for rework (max 2 cycles, then halts)
 
 ### Review Loop (Rework)
 
-If the review agent submits `REQUEST_CHANGES`, it re-dispatches `pipeline-implement`. The coding agent reads the review comments and fixes the issues, creating a new commit on the same PR. When Copilot finishes, the user applies the `cloud/review` label again to restart review. This loop repeats up to 2 times before halting.
+If the review agent submits `REQUEST_CHANGES`, it re-dispatches `cloud-implement`. The coding agent reads the review comments and fixes the issues, creating a new commit on the same PR. When Copilot finishes, the user applies the `cloud/review` label again to restart review. This loop repeats up to 2 times before halting.
 
 ### Stage 5: Docs
 
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Review with `issue_number` input) |
-| **Workflow** | `pipeline-docs.md` |
+| **Workflow** | `cloud-docs.md` |
 | **Engine** | Copilot |
 | **Imports** | docs agent |
 | **Output** | XML docs + markdown updates committed, dispatches Finish |
@@ -194,7 +194,7 @@ The docs agent:
 - Updates docs/ markdown if architecture or APIs changed
 - Commits documentation to the feature branch
 - Posts a documentation summary comment on the issue
-- Dispatches `pipeline-finish` with the issue number
+- Dispatches `cloud-finish` with the issue number
 
 ### ⏸️ Human Touchpoint: Resume After Copilot Finishes
 
@@ -209,7 +209,7 @@ After the Implement stage assigns Copilot coding agent, the agent works asynchro
 | Attribute | Value |
 | ----------- | ------- |
 | **Trigger** | `workflow_dispatch` (dispatched by Docs with `issue_number` input) |
-| **Workflow** | `pipeline-finish.yml` (plain YAML, not agentic) |
+| **Workflow** | `cloud-finish.yml` (plain YAML, not agentic) |
 | **Engine** | GitHub Actions (no Copilot) |
 | **Output** | PR squash-merged, branch deleted, issue closed |
 
@@ -300,15 +300,15 @@ Stage labels are mutually exclusive — each stage removes prior `cloud/*` label
 
 | File | Purpose | Trigger |
 | ------ | --------- | --------- |
-| `pipeline-autopilot.md` | Single entry point, validates and dispatches | `label_command: cloud/autopilot` or `workflow_dispatch` |
-| `pipeline-triage.md` | Classify and dispatch | `label_command: cloud/triage-requested` |
-| `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
-| `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
-| `pipeline-review.md` | Multi-agent code review + issue report | `label_command: cloud/review` or `workflow_dispatch` |
-| `pipeline-docs.md` | Add XML docs and update markdown | `workflow_dispatch` (from Review on approve) |
-| `pipeline-finish.yml` | Squash-merge PR, close issue | `workflow_dispatch` (from Docs) |
+| `cloud-autopilot.md` | Single entry point, validates and dispatches | `label_command: cloud/autopilot` or `workflow_dispatch` |
+| `cloud-triage.md` | Classify and dispatch | `label_command: cloud/triage-requested` |
+| `cloud-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
+| `cloud-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
+| `cloud-review.md` | Multi-agent code review + issue report | `label_command: cloud/review` or `workflow_dispatch` |
+| `cloud-docs.md` | Add XML docs and update markdown | `workflow_dispatch` (from Review on approve) |
+| `cloud-finish.yml` | Squash-merge PR, close issue | `workflow_dispatch` (from Docs) |
 
-Agentic workflows (`.md` source) are compiled to `.lock.yml` via [gh-aw](https://github.github.com/gh-aw/). `pipeline-finish.yml` is plain YAML.
+Agentic workflows (`.md` source) are compiled to `.lock.yml` via [gh-aw](https://github.github.com/gh-aw/). `cloud-finish.yml` is plain YAML.
 
 ---
 
@@ -324,7 +324,7 @@ If a stage fails:
 
 If code review requests changes:
 
-- Review dispatches `pipeline-implement` for rework (max 2 cycles)
+- Review dispatches `cloud-implement` for rework (max 2 cycles)
 - Copilot coding agent reads review comments and pushes fixes
 - `review_requested` event cannot re-trigger workflows due to GitHub's app token anti-recursion rule, so the user must apply the `cloud/review` label again
 - After 2 failed rework cycles, the pipeline halts for human intervention
