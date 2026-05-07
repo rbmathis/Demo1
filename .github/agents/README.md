@@ -10,7 +10,7 @@ This repository implements a **fully-autonomous AI-driven SDLC pipeline** that r
 🏷️ Triage → 📋 Plan → 🔨 Implement → 👀 Review → 🚀 Land
 ```
 
-**Local usage (Copilot CLI):** Say "triage issue 135" — the `pipeline` agent auto-chains through all stages.
+**Local usage (Copilot CLI):** Say "run issue 135" — the `autopilot` agent auto-chains through all stages.
 
 **Remote usage (GitHub Actions):** Apply the `pipeline/triage-requested` label to an issue — the `pipeline-triage.md` workflow kicks off the same flow on GitHub runners.
 
@@ -69,13 +69,13 @@ Instructions, persona, and behavioral guidelines in Markdown...
 
 ## Agents in This Repository
 
-### `pipeline.agent.md`
+### `autopilot.agent.md`
 
 **Tools:** `read`, `search`, `execute`, `github`, `agent`, `web`
-**Agents:** `triage`, `plan`, `implement`, `review`, `land`
+**Agents:** `triage`, `plan`, `implement`, `review`, `deliver`
 **Argument hint:** "Say 'run issue 135' to run the full pipeline on an issue"
 
-The entry point for the autonomous pipeline. Auto-chains through all stages (triage → plan → implement → review → land) without pausing. Handles retry loops if review requests changes (max 2 cycles). Choose this agent to run the full pipeline on an issue.
+The entry point for the autonomous pipeline. Auto-chains through all stages (triage → plan → implement → review → deliver) without pausing. Handles retry loops if review requests changes (max 2 cycles). Choose this agent to run the full pipeline on an issue.
 
 ---
 
@@ -114,11 +114,11 @@ Multi-dimensional PR reviewer covering architecture, security, code quality, tes
 
 ---
 
-### `land.agent.md`
+### `deliver.agent.md`
 
 **Tools:** `read`, `search`, `execute`, `github`
 
-Merges approved PRs to main and updates the issue label to `local/done`. Does not close the issue. Choose this agent to land an approved PR.
+Merges approved PRs to main and updates the issue label to `local/done`. Does not close the issue. Choose this agent to deliver an approved PR.
 
 ---
 

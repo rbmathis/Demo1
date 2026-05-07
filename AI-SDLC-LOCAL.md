@@ -38,7 +38,7 @@ A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot C
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Chaining mechanism:** The `pipeline` controller agent delegates to each stage agent sequentially. No label-based triggers — the controller handles all orchestration in-process.
+**Chaining mechanism:** The `autopilot` controller agent delegates to each stage agent sequentially. No label-based triggers — the controller handles all orchestration in-process.
 
 **State tracking:** Each stage posts a structured comment on the GitHub issue. The issue is the state file — same as the cloud pipeline.
 
@@ -46,24 +46,24 @@ A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot C
 
 ## How to Invoke
 
-> **TL;DR — Always use `@pipeline run`.** It's the controller that runs all stages for you.
+> **TL;DR — Always use `@autopilot run`.** It's the controller that runs all stages for you.
 
 ### Full Pipeline (the normal way)
 
 ```bash
 # Copilot CLI:
-copilot "@pipeline run issue 135"
+copilot "@autopilot run issue 135"
 ```
 
 ```text
 # VS Code Copilot Chat:
-@pipeline run issue 135
+@autopilot run issue 135
 ```
 
-The **`@pipeline` agent** is the single entry point. It auto-chains all 6 stages in order:
+The **`@autopilot` agent** is the single entry point. It auto-chains all 6 stages in order:
 triage → plan → implement → docs → review → land.
 
-You don't need to invoke `@triage` directly — `@pipeline` handles everything.
+You don't need to invoke `@triage` directly — `@autopilot` handles everything.
 
 ### Running a Single Stage (advanced)
 
@@ -75,10 +75,10 @@ copilot "@plan plan issue 135"           # plan only (reads triage comment)
 copilot "@implement implement issue 135" # implement only (reads plan comment)
 copilot "@docs document issue 135"       # document changes (reads PR diff)
 copilot "@review review PR 142"          # review a specific PR
-copilot "@land land PR 142"              # merge to main
+copilot "@deliver deliver PR 142"        # merge to main
 ```
 
-This is rarely needed — the pipeline controller handles sequencing, retries, and error reporting automatically.
+This is rarely needed — the autopilot handles sequencing, retries, and error reporting automatically.
 
 ---
 
@@ -155,7 +155,7 @@ The implement agent:
 | **Label** | `local/docs` |
 | **Output** | XML comments updated, docs/ markdown updated |
 
-The docs agent (called by the pipeline controller, not implement):
+The docs agent (called by the autopilot, not implement):
 - Reads the PR diff to understand what changed
 - Updates XML documentation comments on any new or modified public APIs
 - Adds or updates relevant entries in `docs/` markdown
@@ -185,30 +185,30 @@ The review agent:
 - Posts consolidated review verdict on the PR
 - Makes approve/request-changes decision
 
-**If changes requested:** The pipeline controller can loop back to implement (max 2 cycles).
+**If changes requested:** The autopilot can loop back to implement (max 2 cycles).
 
-### Stage 6: Land
+### Stage 6: Deliver
 
 | Attribute | Value |
 |-----------|-------|
-| **Agent** | `land` |
+| **Agent** | `deliver` |
 | **Tools** | read, search, execute, github |
-| **Label** | `local/landing` |
+| **Label** | `local/delivering` |
 | **Output** | PR merged, label updated |
 
-The land agent:
+The deliver agent:
 - Verifies PR is approved and CI checks pass
 - Squash merges to main
 - Deletes the feature branch
 - Posts landing summary on the issue
 
-Does NOT close the issue — the pipeline controller manages final status.
+Does NOT close the issue — the autopilot manages final status.
 
 ---
 
 ## Labels (Local vs Cloud)
 
-The **pipeline controller** manages all `local/*` label transitions — stage agents do not set labels:
+The **autopilot** manages all `local/*` label transitions — stage agents do not set labels:
 
 | Label | Stage | Set By Pipeline Before |
 |-------|-------|------------------------|
@@ -217,8 +217,8 @@ The **pipeline controller** manages all `local/*` label transitions — stage ag
 | `local/implementing` | Code being written | Implement delegation |
 | `local/docs` | Documentation update | Docs delegation |
 | `local/review` | PR under review | Review delegation |
-| `local/landing` | Merging to main | Land delegation |
-| `local/done` | Pipeline complete | After Land succeeds |
+| `local/delivering` | Merging to main | Deliver delegation |
+| `local/done` | Pipeline complete | After Deliver succeeds |
 
 The cloud pipeline uses `pipeline/triage-requested` as its trigger — completely separate namespace.
 
@@ -230,12 +230,12 @@ The cloud pipeline uses `pipeline/triage-requested` as its trigger — completel
 
 | Agent | File | Role |
 |-------|------|------|
-| `pipeline` | `pipeline.agent.md` | Controller — auto-chains all stages |
+| `autopilot` | `autopilot.agent.md` | Controller — auto-chains all stages |
 | `triage` | `triage.agent.md` | Classifies issues |
 | `plan` | `plan.agent.md` | Creates implementation plans |
 | `implement` | `implement.agent.md` | Writes code via specialists |
 | `review` | `review.agent.md` | Multi-dimensional code review |
-| `land` | `land.agent.md` | Merges to main |
+| `deliver` | `deliver.agent.md` | Merges to main |
 
 ### Specialist Agents (delegated work)
 
@@ -286,13 +286,13 @@ Issue #135: "Add user preferences endpoint"
 
 ## Failure Handling
 
-- If any stage fails, the pipeline controller stops and reports the error
+- If any stage fails, the autopilot stops and reports the error
 - The issue retains all comments posted so far — full audit trail
 - Re-run by invoking the pipeline again: `copilot "triage issue 135"`
 - Or resume from a specific stage: `copilot "@implement implement issue 135"`
 
 If code review requests changes:
-- The pipeline controller loops back to implement (max 2 review cycles)
+- The autopilot loops back to implement (max 2 review cycles)
 - After 2 failed reviews, it stops and reports for human intervention
 
 ---
@@ -310,7 +310,7 @@ If code review requests changes:
 
 ```text
 1. Developer opens an issue describing work needed
-2. Developer runs: copilot "@pipeline run issue 135"
+2. Developer runs: copilot "@autopilot run issue 135"
 3. Triage classifies and posts comment                     (~30s)
 4. Plan researches codebase and posts plan                 (~1-2 min)
 5. Implement writes code, tests, docs, creates PR         (~3-8 min)
