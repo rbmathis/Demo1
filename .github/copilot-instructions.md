@@ -35,85 +35,32 @@ This project uses GitHub Copilot Custom Agents for automated code review, securi
   - Focus on code appreciation and professional support
   - Be genuinely helpful while being charming
 
-## Custom Agents Configuration
+## Technical Architecture
 
-### Code Reviewer Agent
-
-- **Purpose**: Reviews pull requests for .NET MVC best practices
-- **Triggers**: PR opened/updated
-- **Checks**: MVC patterns, code quality, security practices
-
-### Build Validator Agent
-
-- **Purpose**: Ensures builds are successful and dependencies are correct
-- **Triggers**: Push to main/develop, PRs
-- **Checks**: Project files, dependencies, build status
-
-### Security Auditor Agent
-
-- **Purpose**: Scans for security vulnerabilities
-- **Triggers**: Weekly schedule, PRs
-- **Checks**: Dependencies, security headers, authentication
-
-### Documentation Helper Agent
-
-- **Purpose**: Maintains documentation quality
-- **Triggers**: PRs, pushes to main
-- **Checks**: XML comments, README completeness
+See [`architecture.md`](../architecture.md) in the repo root for the full technical reference: solution structure, dependencies, middleware pipeline, services, controllers, build/test commands, and CI/CD pipeline details.
 
 ## Development Guidelines
 
-### Coding Standards
-
 - Use XML documentation for public APIs
 - Follow MVC architectural patterns
-- Implement proper error handling
+- Implement proper error handling and input validation
 - Use dependency injection appropriately
-
-### Security Requirements
-
-- Enable HTTPS redirection
-- Implement authentication/authorization
-- Validate all inputs
-- Keep dependencies updated
-
-### Testing Standards
-
-- Write unit tests for controllers
-- Test model validation
-- Include integration tests for key workflows
-
-### Documentation Requirements
-
-- Update README for significant changes
-- Document API endpoints
-- Include setup and deployment instructions
-
-## GitHub Actions Integration
-
-The project includes three main workflows:
-
-1. **Build and Test** (`dotnet.yml`): Builds, tests, and validates code quality
-2. **Deploy** (`deploy.yml`): Handles production deployments
-3. **Copilot Agents** (`copilot-agents.yml`): Executes agent-triggered tasks
-
-## Getting Started with Agents
-
-1. Push code to trigger the Build Validator Agent
-2. Create a PR to activate the Code Reviewer Agent
-3. Weekly Security Auditor runs automatically
-4. Documentation Helper checks run on main branch updates
-
-The agents provide automated feedback through GitHub Actions and can hand off tasks between each other for comprehensive code review.
+- Write unit tests for controllers; include integration tests for key workflows
+- Update `architecture.md` when adding services, middleware, controllers, or dependencies
 
 ## GitHub Agentic Workflows (gh-aw) Reference
 
 This project uses `gh aw` to compile `.md` workflow definitions into `.lock.yml` files. When editing pipeline workflows:
 
 - **Documentation**: https://github.github.com/gh-aw/introduction/overview/
-- **Compile command**: `gh aw compile` (all) or `gh aw compile <workflow-id>` (specific)
-- **Source files**: `.github/workflows/pipeline-*.md`
-- **Compiled output**: `.github/workflows/pipeline-*.lock.yml` (DO NOT edit directly)
+- **Compile command**: Always delete lock files first, then recompile:
+  ```powershell
+  Remove-Item .github/workflows/cloud-*.lock.yml -ErrorAction SilentlyContinue
+  gh aw compile
+  ```
+  This ensures the latest AWF binary version is pinned. Recompiling without deleting preserves the old (potentially defunct) version.
+- **Source files**: `.github/workflows/cloud-*.md`
+- **Compiled output**: `.github/workflows/cloud-*.lock.yml` (DO NOT edit directly)
 
 ### Key Reference Pages
 
@@ -142,6 +89,6 @@ This project uses `gh aw` to compile `.md` workflow definitions into `.lock.yml`
 
 - `command:` is **deprecated** — use `slash_command:` instead
 - `condition:` is **not valid** on trigger blocks — use `slash_command` or agent-level verification
-- After editing any `.md` workflow, always run `gh aw compile` before pushing
+- After editing any `.md` workflow, always **delete the corresponding `.lock.yml` first**, then run `gh aw compile` before pushing
 - The `.lock.yml` must be committed alongside the `.md` source
-
+- **Why delete first?** GitHub can remove old AWF binary releases without notice, causing 404 failures. Deleting the lock file forces a fresh pin to the latest available version.

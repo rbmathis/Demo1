@@ -1,0 +1,103 @@
+@model Demo1.Models.TrophyCaseViewModel
+@{
+    ViewData["Title"] = "Trophy Case";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="text-center mb-4">
+        <h1 class="display-4">🏅 Trophy Case</h1>
+        <p class="lead text-muted">
+            Explore the site to earn badges! Your progress is tracked automatically.
+        </p>
+        <span class="badge bg-primary fs-5">
+            @Model.TotalEarned / @Model.TotalAvailable Earned
+        </span>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    @{
+        var overallPercent = Model.TotalAvailable > 0
+            ? (double)Model.TotalEarned / Model.TotalAvailable * 100
+            : 0;
+    }
+    <div class="progress mb-4" style="height: 25px;">
+        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
+             role="progressbar"
+             style="width: @overallPercent.ToString("F0")%"
+             aria-valuenow="@Model.TotalEarned"
+             aria-valuemin="0"
+             aria-valuemax="@Model.TotalAvailable">
+            @overallPercent.ToString("F0")% Complete
+        </div>
+    </div>
+
+    <!-- Achievement Cards Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var item in Model.Achievements)
+        {
+            <div class="col">
+                <div class="card h-100 @(item.IsEarned ? "border-success" : "border-secondary")"
+                     style="@(item.IsEarned ? "" : "opacity: 0.7;")">
+                    <div class="card-header text-center @(item.IsEarned ? "bg-success bg-opacity-10" : "bg-secondary bg-opacity-10")">
+                        <span style="font-size: 3rem;">@item.Achievement.Icon</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            @item.Achievement.Name
+                            @if (item.IsEarned)
+                            {
+                                <span class="badge bg-success ms-2">✅ Earned</span>
+                            }
+                        </h5>
+                        <p class="card-text text-muted">@item.Achievement.Description</p>
+
+                        @if (item.IsEarned)
+                        {
+                            <p class="text-success mb-0">
+                                <small>🎉 Earned on @item.EarnedAt?.ToString("MMM dd, yyyy HH:mm") UTC</small>
+                            </p>
+                        }
+                        else
+                        {
+                            <!-- Progress bar for unearned achievements -->
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar @(item.ProgressPercentage >= 75 ? "bg-warning" : "bg-info")"
+                                     role="progressbar"
+                                     style="width: @item.ProgressPercentage.ToString("F0")%"
+                                     aria-valuenow="@item.CurrentProgress"
+                                     aria-valuemin="0"
+                                     aria-valuemax="@item.Target">
+                                    @if (item.ProgressPercentage > 15)
+                                    {
+                                        @($"{item.CurrentProgress}/{item.Target}")
+                                    }
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                @item.CurrentProgress / @item.Target — @item.ProgressPercentage.ToString("F0")% complete
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Footer Note -->
+    <div class="alert alert-info mt-4">
+        <h6 class="alert-heading">ℹ️ How Achievement Tracking Works</h6>
+        <p class="mb-0">
+            Achievements are tracked per browser session using a <strong>Channel&lt;T&gt; + BackgroundService</strong> pattern.
+            Every page visit publishes an event to a bounded channel, and a background processor evaluates achievement rules asynchronously.
+            This means zero impact on your page load times! Your progress resets when your session expires (30 minutes of inactivity).
+        </p>
+    </div>
+
+    <!-- Link to Anti-Pattern for comparison -->
+    <div class="text-center mt-3 mb-4">
+        <a asp-controller="Achievement" asp-action="SynchronousAntiPattern" class="btn btn-outline-danger">
+            🔥 See the Wrong Way (Synchronous Anti-Pattern)
+        </a>
+    </div>
+</div>

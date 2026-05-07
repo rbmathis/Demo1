@@ -33,8 +33,9 @@ Understand exactly what changed: which files, what was added/removed, what the f
 
 ### 2. Update all applicable documentation
 - **XML documentation comments** on any new or modified public APIs in production code
-- **README.md** — if the change adds a feature, endpoint, config option, or changes how to run/use the app, update README
-- **`docs/`** — update any relevant markdown files (architecture, configuration, swagger, health-endpoint, etc.). If nothing applies, note it.
+- **`architecture.md`** (repo root) — if the change adds/removes services, middleware, controllers, dependencies, feature flags, or alters the middleware pipeline order, update the relevant tables in `architecture.md`. This is the single source of truth for solution structure.
+- **README.md** — if the change adds a user-facing feature, endpoint, config option, or changes how to run/use the app, update README
+- **`docs/`** — update any relevant markdown files (configuration, swagger, health-endpoint, etc.). If nothing applies, note it.
 - **`docs/issues-backlog.md`** — if this issue was tracked there, mark it done
 - Commit all doc changes to the feature branch with a snarky `docs(scope):` commit message
 

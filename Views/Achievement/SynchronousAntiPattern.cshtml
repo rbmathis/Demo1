@@ -1,0 +1,181 @@
+@model Demo1.Models.SynchronousAntiPatternViewModel
+@{
+    ViewData["Title"] = "Synchronous Achievement Checker";
+}
+
+<div class="container">
+    <!-- Header with Warning Styling -->
+    <div class="text-center mb-4 p-4 rounded" style="background: linear-gradient(135deg, #2d1b1b, #1a1a2e); color: #ff6b6b;">
+        <h1 class="display-5">🔥 Synchronous Achievement Checker</h1>
+        <h2 class="text-warning">— The WRONG Way —</h2>
+        <p class="text-light">
+            This page demonstrates what happens when you process achievements synchronously
+            inline with every request. <strong>Don't do this.</strong>
+        </p>
+    </div>
+
+    <!-- Timing Display -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-danger">⏱️ Processing Time</h5>
+                    <p class="display-4 text-danger fw-bold">@Model.ElapsedMs ms</p>
+                    <small class="text-muted">This time was added to YOUR page load</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">📊 Events Queried</h5>
+                    <p class="display-4 text-warning fw-bold">@Model.EventsQueried</p>
+                    <small class="text-muted">Synchronous DB reads on request thread</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">🔍 Rules Evaluated</h5>
+                    <p class="display-4 text-warning fw-bold">@Model.RulesEvaluated</p>
+                    <small class="text-muted">Inline rule checks blocking the pipeline</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Comparison Panel -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">❌ The Bad Way — Synchronous Inline</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-dark text-light p-3 rounded"><code>// 🔥 In the request pipeline...
+public IActionResult SomePage()
+{
+    // Block thread: query ALL events
+    var events = db.Events.ToList();
+
+    // Block thread: evaluate ALL rules
+    foreach (var rule in rules)
+    {
+        var progress = db.Events
+            .Where(e => ...).Count();
+        if (progress >= target)
+            db.Achievements.Add(...);
+    }
+
+    // Block thread: save to DB
+    db.SaveChanges();
+
+    return View();
+}</code></pre>
+                    <ul class="text-danger">
+                        <li>Blocks the request thread</li>
+                        <li>DB queries on every page load</li>
+                        <li>Thread pool starvation under load</li>
+                        <li>Latency grows with event count</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-success h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">✅ The Good Way — Channel + BackgroundService</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-dark text-light p-3 rounded"><code>// ✅ In middleware (non-blocking)
+public async Task InvokeAsync(HttpContext ctx)
+{
+    await _next(ctx);
+
+    // Fire-and-forget: TryWrite is instant
+    channel.Writer.TryWrite(new Event
+    {
+        Path = ctx.Request.Path,
+        Status = ctx.Response.StatusCode
+    });
+}
+
+// ✅ In BackgroundService (separate thread)
+await foreach (var evt in channel.Reader
+    .ReadAllAsync(token))
+{
+    // Process at our own pace
+    await EvaluateRulesAsync(evt);
+}</code></pre>
+                    <ul class="text-success">
+                        <li>Zero impact on request latency</li>
+                        <li>Non-blocking fire-and-forget</li>
+                        <li>Processes at its own pace</li>
+                        <li>Graceful degradation under load</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What Happens at Scale -->
+    <div class="card border-danger mb-4">
+        <div class="card-header bg-danger bg-opacity-10">
+            <h5 class="text-danger mb-0">💀 What Happens at Scale</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                The synchronous approach becomes a <strong>ticking time bomb</strong> as your application grows:
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-danger">With 100 concurrent users:</h6>
+                    <ul>
+                        <li>100 threads blocked on DB queries simultaneously</li>
+                        <li>Thread pool exhaustion → requests queue up</li>
+                        <li>Response times spike from milliseconds to seconds</li>
+                        <li>Cascading failures across the application</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-success">With Channel + BackgroundService:</h6>
+                    <ul>
+                        <li>100 requests publish events instantly (TryWrite)</li>
+                        <li>Single background thread processes the queue</li>
+                        <li>Request latency stays constant regardless of load</li>
+                        <li>Bounded channel provides natural backpressure</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Achievement Status (from the sync check) -->
+    <h4>Current Achievements (Synchronously Computed)</h4>
+    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+        @foreach (var item in Model.Achievements)
+        {
+            <div class="col">
+                <div class="card @(item.IsEarned ? "border-success" : "border-secondary")" style="@(item.IsEarned ? "" : "opacity: 0.6;")">
+                    <div class="card-body text-center">
+                        <span style="font-size: 2rem;">@item.Achievement.Icon</span>
+                        <h6>@item.Achievement.Name</h6>
+                        <small class="text-muted">@item.CurrentProgress / @item.Target</small>
+                        @if (item.IsEarned)
+                        {
+                            <span class="badge bg-success d-block mt-1">Earned ✅</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Link to proper implementation -->
+    <div class="text-center mb-4">
+        <a asp-controller="Achievement" asp-action="TrophyCase" class="btn btn-success btn-lg">
+            🏅 See the Right Way → Trophy Case
+        </a>
+    </div>
+</div>
