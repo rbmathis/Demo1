@@ -35,12 +35,12 @@ safe-outputs:
     max: 2
     target: "*"
   add-labels:
-    allowed: ["pipeline/review", "pipeline/awaiting-merge"]
+    allowed: ["cloud/review", "cloud/awaiting-merge"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/documenting", "pipeline/delivering", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -56,7 +56,7 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
 ## Your Task
 
 1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
-2. **Update the pipeline label** — remove any existing `pipeline/*` labels and add `pipeline/review` on issue #${{ github.event.inputs.issue_number }}
+2. **Update the pipeline label** — remove any existing `cloud/*` labels and add `cloud/review` on issue #${{ github.event.inputs.issue_number }}
 3. **Post a status comment on the issue** (before reviewing):
    - Post this comment on issue #${{ github.event.inputs.issue_number }}:
      ```
@@ -79,7 +79,7 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
    - **REQUEST_CHANGES** — security vulnerabilities or critical issues found
    - **COMMENT** — suggestions but nothing blocking
 9. **Post an implementation summary on issue #${{ github.event.inputs.issue_number }}** (MANDATORY — use format below)
-10. **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+10. **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
 11. **Dispatch the deploy workflow** — call `dispatch_workflow` for `pipeline-deploy` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Review Checklist
@@ -142,18 +142,18 @@ This comment is the official pipeline record. Do NOT skip it.
 After completing the review and posting the implementation report, dispatch the appropriate next stage based on your verdict:
 
 ### If APPROVE:
-- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+- **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
 - **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 - This moves the pipeline to the documentation stage before delivery
 
 ### If REQUEST_CHANGES:
-- **Keep `pipeline/review` label** on issue #${{ github.event.inputs.issue_number }}
+- **Keep `cloud/review` label** on issue #${{ github.event.inputs.issue_number }}
 - **Check the rework count** — read issue comments and count how many "Pipeline — Implementation Report" comments exist with verdict "REQUEST_CHANGES"
 - **If fewer than 2 rework cycles:** Dispatch `pipeline-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}` — the coding agent will read the review comments and fix the issues
 - **If 2 or more rework cycles already:** Do NOT dispatch. Post a comment: "⚠️ Pipeline halted — maximum rework cycles (2) reached. Human intervention required."
 
 ### If COMMENT:
-- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+- **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
 - **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 - Comments are advisory — they don't block the pipeline
 

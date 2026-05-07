@@ -98,10 +98,10 @@ jobs:
             });
 
             const labels = issue.data.labels.map(l => typeof l === 'string' ? l : l.name);
-            const inImplementing = labels.includes('pipeline/implementing');
+            const inImplementing = labels.includes('cloud/implementing');
 
             if (!inImplementing) {
-              core.warning(`Issue #${issueNumber} does not have pipeline/implementing label (has: ${labels.join(', ')}). Proceeding anyway.`);
+              core.warning(`Issue #${issueNumber} does not have cloud/implementing label (has: ${labels.join(', ')}). Proceeding anyway.`);
             }
 
             core.setOutput('skip', 'false');
@@ -122,31 +122,31 @@ jobs:
               body: `## ✅ Pipeline — Code Complete\n\n**Timestamp:** ${timestamp}\n**PR:** #${pr.number}\n**Branch:** \`${pr.head.ref}\`\n\nCopilot coding agent has finished work. The PR is ready for review.\n\n---\n*Auto-posted by notify-code-complete workflow*`
             });
 
-      - name: Transition label to pipeline/review
+      - name: Transition label to cloud/review
         if: steps.issue.outputs.number != '' && steps.guard.outputs.skip != 'true'
         uses: actions/github-script@v7
         with:
           script: |
             const issueNumber = parseInt('${{ steps.issue.outputs.number }}');
 
-            // Remove pipeline/implementing if present
+            // Remove cloud/implementing if present
             try {
               await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                name: 'pipeline/implementing'
+                name: 'cloud/implementing'
               });
             } catch (e) {
-              core.info('pipeline/implementing label not present — that is OK');
+              core.info('cloud/implementing label not present — that is OK');
             }
 
-            // Add pipeline/review
+            // Add cloud/review
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              labels: ['pipeline/review']
+              labels: ['cloud/review']
             });
 
       - name: Dispatch pipeline-review workflow

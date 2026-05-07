@@ -35,12 +35,12 @@ safe-outputs:
     max: 1
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   add-labels:
-    allowed: ["pipeline/planning", "pipeline/implementing"]
+    allowed: ["cloud/planning", "cloud/implementing"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/deploying", "cloud/done"]
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -56,7 +56,7 @@ You are the planning agent for an AI-SDLC pipeline. You create detailed, actiona
 ## Your Task
 
 1. **Read the issue** (#${{ github.event.inputs.issue_number }}) — title, body, and all comments
-2. **Remove any existing `pipeline/*` labels** and **add `pipeline/planning`** to issue #${{ github.event.inputs.issue_number }}
+2. **Remove any existing `cloud/*` labels** and **add `cloud/planning`** to issue #${{ github.event.inputs.issue_number }}
 3. **Find the triage comment** — look for the comment containing "Pipeline — Triage" to understand classification, scope, and agents needed
 3. **Analyze the codebase** — use GitHub tools to explore relevant files and understand the current state
 4. **Create a detailed implementation plan** including:
@@ -114,5 +114,5 @@ Post this as a comment on issue #${{ github.event.inputs.issue_number }}:
 - Always include testing and documentation steps
 - The plan should be detailed enough for Copilot coding agent to execute without ambiguity
 - After posting the plan, ALWAYS dispatch `pipeline-implement`
-- **Before dispatching**, replace `pipeline/planning` with `pipeline/implementing` on the issue
+- **Before dispatching**, replace `cloud/planning` with `cloud/implementing` on the issue
 - If you cannot determine a plan, post what you know and dispatch anyway

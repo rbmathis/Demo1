@@ -9,7 +9,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                             │
-│   /autopilot or label                                                       │
+│   cloud/autopilot label                                                     │
 │       │                                                                     │
 │       ▼                                                                     │
 │   ┌───────────┐                                                             │
@@ -72,7 +72,7 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `/autopilot` slash command on issue, or `workflow_dispatch` |
+| **Trigger** | `cloud/autopilot` label on issue, or `workflow_dispatch` |
 | **Workflow** | `pipeline-autopilot.md` |
 | **Engine** | Copilot |
 | **Output** | Validates issue, posts engagement comment, dispatches Triage |
@@ -80,17 +80,17 @@ A fully-autonomous, AI-powered SDLC pipeline built on [GitHub Agentic Workflows]
 The autopilot:
 
 - Validates the issue has enough information to proceed
-- Removes any stale `pipeline/*` labels
+- Removes any stale `cloud/*` labels
 - Posts an "Autopilot Engaged" comment with the full pipeline stage table
-- Dispatches `pipeline-triage` (or applies `pipeline/triage-requested` label)
+- Dispatches `pipeline-triage` (or applies `cloud/triage-requested` label)
 
-> **Note:** The autopilot is optional — you can still trigger the pipeline by applying `pipeline/triage-requested` directly.
+> **Note:** The autopilot is optional — you can still trigger the pipeline by applying `cloud/triage-requested` directly.
 
 ### Stage 1: Triage
 
 | Attribute | Value |
 | ----------- | ------- |
-| **Trigger** | `label_command: pipeline/triage-requested` on issues |
+| **Trigger** | `label_command: cloud/triage-requested` on issues |
 | **Workflow** | `pipeline-triage.md` |
 | **Engine** | Copilot |
 | **Output** | Classification comment, type labels, dispatches Plan |
@@ -275,18 +275,36 @@ Downstream stages read upstream comments to understand context — no separate s
 
 ## Labels
 
-Labels are used for **classification only**, never as pipeline triggers:
+Labels serve two purposes: **issue classification** and **stage tracking**.
 
-| Label | Purpose | Applied By |
-| ------- | --------- | ----------- |
-| `bug` | Issue type | Triage |
-| `enhancement` | Issue type | Triage |
-| `feature` | Issue type | Triage |
-| `security` | Issue type | Triage |
-| `documentation` | Issue type | Triage |
-| `refactor` | Issue type | Triage |
+### Classification Labels (applied by Triage)
 
-No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
+| Label | Purpose |
+| ------- | --------- |
+| `bug` | Issue type |
+| `enhancement` | Issue type |
+| `feature` | Issue type |
+| `security` | Issue type |
+| `documentation` | Issue type |
+| `refactor` | Issue type |
+
+### Stage Labels (`cloud/*` — applied by each stage)
+
+| Label | Applied By | Meaning |
+| ------- | ----------- | --------- |
+| `cloud/autopilot` | Human | Initial trigger — kicks off the pipeline |
+| `cloud/triage-requested` | Autopilot | Triggers Triage via label_command |
+| `cloud/triage` | Triage | Classifying |
+| `cloud/planning` | Plan | Creating implementation plan |
+| `cloud/implementing` | Implement | Copilot coding agent assigned |
+| `cloud/review` | Review | Multi-agent review in progress |
+| `cloud/awaiting-merge` | Review | Review approved, awaiting next stage |
+| `cloud/documenting` | Docs | Adding documentation |
+| `cloud/delivering` | Deliver | Merging PR |
+| `cloud/deploying` | Deploy | Verifying and closing |
+| `cloud/done` | Deploy | Pipeline complete |
+
+Stage labels are mutually exclusive — each stage removes prior `cloud/*` labels before applying its own. Stage transitions still use `dispatch-workflow`; labels provide at-a-glance status.
 
 ---
 
@@ -309,8 +327,8 @@ No `pipeline:*` labels exist. Stage transitions use `dispatch-workflow`.
 
 | File | Purpose | Trigger |
 | ------ | --------- | --------- |
-| `pipeline-autopilot.md` | Single entry point, validates and dispatches | `/autopilot` slash command or `workflow_dispatch` |
-| `pipeline-triage.md` | Classify and dispatch | `label_command: pipeline/triage-requested` |
+| `pipeline-autopilot.md` | Single entry point, validates and dispatches | `label_command: cloud/autopilot` or `workflow_dispatch` |
+| `pipeline-triage.md` | Classify and dispatch | `label_command: cloud/triage-requested` |
 | `pipeline-plan.md` | Create implementation plan | `workflow_dispatch` (from Triage) |
 | `pipeline-implement.md` | Assign Copilot coding agent | `workflow_dispatch` (from Plan) |
 | `notify-code-complete.yml` | Post "Code Complete" + dispatch review | `pull_request: [ready_for_review, review_requested]` |
@@ -345,7 +363,7 @@ If code review requests changes:
 ## How It Works End-to-End
 
 ```text
-1. Developer comments `/autopilot` on an issue (or applies `pipeline/triage-requested`)
+1. Developer applies `cloud/autopilot` label to an issue (or `cloud/triage-requested` directly)
 2. Autopilot validates and dispatches Triage                  (~30 sec) [automatic]
 3. Triage classifies the issue and dispatches Plan            (~2 min)  [automatic]
 4. Plan analyzes the codebase and posts implementation plan   (~3 min)  [automatic]
@@ -393,7 +411,7 @@ dotnet run
 ### Triggering the Pipeline
 
 1. Create a new issue with a descriptive title and body
-2. Apply the `pipeline/triage-requested` label to the issue
+2. Apply the `cloud/triage-requested` label to the issue
 3. Watch the pipeline stages execute via issue comments
 4. Each stage posts a structured comment as it completes
 

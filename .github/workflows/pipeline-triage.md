@@ -4,7 +4,7 @@ description: "Classifies issues and kicks off the planning stage"
 
 on:
   label_command:
-    name: pipeline/triage-requested
+    name: cloud/triage-requested
     events: [issues]
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
@@ -24,12 +24,12 @@ safe-outputs:
     max: 1
     target: "triggering"
   add-labels:
-    allowed: [bug, enhancement, feature, security, documentation, refactor, "pipeline/triage", "pipeline/planning"]
+    allowed: [bug, enhancement, feature, security, documentation, refactor, "cloud/triage", "cloud/planning"]
     max: 3
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/deploying", "cloud/done"]
     max: 7
     target: "triggering"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -38,11 +38,11 @@ safe-outputs:
 
 ## Pipeline — Triage Agent
 
-You are the intake agent for an AI-SDLC pipeline. When the `pipeline/triage-requested` label is applied to an issue, you classify it and kick off the planning stage.
+You are the intake agent for an AI-SDLC pipeline. When the `cloud/triage-requested` label is applied to an issue, you classify it and kick off the planning stage.
 
 ## Your Task
 
-1. **Apply the `pipeline/triage` label** to the issue immediately (remove any other `pipeline/*` labels first)
+1. **Apply the `cloud/triage` label** to the issue immediately (remove any other `cloud/*` labels first)
 3. **Read the issue** title and body carefully
 4. **Classify** the issue:
    - **Type**: bug, enhancement, feature, security, documentation, or refactor
@@ -57,7 +57,7 @@ You are the intake agent for an AI-SDLC pipeline. When the `pipeline/triage-requ
    - `docs` — documentation updates (include for features and significant changes)
 5. **Post a triage comment** with your analysis (format below)
 6. **Apply classification labels** — apply 1-2 type labels (bug/enhancement/feature/security/documentation/refactor). These are classification only, NOT pipeline triggers.
-7. **Replace the `pipeline/triage` label with `pipeline/planning`** — remove `pipeline/triage`, add `pipeline/planning`
+7. **Replace the `cloud/triage` label with `cloud/planning`** — remove `cloud/triage`, add `cloud/planning`
 8. **Dispatch the plan workflow** — call `dispatch_workflow` for `pipeline-plan` with input `issue_number` set to the triggering issue number as a string.
 
 ## Triage Comment Format

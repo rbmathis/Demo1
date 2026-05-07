@@ -30,12 +30,12 @@ safe-outputs:
     max: 1
     target: "*"
   add-labels:
-    allowed: ["pipeline/documenting"]
+    allowed: ["cloud/documenting"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/documenting", "pipeline/delivering", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -57,7 +57,7 @@ You are the documentation agent. After code has been reviewed and approved, you 
 ## Your Task
 
 1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
-2. **Remove all `pipeline/*` labels** and **add `pipeline/documenting`** on issue #${{ github.event.inputs.issue_number }}
+2. **Remove all `cloud/*` labels** and **add `cloud/documenting`** on issue #${{ github.event.inputs.issue_number }}
 3. **Read the PR diff** — understand all changed/created files
 4. **Add/update XML documentation:**
    - Add `<summary>`, `<param>`, `<returns>` XML docs to all new/modified public methods and classes

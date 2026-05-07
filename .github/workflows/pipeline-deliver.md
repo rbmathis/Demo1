@@ -27,12 +27,12 @@ safe-outputs:
     max: 1
     target: "*"
   add-labels:
-    allowed: ["pipeline/delivering"]
+    allowed: ["cloud/delivering"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/documenting", "pipeline/delivering", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -58,7 +58,7 @@ You are the delivery agent. When dispatched with an issue number, you find the a
 
 1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
 2. **If no approved PR found** — call `noop` with "No approved PR found for issue #${{ github.event.inputs.issue_number }}. Cannot deliver."
-3. **Remove all `pipeline/*` labels** and **add `pipeline/delivering`** on issue #${{ github.event.inputs.issue_number }}
+3. **Remove all `cloud/*` labels** and **add `cloud/delivering`** on issue #${{ github.event.inputs.issue_number }}
 4. **Verify pre-merge conditions:**
    - PR review status is "approved"
    - CI/CD status checks are passing (or no required checks)

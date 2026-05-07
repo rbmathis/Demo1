@@ -28,12 +28,12 @@ safe-outputs:
     max: 1
     target: "*"
   add-labels:
-    allowed: ["pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/deploying", "cloud/done"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/deploying", "cloud/done"]
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -53,10 +53,10 @@ You are the deployment and closure agent. When dispatched with an issue number, 
 
 1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for merged PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
 2. **If no merged PR found** — check if there's a closed-without-merge PR. If so, call `noop` with "PR closed without merge. No action needed." If no PR at all, call `noop` with "No linked PR found."
-3. **Remove all `pipeline/*` labels** and **add `pipeline/deploying`** on issue #${{ github.event.inputs.issue_number }}
+3. **Remove all `cloud/*` labels** and **add `cloud/deploying`** on issue #${{ github.event.inputs.issue_number }}
 4. **Read the issue** to gather the full pipeline history (triage, plan, implement comments)
 5. **Post a final deployment comment** on issue #${{ github.event.inputs.issue_number }}
-6. **Replace `pipeline/deploying` with `pipeline/done`** on the issue
+6. **Replace `cloud/deploying` with `cloud/done`** on the issue
 7. **Close the issue** as completed
 
 ## Deployment Comment Format

@@ -3,7 +3,9 @@ name: "Pipeline — Autopilot"
 description: "Single entry point that kicks off the full AI-SDLC pipeline on an issue"
 
 on:
-  slash_command: autopilot
+  label_command:
+    name: cloud/autopilot
+    events: [issues]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -28,12 +30,12 @@ safe-outputs:
     max: 1
     target: "*"
   add-labels:
-    allowed: ["pipeline/triage-requested"]
+    allowed: ["cloud/triage-requested"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/documenting", "pipeline/delivering", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/delivering", "cloud/deploying", "cloud/done"]
     max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -63,9 +65,9 @@ Each stage dispatches the next. You don't need to wait or monitor — the chain 
 2. **Validate the issue** has:
    - A clear title describing work to be done
    - A body with enough context to classify and plan
-3. **Remove any existing `pipeline/*` labels** from the issue (clean slate)
+3. **Remove any existing `cloud/*` labels** from the issue (clean slate)
 4. **Post an autopilot engagement comment** on issue #${{ github.event.inputs.issue_number }} (format below)
-5. **Apply the `pipeline/triage-requested` label** OR **dispatch `pipeline-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+5. **Apply the `cloud/triage-requested` label** OR **dispatch `pipeline-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
 
 ## Autopilot Comment Format
 
@@ -93,13 +95,13 @@ The full AI-SDLC pipeline has been activated for this issue.
 Each stage will post its own status comment as it completes. The pipeline is fully autonomous — no human intervention required unless review requests changes after 2 rework cycles.
 ```
 
-## Slash Command Usage
+## Label Trigger Usage
 
-When triggered via `/autopilot` on an issue comment, the issue number is the issue where the command was posted. Use that as the target.
+When triggered via the `cloud/autopilot` label on an issue, the issue number is the issue where the label was applied. Use that as the target.
 
 ## Important
 
 - Only dispatch triage if the issue has enough information to proceed
 - If the issue is empty or nonsensical, post a comment asking for clarification instead of dispatching
-- Never dispatch if the issue already has active `pipeline/*` labels (pipeline is already running) — post a comment noting this and `noop`
+- Never dispatch if the issue already has active `cloud/*` labels (pipeline is already running) — post a comment noting this and `noop`
 - This is a fire-and-forget entry point — once triage is dispatched, the chain handles itself
