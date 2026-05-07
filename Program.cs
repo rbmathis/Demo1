@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Demo1.Middleware;
 using Demo1.Models;
 using Demo1.Telemetry;
@@ -8,12 +9,38 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHealthChecks();
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'V";
+    options.SubstituteApiVersionInUrl = true;
+});
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Demo1 API",
+        Version = "v1"
+    });
+    options.SwaggerDoc("v2", new OpenApiInfo
+    {
+        Title = "Demo1 API",
+        Version = "v2"
+    });
+});
 
 // ✅ Rate Limiting: Configure IP-based rate limiting using built-in middleware
 builder.Services.Configure<RateLimitingOptions>(
@@ -172,6 +199,7 @@ builder.Services.Configure<Microsoft.ApplicationInsights.Extensibility.Telemetry
 builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitializer("Demo1"));
 
 var app = builder.Build();
+var enableSwagger = app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger");
 
 // Flag set when Azure App Configuration provider is successfully added
 
@@ -181,6 +209,16 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+
+if (enableSwagger)
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Demo1 API v1");
+        options.SwaggerEndpoint("/swagger/v2/swagger.json", "Demo1 API v2");
+    });
 }
 
 app.UseHttpsRedirection();
