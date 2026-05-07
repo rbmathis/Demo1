@@ -29,11 +29,6 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
-  add-labels:
-    allowed: ["cloud/triage-requested"]
-    max: 1
-    target: "*"
-    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
     allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/done"]
     max: 9
