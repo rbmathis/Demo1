@@ -6,7 +6,7 @@ Welcome to the documentation hub for **Demo1**.
 
 | Topic                              | File                                 |
 | ---------------------------------- | ------------------------------------ |
-| Architecture overview              | [architecture.md](architecture.md)   |
+| Architecture overview              | [architecture.md](../architecture.md) |
 | Coding & documentation conventions | [conventions.md](conventions.md)     |
 | Configuration & environments       | [configuration.md](configuration.md) |
 | Testing guidelines                 | [testing.md](testing.md)             |

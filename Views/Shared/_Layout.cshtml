@@ -72,6 +72,10 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="SecurityLab"
                                 asp-action="Index">🛡️ Security Lab</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Achievement"
+                                asp-action="TrophyCase">🏅 Trophy Case</a>
+                        </li>
                         <!-- 🎪 ANTI-PATTERN CIRCUS DROPDOWN 🎪 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-danger" href="#" id="antiPatternDropdown"
@@ -91,6 +95,8 @@
                                         style="color: #f093fb;">🌊 Callback Hell Weather</a></li>
                                 <li><a class="dropdown-item" asp-controller="Home" asp-action="InlineCssHell"
                                         style="color: #ffd700;">🎨 Inline CSS Hell</a></li>
+                                <li><a class="dropdown-item" asp-controller="Achievement" asp-action="SynchronousAntiPattern"
+                                        style="color: #ff9f43;">🏀 Sync Achievement Checker</a></li>
                             </ul>
                         </li>
                     </ul>

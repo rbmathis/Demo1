@@ -1,12 +1,15 @@
 using Asp.Versioning;
+using Demo1.Data;
 using Demo1.Middleware;
 using Demo1.Models;
 using Demo1.Telemetry;
 using Demo1.Services;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+using System.Threading.Channels;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
@@ -84,6 +87,23 @@ builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>()
 builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
 builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
+
+// ✅ Achievement System: EF Core + SQLite persistence
+builder.Services.AddDbContext<AchievementDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("AchievementDb")
+        ?? "Data Source=achievements.db"));
+
+// ✅ Achievement System: Bounded channel for async event processing
+builder.Services.AddSingleton(Channel.CreateBounded<AchievementEventMessage>(
+    new BoundedChannelOptions(1000)
+    {
+        FullMode = BoundedChannelFullMode.DropOldest,
+        SingleReader = true
+    }));
+
+// ✅ Achievement System: Services
+builder.Services.AddScoped<IAchievementService, AchievementService>();
+builder.Services.AddHostedService<AchievementProcessorService>();
 
 // ✅ 12-FACTOR: Configure distributed cache based on environment
 var cacheProvider = builder.Configuration["CacheProvider"] ?? "Memory";
@@ -199,6 +219,14 @@ builder.Services.Configure<Microsoft.ApplicationInsights.Extensibility.Telemetry
 builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitializer("Demo1"));
 
 var app = builder.Build();
+
+// ✅ Achievement System: Ensure database is created with seed data
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AchievementDbContext>();
+    db.Database.EnsureCreated();
+}
+
 var enableSwagger = app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger");
 
 // Flag set when Azure App Configuration provider is successfully added
@@ -232,6 +260,9 @@ app.UseRateLimitHeaders();
 
 // 🔥 ANTI-PATTERN: Session middleware - kept for demo pages only
 app.UseSession();
+
+// ✅ Achievement System: Track page visits for badge processing
+app.UseAchievementTracking();
 
 // Apply Azure App Configuration middleware so feature flags and config refresh are available per-request
 if (azureAppConfigRegistered)

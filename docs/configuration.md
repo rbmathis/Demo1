@@ -12,6 +12,7 @@ ASP.NET Core uses the `ASPNETCORE_ENVIRONMENT` variable (`Development`, `Staging
 
 Common settings:
 
+- `ConnectionStrings__AchievementDb` for achievement system SQLite database (default: `Data Source=achievements.db`)
 - `ConnectionStrings__Default` for database connections
 - `Logging__LogLevel__Default` for logging verbosity
 - `ApplicationInsights__ConnectionString` for Application Insights connection
@@ -73,6 +74,37 @@ To add custom telemetry initializers, implement `ITelemetryInitializer` and regi
 ### Sampling
 
 Sampling is configured using the `SamplingPercentage` setting. The SDK uses fixed-rate sampling to control the percentage of telemetry sent to Application Insights. This helps manage costs and data volume while maintaining representative data.
+
+## Achievement System
+
+The achievement system uses an SQLite database for persistence. The database file is created automatically on first run.
+
+### Connection String
+
+```json
+{
+  "ConnectionStrings": {
+    "AchievementDb": "Data Source=achievements.db"
+  }
+}
+```
+
+- **Default**: `Data Source=achievements.db` (file created in the application root)
+- **Override via environment variable**: `ConnectionStrings__AchievementDb`
+- The database is auto-created with seed data on startup (`db.Database.EnsureCreated()`)
+- No migrations are needed — the schema is managed by EF Core's `EnsureCreated()`
+
+### Channel Configuration
+
+The bounded channel for async event processing is configured in `Program.cs` with these defaults:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| Capacity | 1 000 | Maximum queued events before dropping |
+| FullMode | DropOldest | Drops oldest event when channel is full |
+| SingleReader | true | Optimized for single background consumer |
+
+These values are hardcoded in `Program.cs`. To change them, modify the `BoundedChannelOptions` constructor call.
 
 ## HTTPS & Security
 
