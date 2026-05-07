@@ -12,7 +12,7 @@ This repository implements a **fully-autonomous AI-driven SDLC pipeline** that r
 
 **Local usage (Copilot CLI):** Say "run issue 135" — the `autopilot` agent auto-chains through all stages.
 
-**Remote usage (GitHub Actions):** Apply the `pipeline/triage-requested` label to an issue — the `pipeline-triage.md` workflow kicks off the same flow on GitHub runners.
+**Remote usage (GitHub Actions):** Apply the `cloud/triage-requested` label to an issue — the `pipeline-triage.md` workflow kicks off the same flow on GitHub runners.
 
 Each stage posts comments on the GitHub issue, providing full transparency of AI thinking and decisions.
 
@@ -201,7 +201,7 @@ These labels track pipeline progress on GitHub issues:
 
 | Label | Stage |
 |-------|-------|
-| `pipeline/triage-requested` | Trigger: starts the remote pipeline (via GitHub Actions) |
+| `cloud/triage-requested` | Trigger: starts the remote pipeline (via GitHub Actions) |
 | `local/triage` | Being classified (local agents) |
 | `local/planning` | Plan being created (local agents) |
 | `local/implementing` | Code being written (local agents) |
@@ -214,7 +214,7 @@ The remote pipeline uses GitHub Agentic Workflows (`.github/workflows/pipeline-*
 
 | Workflow | Trigger |
 |----------|---------|
-| `pipeline-triage.md` | `pipeline/triage-requested` label applied |
+| `pipeline-triage.md` | `cloud/triage-requested` label applied |
 | `pipeline-plan.md` | Dispatched by triage |
 | `pipeline-implement.md` | Dispatched by plan |
 | `pipeline-review.md` | PR opened / review requested |

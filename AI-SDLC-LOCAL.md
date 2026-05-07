@@ -1,6 +1,6 @@
 # AI-Driven Software Development Lifecycle — Local Mode (AI-SDLC-LOCAL)
 
-A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot CLI (`copilot` command) and VS Code Copilot Chat. Issues flow from intake to landed PR with minimal human intervention. The local agents use `local/*` labels to track progress — completely isolated from the cloud `pipeline/*` labels that trigger GitHub Actions workflows.
+A fully-autonomous, AI-powered SDLC pipeline that runs **locally** via Copilot CLI (`copilot` command) and VS Code Copilot Chat. Issues flow from intake to landed PR with minimal human intervention. The local agents use `local/*` labels to track progress — completely isolated from the cloud `cloud/*` labels that trigger GitHub Actions workflows.
 
 ---
 
@@ -220,7 +220,7 @@ The **autopilot** manages all `local/*` label transitions — stage agents do no
 | `local/delivering` | Merging to main | Deliver delegation |
 | `local/done` | Pipeline complete | After Deliver succeeds |
 
-The cloud pipeline uses `pipeline/triage-requested` as its trigger — completely separate namespace.
+The cloud pipeline uses `cloud/autopilot` as its trigger — completely separate namespace.
 
 ---
 
@@ -274,9 +274,9 @@ Issue #135: "Add user preferences endpoint"
 | Aspect | Cloud (AI-SDLC-CLOUD) | Local (AI-SDLC-LOCAL) |
 |--------|----------------------|----------------------|
 | **Runtime** | GitHub Actions runners | Local machine (Copilot CLI) |
-| **Trigger** | `pipeline/triage-requested` label | `copilot "triage issue N"` |
+| **Trigger** | `cloud/autopilot` label | `copilot "triage issue N"` |
 | **Chaining** | `dispatch-workflow` safe outputs | In-process agent delegation |
-| **Labels** | None (dispatch-based) | `local/*` for progress tracking |
+| **Labels** | `cloud/*` for progress tracking | `local/*` for progress tracking |
 | **Human gates** | Approve workflow run, merge PR, close issue | Merge PR (optional: review before merge) |
 | **Tools** | gh-aw sandbox (limited MCP) | Full GitHub MCP server, local filesystem |
 | **Speed** | ~15-25 min end-to-end | ~5-15 min (no queue wait) |

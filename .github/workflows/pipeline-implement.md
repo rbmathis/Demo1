@@ -28,12 +28,12 @@ safe-outputs:
     max: 1
     target: "*"
   add-labels:
-    allowed: ["pipeline/implementing"]
+    allowed: ["cloud/implementing"]
     max: 1
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
+    allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/done"]
     max: 7
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -93,7 +93,7 @@ You are the implementation coordinator. You read the plan from the issue and ass
 ## Your Task
 
 1. **Read the issue** (#${{ github.event.inputs.issue_number }}) — title, body, and all comments
-2. **Ensure `pipeline/implementing` label is on the issue** (remove any other `pipeline/*` labels)
+2. **Ensure `cloud/implementing` label is on the issue** (remove any other `cloud/*` labels)
 3. **Find the plan comment** — look for the comment containing "Pipeline — Plan" with the implementation steps
 4. **Post a status comment** confirming you're assigning the coding agent
 5. **Assign Copilot coding agent** to issue #${{ github.event.inputs.issue_number }}
@@ -106,9 +106,15 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 ## 🚀 Pipeline — Implement
 
 **Timestamp:** [UTC time]
-**Status:** Assigning Copilot coding agent
+**Status:** Copilot coding agent assigned
 
-The plan has been reviewed and the coding agent is being assigned to execute the implementation.
+The plan has been reviewed and the coding agent has been assigned to execute the implementation.
+
+### ⏸️ Pipeline paused — waiting for Copilot to finish
+
+The coding agent works asynchronously. When it finishes, a PR will be created and you will receive a notification that the PR is ready for review.
+
+**To resume the pipeline:** apply the `cloud/review` label to this issue. That will trigger the automated review stage, and the rest of the pipeline (review → docs → merge → close) will run automatically.
 ```
 
 ## Important
