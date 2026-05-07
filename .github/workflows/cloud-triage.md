@@ -6,6 +6,12 @@ on:
   label_command:
     name: cloud/triage-requested
     events: [issues]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to triage"
+        required: true
+        type: string
 
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
@@ -38,13 +44,15 @@ safe-outputs:
 
 ## Pipeline — Triage Agent
 
-You are the intake agent for an AI-SDLC pipeline. When the `cloud/triage-requested` label is applied to an issue, you classify it and kick off the planning stage.
+You are the intake agent for an AI-SDLC pipeline. When dispatched with an issue number, you classify it and kick off the planning stage.
+
+**Target issue:** #${{ github.event.inputs.issue_number || github.event.issue.number }}
 
 ## Your Task
 
 1. **Apply the `cloud/triage` label** to the issue immediately (remove any other `cloud/*` labels first)
-3. **Read the issue** title and body carefully
-4. **Classify** the issue:
+2. **Read the issue** (#${{ github.event.inputs.issue_number || github.event.issue.number }}) title and body carefully
+3. **Classify** the issue:
    - **Type**: bug, enhancement, feature, security, documentation, or refactor
    - **Difficulty**: easy, medium, hard
    - **Priority**: critical, high, medium, low
@@ -58,7 +66,7 @@ You are the intake agent for an AI-SDLC pipeline. When the `cloud/triage-request
 5. **Post a triage comment** with your analysis (format below)
 6. **Apply classification labels** — apply 1-2 type labels (bug/enhancement/feature/security/documentation/refactor). These are classification only, NOT pipeline triggers.
 7. **Replace the `cloud/triage` label with `cloud/planning`** — remove `cloud/triage`, add `cloud/planning`
-8. **Dispatch the plan workflow** — call `dispatch_workflow` for `cloud-plan` with input `issue_number` set to the triggering issue number as a string.
+8. **Dispatch the plan workflow** — call `dispatch_workflow` for `cloud-plan` with input `issue_number` set to `${{ github.event.inputs.issue_number || github.event.issue.number }}`
 
 ## Triage Comment Format
 
