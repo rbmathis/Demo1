@@ -18,13 +18,19 @@ Technical reference for the Demo1 ASP.NET Core MVC application. This is the sing
 Controllers/            MVC controllers
   Api/V1/               Versioned API controllers (v1)
   Api/V2/               Versioned API controllers (v2)
+Data/                   EF Core DbContext classes
 Features/               Feature flag constants
 Middleware/              Custom middleware components
 Models/                 View models, API models, domain models
   Api/                  API response models
 Services/               Service interfaces and implementations
 Telemetry/              Custom telemetry initializers
-Views/                  Razor views (Home, Performance, SecurityLab, Shared)
+Views/                  Razor views
+  Achievement/          Trophy case & anti-pattern demo views
+  Home/                 Home, About, Privacy, anti-pattern pages
+  Performance/          Performance dashboard views
+  SecurityLab/          Security lab interactive views
+  Shared/               Layout, partials, error pages
 wwwroot/                Static assets (css, js, lib)
 docs/                   Developer documentation
 tests/
@@ -47,6 +53,9 @@ scripts/                Build, commit, and CI helper scripts
 | Microsoft.Extensions.Caching.StackExchangeRedis | 9.0.0 | Redis distributed cache (optional) |
 | Microsoft.FeatureManagement.AspNetCore | 4.3.0 | Feature flag management |
 | Swashbuckle.AspNetCore | 7.2.0 | Swagger/OpenAPI generation |
+| Microsoft.EntityFrameworkCore.Sqlite | 10.0.0 | SQLite database provider for achievement persistence |
+| Microsoft.EntityFrameworkCore.Design | 10.0.0 | EF Core design-time tools (migrations) |
+| Microsoft.EntityFrameworkCore.Tools | 10.0.0 | EF Core CLI tools |
 
 ## Middleware Pipeline
 
@@ -63,11 +72,12 @@ Order matters — this is the actual registration order in `Program.cs`:
 8. Routing
 9. RateLimiter                       (IP-based fixed-window)
 10. RateLimitHeadersMiddleware       (custom — X-RateLimit-* headers)
-11. Session                          (anti-pattern demo only)
-12. AzureAppConfiguration            (feature flag refresh, when configured)
-13. Authorization
-14. Static Assets / Controllers
-15. Health Checks                    (/health/ready)
+11. Session                          (required for achievement tracking)
+12. AchievementMiddleware             (custom — publishes events to Channel<T>)
+13. AzureAppConfiguration            (feature flag refresh, when configured)
+14. Authorization
+15. Static Assets / Controllers
+16. Health Checks                    (/health/ready)
 ```
 
 ## Custom Middleware
@@ -78,6 +88,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `SecurityHeadersMiddleware` | Middleware/SecurityHeadersMiddleware.cs | Adds CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy |
 | `SecurityLabMiddleware` | Middleware/SecurityLabMiddleware.cs | Relaxes security headers on `/SecurityLab/*` routes for demo purposes |
 | `RateLimitHeadersMiddleware` | Middleware/RateLimitHeadersMiddleware.cs | Adds `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers |
+| `AchievementMiddleware` | Middleware/AchievementMiddleware.cs | Publishes request events to `Channel<AchievementEventMessage>` for async badge processing |
 
 ## Registered Services
 
@@ -90,6 +101,10 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `IStyleGeneratorService` | `StyleGeneratorService` | Singleton | CSS style generation for demos |
 | `IUptimeService` | `UptimeService` | Singleton | Application uptime tracking |
 | `IPerformanceMetricsService` | `PerformanceMetricsService` | Singleton | Performance budget monitoring |
+| `IAchievementService` | `AchievementService` | Scoped | Achievement data retrieval and progress calculation |
+| `AchievementProcessorService` | (self — `BackgroundService`) | Hosted (Singleton) | Consumes `Channel<T>` events, persists and evaluates achievement rules |
+| `AchievementDbContext` | (self — `DbContext`) | Scoped | EF Core context for achievement SQLite database |
+| `Channel<AchievementEventMessage>` | Bounded channel (1 000 cap, DropOldest) | Singleton | In-memory producer-consumer queue for achievement events |
 
 ## Controllers
 
@@ -101,6 +116,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `PerformanceController` | `/Performance/*` | Performance dashboard and budget monitoring |
 | `SecurityLabController` | `/SecurityLab/*` | Interactive XSS/injection attack demos |
 | `HealthController` | `/health/*` | Health check endpoints |
+| `AchievementController` | `/Achievement/*` | Trophy case, badges API (`/Achievement/api/badges`), anti-pattern demo |
 
 ### API Controllers
 
@@ -120,6 +136,7 @@ Intentionally bad code for teaching purposes. Each page demonstrates a common mi
 | CallbackHellWeather | Deeply nested async callbacks | Views/Home/CallbackHellWeather.cshtml |
 | ViewLogicCalculator | Business logic in Razor views | Views/Home/ViewLogicCalculator.cshtml |
 | RawSqlSearch | Raw SQL queries (injection risk) | Views/Home/RawSqlSearch.cshtml |
+| SynchronousAntiPattern | Synchronous inline achievement checking (blocks request thread) | Views/Achievement/SynchronousAntiPattern.cshtml |
 
 ## Feature Flags
 

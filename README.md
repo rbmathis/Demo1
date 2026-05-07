@@ -14,6 +14,7 @@ Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This
 - **Feature-flag finesse** – Azure App Configuration flips features faster than a costume change.
 - **Observability drip** – Application Insights, custom telemetry, and coverage gates keep the receipts.
 - **Rate limiting** – IP-based request throttling with configurable limits and informative response headers. See [`docs/configuration.md`](docs/configuration.md#rate-limiting) for details.
+- **Achievement system** – Earn badges by exploring the site. A `Channel<T>` + `BackgroundService` pattern tracks actions asynchronously with zero impact on page loads. Visit `/Achievement/TrophyCase` to see your progress.
 
 ## Getting Started
 
@@ -73,8 +74,11 @@ See [`.github/workflows/version.yml`](.github/workflows/version.yml) for impleme
 ### Project Structure
 
 - **Controllers/**: MVC controllers
+- **Data/**: EF Core database contexts
+- **Middleware/**: Custom middleware components
+- **Models/**: Data and view models
+- **Services/**: Service interfaces and implementations
 - **Views/**: Razor view templates
-- **Models/**: Data models
 - **wwwroot/**: Static files (CSS, JS, images)
 - **Program.cs**: Application entry point
 - **appsettings.json**: Configuration settings
@@ -97,7 +101,7 @@ The debugger will launch the application and open it in your default browser.
 ## Documentation
 
 - Docs hub: [`docs/README.md`](docs/README.md)
-- Architecture: [`docs/architecture.md`](docs/architecture.md)
+- Architecture: [`architecture.md`](architecture.md)
 - Coding & docs conventions: [`docs/conventions.md`](docs/conventions.md)
 - Configuration: [`docs/configuration.md`](docs/configuration.md)
 - Testing guidelines: [`docs/testing.md`](docs/testing.md)
