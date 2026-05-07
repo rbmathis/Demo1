@@ -40,11 +40,11 @@ safe-outputs:
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
-    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/deploying", "pipeline/done"]
-    max: 7
+    allowed: ["pipeline/triage", "pipeline/planning", "pipeline/implementing", "pipeline/review", "pipeline/awaiting-merge", "pipeline/documenting", "pipeline/delivering", "pipeline/deploying", "pipeline/done"]
+    max: 9
     target: "*"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-  dispatch-workflow: [pipeline-deploy]
+  dispatch-workflow: [pipeline-docs, pipeline-implement]
 ---
 
 ## Pipeline — Review Agent
@@ -139,13 +139,24 @@ This comment is the official pipeline record. Do NOT skip it.
 
 ## Dispatch Chain
 
-After completing the review and posting the implementation report, you MUST dispatch the next pipeline stage:
-- Call `dispatch_workflow` for workflow `pipeline-deploy` with input `issue_number` = `${{ github.event.inputs.issue_number }}`
+After completing the review and posting the implementation report, dispatch the appropriate next stage based on your verdict:
+
+### If APPROVE:
+- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+- **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+- This moves the pipeline to the documentation stage before delivery
+
+### If REQUEST_CHANGES:
+- **Keep `pipeline/review` label** on issue #${{ github.event.inputs.issue_number }}
+- **Check the rework count** — read issue comments and count how many "Pipeline — Implementation Report" comments exist with verdict "REQUEST_CHANGES"
+- **If fewer than 2 rework cycles:** Dispatch `pipeline-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}` — the coding agent will read the review comments and fix the issues
+- **If 2 or more rework cycles already:** Do NOT dispatch. Post a comment: "⚠️ Pipeline halted — maximum rework cycles (2) reached. Human intervention required."
+
+### If COMMENT:
+- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
+- **Dispatch `pipeline-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+- Comments are advisory — they don't block the pipeline
 
 ## After Review
 
-After submitting the review and posting the implementation report:
-- **Replace `pipeline/review` with `pipeline/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-- **Dispatch `pipeline-deploy`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
-- This signals to the human that the PR is ready for their approval and merge
-- If you cannot dispatch the workflow, call `noop` with an explanation
+After submitting the review and posting the implementation report, follow the dispatch chain above based on your verdict. Do not skip the dispatch step.
