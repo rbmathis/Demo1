@@ -71,6 +71,16 @@ safe-outputs:
 
       Use `build-validator` agent to verify the project builds cleanly and tests pass.
 
+      ## CRITICAL: PR BODY REQUIREMENT
+
+      When creating the pull request, the PR body MUST include a closing keyword line:
+
+      `
+      Closes #${{ github.event.inputs.issue_number }}
+      `
+
+      This line is required for the pipeline to automatically detect the linked issue and trigger the review stage. Do not omit it.
+
       NOTE: Do NOT post an implementation report on the issue. The review pipeline handles that automatically.
 ---
 
