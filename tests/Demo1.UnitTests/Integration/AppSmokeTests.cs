@@ -45,4 +45,21 @@ public class AppSmokeTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("text/html", response.Content.Headers.ContentType?.MediaType);
     }
+
+    [Theory]
+    [InlineData("/favicon.ico", "image/")]
+    [InlineData("/robots.txt", "text/plain")]
+    [InlineData("/sitemap.xml", "text/xml")]
+    public async Task Get_StaticAssets_ReturnsSuccess(string path, string expectedContentTypePrefix)
+    {
+        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        var response = await client.GetAsync(path);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(expectedContentTypePrefix, response.Content.Headers.ContentType?.MediaType);
+    }
 }
