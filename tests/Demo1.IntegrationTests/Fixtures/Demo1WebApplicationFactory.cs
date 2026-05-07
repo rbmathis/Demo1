@@ -13,7 +13,8 @@ namespace Demo1.IntegrationTests.Fixtures;
 /// </summary>
 public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
 {
-    private SqliteConnection? _connection;
+    private const string SharedInMemoryConnectionString = "Data Source=Demo1IntegrationTests;Mode=Memory;Cache=Shared";
+    private SqliteConnection? _keepAliveConnection;
 
     /// <summary>
     /// Configures the web host for testing purposes.
@@ -23,9 +24,9 @@ public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
-        // Create a shared in-memory SQLite connection that stays open for the test lifetime
-        _connection = new SqliteConnection("DataSource=:memory:");
-        _connection.Open();
+        // Keep one connection open so the shared in-memory SQLite database persists
+        _keepAliveConnection = new SqliteConnection(SharedInMemoryConnectionString);
+        _keepAliveConnection.Open();
 
         builder.ConfigureServices(services =>
         {
@@ -41,9 +42,9 @@ public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Add SQLite in-memory database using the shared connection
+            // Use shared-cache in-memory SQLite so each DbContext gets its own connection
             services.AddDbContext<AchievementDbContext>(options =>
-                options.UseSqlite(_connection));
+                options.UseSqlite(SharedInMemoryConnectionString));
         });
     }
 
@@ -56,8 +57,8 @@ public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (disposing)
         {
-            _connection?.Close();
-            _connection?.Dispose();
+            _keepAliveConnection?.Close();
+            _keepAliveConnection?.Dispose();
         }
     }
 }
