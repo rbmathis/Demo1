@@ -1,0 +1,78 @@
+@model IEnumerable<Demo1.Models.ComponentDefinition>
+@{
+    ViewData["Title"] = "Component Showcase";
+    var categories = Model.Select(c => c.Category).Distinct().OrderBy(c => c).ToList();
+}
+
+<div class="py-4">
+    <h1>Component Showcase</h1>
+    <p class="lead text-muted">Browse, preview, and copy markup for all available UI components.</p>
+</div>
+
+<ul class="nav nav-tabs" id="categoryTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-tab" data-bs-toggle="tab"
+                data-bs-target="#all-pane" type="button" role="tab"
+                aria-controls="all-pane" aria-selected="true">All</button>
+    </li>
+    @foreach (var category in categories)
+    {
+        var tabId = category.Replace(" ", "-").ToLowerInvariant();
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="@tabId-tab" data-bs-toggle="tab"
+                    data-bs-target="#@tabId-pane" type="button" role="tab"
+                    aria-controls="@tabId-pane" aria-selected="false">@category</button>
+        </li>
+    }
+</ul>
+
+<div class="tab-content pt-4" id="categoryTabContent">
+    @* All components tab *@
+    <div class="tab-pane fade show active" id="all-pane" role="tabpanel" aria-labelledby="all-tab">
+        <div class="row g-4">
+            @foreach (var component in Model)
+            {
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header fw-semibold">@component.Name</div>
+                        <iframe src="/ComponentShowcase/Preview/@component.Name"
+                                class="component-preview-frame"
+                                title="@component.Name preview"
+                                loading="lazy"></iframe>
+                        <div class="card-body">
+                            <p class="card-text">@component.Description</p>
+                            <copy-markup>@Html.Raw(component.ExampleMarkup)</copy-markup>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Per-category tabs *@
+    @foreach (var category in categories)
+    {
+        var tabId = category.Replace(" ", "-").ToLowerInvariant();
+        var categoryComponents = Model.Where(c => c.Category == category);
+        <div class="tab-pane fade" id="@tabId-pane" role="tabpanel" aria-labelledby="@tabId-tab">
+            <div class="row g-4">
+                @foreach (var component in categoryComponents)
+                {
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header fw-semibold">@component.Name</div>
+                            <iframe src="/ComponentShowcase/Preview/@component.Name"
+                                    class="component-preview-frame"
+                                    title="@component.Name preview"
+                                    loading="lazy"></iframe>
+                            <div class="card-body">
+                                <p class="card-text">@component.Description</p>
+                                <copy-markup>@Html.Raw(component.ExampleMarkup)</copy-markup>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
