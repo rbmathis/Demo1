@@ -32,8 +32,8 @@ jobs:
             }
 
             // Scan recent PRs while keeping API usage conservative.
-            const MAX_PRS_TO_SCAN = 50;
-            // Match GitHub auto-closing keywords that reference this issue number (case-insensitive).
+            const MAX_PULLS_TO_SCAN = 50;
+            // Match GitHub auto-closing keywords (closes/fixes/resolves) for this issue number (case-insensitive).
             const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
 
             const findLinkedPr = async (state) => {
@@ -44,7 +44,7 @@ jobs:
                 sort: 'updated',
                 direction: 'desc',
                 // Scan a larger recent window to avoid missing linked PRs in busy repos.
-                per_page: MAX_PRS_TO_SCAN
+                per_page: MAX_PULLS_TO_SCAN
               });
 
               return pulls.find(pr => pr.body && issueRefRegex.test(pr.body));
