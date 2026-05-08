@@ -44,8 +44,9 @@ jobs:
             });
 
             // Collect unique PR numbers referenced in the timeline, most-recent first.
+            // Use a copy to avoid mutating the API response array.
             const referencedPrNumbers = [];
-            for (const event of timeline.reverse()) {
+            for (const event of [...timeline].reverse()) {
               if (
                 event.event === 'cross-referenced' &&
                 event.source?.type === 'issue' &&
