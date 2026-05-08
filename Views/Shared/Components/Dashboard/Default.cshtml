@@ -1,0 +1,39 @@
+@using System.Globalization
+@using System.Linq
+@model IReadOnlyList<Demo1.Models.DashboardCardViewModel>
+
+<section class="dashboard-grid" aria-label="Dashboard summary">
+    @foreach (var card in Model)
+    {
+        <article class="dashboard-card @card.CssClass">
+            <h2 class="h6 mb-1 text-body-secondary">@card.Title</h2>
+            <p class="mb-3">
+                <span class="fs-3 fw-semibold">@card.Value</span>
+                @if (!string.IsNullOrWhiteSpace(card.Unit))
+                {
+                    <span class="text-body-secondary">@card.Unit</span>
+                }
+            </p>
+
+            @if (card.SparklinePoints.Count > 0)
+            {
+                var pointCount = card.SparklinePoints.Count;
+                var points = string.Join(" ", card.SparklinePoints.Select((value, index) =>
+                {
+                    var x = pointCount > 1 ? index * (100d / (pointCount - 1)) : 50d;
+                    var normalizedValue = double.IsFinite(value) ? Math.Clamp(value, 0d, 1d) : 0.5d;
+                    var y = 30d - (normalizedValue * 28d);
+                    return $"{x.ToString("0.##", CultureInfo.InvariantCulture)},{y.ToString("0.##", CultureInfo.InvariantCulture)}";
+                }));
+
+                <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-100" aria-hidden="true">
+                    <polyline class="dashboard-sparkline" points="@points"></polyline>
+                </svg>
+            }
+            else
+            {
+                <p class="small text-body-secondary opacity-75 mb-0">No recent trend data available.</p>
+            }
+        </article>
+    }
+</section>

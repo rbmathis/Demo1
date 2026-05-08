@@ -50,4 +50,9 @@ public static class FeatureFlags
     // --- Temporary rollout flags ---
     // Add temporary flags below. Each must have a cleanup issue reference
     // in the rollout checklist. Remove the flag after rollout completes.
+
+    /// <summary>
+    /// Dashboard home page experience rollout toggle. Temporary rollout flag.
+    /// </summary>
+    public const string DashboardHomePage = "DashboardHomePage";
 }

@@ -148,6 +148,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `AlertShowcaseViewComponent` | `Views/Shared/Components/AlertShowcase/Default.cshtml` | Alert variants (contextual, dismissible) |
 | `FormShowcaseViewComponent` | `Views/Shared/Components/FormShowcase/Default.cshtml` | Form elements (inputs, selects, checkboxes, radios, textarea) |
 | `BadgeShowcaseViewComponent` | `Views/Shared/Components/BadgeShowcase/Default.cshtml` | Badge variants (contextual, pill, in heading/button) |
+| `DashboardViewComponent` | `Views/Shared/Components/Dashboard/Default.cshtml` | Renders homepage dashboard cards; injects `IUptimeService` and `IPerformanceMetricsService` |
 
 ## Custom Tag Helpers
 
@@ -178,6 +179,7 @@ Managed via Azure App Configuration (when configured) or local `appsettings.json
 | `DarkMode` | Dark mode UI toggle | Permanent |
 | `ContactForm` | Contact form visibility | Permanent |
 | `BetaFeatures` | Master toggle for beta features | Permanent |
+| `DashboardHomePage` | Gates dashboard homepage rendering (default off) | Temporary |
 
 See `Features/FeatureFlags.cs` for the constant definitions and XML doc conventions.
 
