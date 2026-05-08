@@ -44,9 +44,9 @@ jobs:
             });
 
             // Collect unique PR numbers referenced in the timeline, most-recent first.
-            // Use a copy to avoid mutating the API response array.
             const referencedPrNumbers = [];
-            for (const event of [...timeline].reverse()) {
+            for (let i = timeline.length - 1; i >= 0; i--) {
+              const event = timeline[i];
               if (
                 event.event === 'cross-referenced' &&
                 event.source?.type === 'issue' &&
@@ -78,7 +78,6 @@ jobs:
             if (!linkedPR) {
               // Match GitHub auto-closing keywords (closes/fixes/resolves) for this issue number (case-insensitive).
               const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s*:?\\s*#${issueNumber}\\b`, 'i');
-
               const findByKeyword = async (state) => {
                 const { data: pulls } = await github.rest.pulls.list({
                   owner: context.repo.owner,
