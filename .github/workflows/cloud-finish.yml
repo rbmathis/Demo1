@@ -59,7 +59,8 @@ jobs:
 
             // Fetch all referenced PRs in parallel, then pick the best match:
             // prefer the first open PR; keep the most-recently-merged one as fallback.
-            const prResults = await Promise.all(
+            // Use allSettled so a single deleted/missing PR doesn't abort the whole search.
+            const prSettled = await Promise.allSettled(
               referencedPrNumbers.map(prNumber =>
                 github.rest.pulls.get({
                   owner: context.repo.owner,
@@ -68,13 +69,16 @@ jobs:
                 }).then(r => r.data)
               )
             );
+            const prResults = prSettled
+              .filter(r => r.status === 'fulfilled')
+              .map(r => r.value);
 
             for (const pr of prResults) {
               if (pr.state === 'open') {
                 linkedPR = pr;
                 break;
               }
-              if (!linkedPR && pr.merged_at) {
+              if (!linkedPR && Boolean(pr.merged_at)) {
                 linkedPR = pr; // keep as fallback for idempotent reruns
               }
             }
@@ -112,7 +116,7 @@ jobs:
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
 
-            const isMerged = linkedPR.merged_at !== null;
+            const isMerged = Boolean(linkedPR.merged_at);
             if (isMerged) {
               core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
             }
