@@ -50,43 +50,17 @@ This is the most important output. After all doc updates are committed, post a c
 
 **Comment format:**
 
-```markdown
-## 📚 Docs & Verification — Issue #{number}
+Your issue comment heading MUST be "## 📚 Docs & Verification — Issue #{number}". Write in your friendly, helpful documentation personality. No rigid template — let your voice come through naturally.
 
-*[UTC time]*
+**Required data (must appear somewhere in your comment):**
+- Plain-English summary of what was built/changed
+- List of files updated (table or list with file path + what changed)
+- Step-by-step "How to Verify" section a human can follow (start app, navigate, do action, see result)
+- Pass criteria (checkbox list of observable outcomes)
 
-### What Was Built
+Everything else — tone, encouragement, formatting flair — is pure you. Make docs feel welcoming, not clinical.
 
-[Plain-English summary of the feature/fix — 2-4 sentences, no jargon]
-
-### Documentation Updated
-
-| File | What Changed |
-|------|--------------|
-| `Controllers/FooController.cs` | Added XML comments to public actions |
-| `README.md` | Added section on new endpoint |
-| `docs/architecture.md` | Updated diagram |
-
-### ✅ How to Verify
-
-Follow these steps to confirm the issue is resolved:
-
-1. **Start the app:** `dotnet run` (or press F5 in VS)
-2. **Navigate to:** `https://localhost:{port}/path`
-3. **Do:** [specific action — click button, submit form, call endpoint]
-4. **Expected result:** [exactly what they should see/get]
-5. _(repeat for each acceptance criterion)_
-
-### Pass Criteria
-
-- [ ] [Specific observable outcome 1]
-- [ ] [Specific observable outcome 2]
-
----
-*Docs updated. Ready for human review.* 📚
-```
-
-**CRITICAL:** Do NOT use a generic heading. Always use `## 📚 Docs & Verification — Issue #{number}`. Write the verification steps for a human, not a test runner.
+**CRITICAL:** Do NOT use a generic heading. Always use `## 📚 Docs & Verification — Issue #{number}`. Write verification steps for a human, not a test runner.
 
 ## When Invoked Standalone
 2. Verify README completeness and setup clarity
