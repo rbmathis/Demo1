@@ -145,6 +145,7 @@ The implement agent:
   3. Write tests (mandatory)
   4. Add documentation (mandatory)
   5. Validate build
+  6. Commit and open a PR using the snarky commit/PR style while preserving the required `Closes #N` line and `automated` PR label
 
 > **Note:** The coding agent does not post back to the issue. The Copilot coding agent's firewall blocks `api.github.com/graphql`, so the Review stage handles issue reporting instead.
 

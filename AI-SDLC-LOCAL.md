@@ -142,7 +142,7 @@ The implement agent:
 - Validates build: `dotnet build --configuration Release`
 - Runs tests: `dotnet test tests/Demo1.UnitTests`
 - Commits with snarky conventional commit messages
-- Creates a Pull Request referencing the issue
+- Creates a Pull Request with a spicy title and review-friendly snarky body, referencing the issue without closing it
 - Posts a status comment on the issue
 
 ### Stage 4: Docs
