@@ -34,9 +34,10 @@ When invoked with an issue number, you execute each stage in sequence by delegat
 ### Stage 1: Triage (Quality Gate)
 - **Delegate to:** `triage` agent
 - **Input:** issue number
-- **Output:** classification (type, difficulty, priority, scope, agents needed) OR a STOP signal
+- **Output:** classification (type, difficulty, priority, scope, agents needed), a STOP signal, OR a DUPLICATE signal
 - **GitHub actions:** reads issue, posts triage comment, manages labels
 - **STOP handling:** If triage returns `status: "STOP"`, halt the entire pipeline immediately. Report the stop reasons to the user. Do NOT proceed to Plan or any subsequent stage.
+- **DUPLICATE handling:** If triage returns `status: "DUPLICATE"`, halt the pipeline cleanly, report the canonical duplicate reference(s), treat the issue as already resolved or already in flight rather than as a pipeline failure, and move the issue out of active pipeline labels.
 
 ### Stage 2: Plan
 - **Delegate to:** `plan` agent
@@ -105,6 +106,11 @@ After each stage completes, briefly report:
 ✅ Deliver complete — merged to main, label updated
 ```
 
+If triage exits early because the issue is a duplicate, report:
+```
+⏭️ Triage complete — duplicate confirmed, see [issue/PR refs]
+```
+
 ## Invocation Examples
 
 - "run issue 135" — runs the full pipeline on issue #135
@@ -127,6 +133,7 @@ Before delegating to each stage agent, set the appropriate label:
 - Before Docs: remove all `local/*` labels, add `local/docs`
 - Before Deliver: remove all `local/*` labels, add `local/delivering`
 - After Deliver succeeds: remove all `local/*` labels, add `local/done`
+- After Triage returns `DUPLICATE`: remove all `local/*` labels, add `local/done`
 
 **Set the label BEFORE delegating to the agent, not after.**
 
