@@ -50,6 +50,20 @@ safe-outputs:
 
       Read issue #${{ github.event.inputs.issue_number }} and find the comment titled "📋 Pipeline — Plan". That comment has your implementation plan with specific files, changes, and acceptance criteria. Follow it precisely.
 
+      ## ROLLOUT-AWARE IMPLEMENTATION
+
+      If the plan includes a rollout checklist with a flagged verdict:
+      - **Preserve old behavior** — existing code paths must remain the default when the flag is off
+      - **Gate new behavior** — new feature code runs only when the flag is on, using the gating mechanism specified in the plan
+      - **Ship dark** — the flag defaults to off. Never auto-enable a flag
+      - **Suppress side effects** — when the flag is off, no new side effects (emails, external calls, jobs) should execute unless the plan explicitly justifies an exception
+      - **Add the flag constant** to `Features/FeatureFlags.cs` and `appsettings.json` (default `false`)
+      - **Use existing mechanisms** — implement gating using existing project patterns. Do not create new generic feature-flag helper abstractions unless the plan explicitly requires them
+
+      If the plan verdict is ungated with justification, implement normally without adding a flag.
+
+      See `docs/feature-flag-rollout-contract.md` for the full rollout contract.
+
       ## STEP 1: IMPLEMENT
 
       Use the specialized sub-agents in .github/agents/:

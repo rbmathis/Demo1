@@ -135,6 +135,21 @@ Scopes: `controller`, `model`, `view`, `service`, `middleware`, `config`, `test`
 4. **Always test** — never push code that doesn't build.
 5. **Don't over-build** — implement exactly what the plan says.
 
+## Rollout-Aware Implementation
+
+When the plan comment includes a rollout checklist with a flagged verdict:
+
+1. **Preserve old behavior** — the existing code path must remain the default when the flag is off
+2. **Gate new behavior** — new feature code runs only when the flag is on, using the gating mechanism specified in the plan (e.g., `[FeatureGate]`, `IFeatureManager`, Razor `<feature>` tags)
+3. **Ship dark** — the flag defaults to off. Never auto-enable a flag in code, configuration, or startup
+4. **Suppress side effects** — when the flag is off, no new side effects (emails, external calls, background jobs) should execute unless the plan explicitly justifies an exception
+5. **Add the flag constant** — add the new flag to `Features/FeatureFlags.cs` and `appsettings.json` (default `false`)
+6. **Use existing mechanisms** — implement gating using existing project patterns or the exact mechanism specified in the plan. Do not create new generic feature-flag helper abstractions unless the plan explicitly requires them
+
+When the plan verdict is **ungated with justification**, implement normally without adding a flag.
+
+See `docs/feature-flag-rollout-contract.md` for the full rollout contract.
+
 ## Handling Blockers
 
 If a task can't be completed:

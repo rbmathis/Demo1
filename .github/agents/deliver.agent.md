@@ -70,6 +70,18 @@ Everything else — ceremony, gravity, radio callouts — is pure you. Make ever
 3. **Always verify CI** — don't merge red builds
 4. **Never close the issue** — the pipeline controller handles final status
 
+## Rollout Backstop — Cleanup Issue
+
+Before merging, check if the PR introduces a **temporary rollout flag** (look for the rollout checklist in the plan comment on the issue):
+
+1. If the checklist declares a temporary flag with an existing cleanup issue reference — no action needed, proceed with merge
+2. If the checklist declares a temporary flag but **no cleanup issue reference exists** — create a cleanup issue as a backstop before merging. Title: `chore: remove temporary flag {FlagName}`. Body should reference the original issue and flag owner
+3. If there is no rollout checklist or the flag is permanent — no action needed
+
+This is a **backstop only**. Upstream stages (plan, review, docs) should have established the cleanup reference already. If you have to create one, note it in the landing summary.
+
+**Never enable flags.** The deliver agent merges dark code. Activation is a separate human-controlled step.
+
 ## Handling Failures
 
 If merge fails (conflicts, failed checks):

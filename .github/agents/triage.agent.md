@@ -67,6 +67,7 @@ Your issue comment heading MUST be "## 🕵️ Case File — Triage Report". Wri
 - Priority (critical/high/medium/low)
 - Scope areas affected
 - Agents being called in
+- Rollout status (rollout-required / rollout-optional / rollout-exempt) with rationale
 - Duplicate status: none / possible / confirmed
 - Related links: associated issues and PRs worth reading
 
@@ -185,6 +186,22 @@ Example DUPLICATE comment:
 *No sense sending the boys downtown on a case that's already closed. Filing this one under duplicate and moving on.* 🕵️
 ```
 
+## Rollout Status Classification
+
+In addition to type/difficulty/priority/scope, classify the **rollout status** of every issue:
+
+| Status | When to use |
+|--------|-------------|
+| `rollout-required` | User-visible UI/page changes, API contract changes, side-effecting work (jobs, emails, webhooks), risky server logic (auth, payments), database-affecting changes |
+| `rollout-optional` | Low-risk user-invisible changes that may benefit from a dark launch, internal refactors with regression risk, config changes with indirect runtime effect |
+| `rollout-exempt` | Docs-only, test-only, internal refactors with no observable behavior change, build/CI/config cleanup with no runtime effect, emergency security fixes |
+
+**Rules:**
+- Triage classifies rollout status. Triage does **not** decide whether a flag is temporary/permanent or which gating mechanism to use — that belongs to the plan agent and `feature-flags` specialist.
+- `rollout-optional` is not an exemption — it means the plan agent must still evaluate and record a flagging verdict.
+- Record your rollout status rationale in the triage comment.
+- See `docs/feature-flag-rollout-contract.md` for the full rollout contract.
+
 ## Classification Rules
 
 - Always include `testing` if any implementation agents are assigned
@@ -206,6 +223,7 @@ When complete, return a summary object with:
 - `priority`: critical/high/medium/low (only if GO)
 - `scope`: array of affected areas (only if GO)
 - `agents`: array of agents needed (only if GO)
+- `rollout_status`: "rollout-required", "rollout-optional", or "rollout-exempt" (only if GO)
 - `issue_number`: the issue number triaged
 - `stop_reasons`: array of reasons (only if STOP)
 - `duplicate_of`: array of canonical issue/PR references (only if DUPLICATE)

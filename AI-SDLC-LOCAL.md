@@ -258,6 +258,28 @@ The cloud pipeline uses `cloud/autopilot` as its trigger — completely separate
 | `build-validator` | `build-validator.agent.md` | Build health |
 | `code-reviewer` | `code-reviewer.agent.md` | Code quality review |
 | `security-auditor` | `security-auditor.agent.md` | Security scanning |
+| `feature-flags` | `feature-flags.agent.md` | Feature flag rollout strategy |
+
+---
+
+## Feature-Flag Rollout
+
+The pipeline ships user-visible, API-affecting, and data-path changes **dark by default** behind a feature flag. Activation is always human-controlled.
+
+### Stage Responsibilities
+
+| Stage | Rollout Behavior |
+|-------|-----------------|
+| **Triage** | Classifies rollout status: `rollout-required`, `rollout-optional`, or `rollout-exempt` |
+| **Plan** | Invokes `feature-flags` specialist, embeds rollout checklist in plan comment, owns the flagging verdict for optional issues |
+| **Implement** | Ships new behavior behind a default-off flag, preserves old behavior when flag is off, suppresses side effects when flag is off |
+| **Review** | Blocks on missing dual-path validation (dimension 6: Rollout Compliance) |
+| **Docs** | Documents verification steps for both flag states, emits activation instructions |
+| **Deliver** | Backstop: creates cleanup issue for temporary flags if upstream stages missed it |
+
+### Activation
+
+Flags are enabled manually after docs publishes verification steps. Local activation uses `appsettings.json` or `appsettings.Development.json`. See [`docs/feature-flag-rollout-contract.md`](docs/feature-flag-rollout-contract.md) for the full contract and [`docs/feature-flag-runtime-guide.md`](docs/feature-flag-runtime-guide.md) for implementation patterns.
 
 ---
 

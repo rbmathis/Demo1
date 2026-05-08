@@ -15,6 +15,9 @@ engine:
   id: copilot
   model: claude-opus-4.6
 
+imports:
+  - .github/agents/feature-flags.agent.md
+
 permissions:
   contents: read
   issues: read
@@ -116,3 +119,7 @@ Post this as a comment on issue #${{ github.event.inputs.issue_number }}:
 - After posting the plan, ALWAYS dispatch `cloud-implement`
 - **Before dispatching**, replace `cloud/planning` with `cloud/implementing` on the issue
 - If you cannot determine a plan, post what you know and dispatch anyway
+
+## Rollout-Aware Planning
+
+When the triage comment classifies an issue as `rollout-required` or `rollout-optional`, follow the imported `feature-flags` specialist guidance to produce a rollout checklist in the plan comment. For `rollout-exempt` issues, skip rollout analysis entirely. See `docs/feature-flag-rollout-contract.md` for the canonical checklist shape.

@@ -306,6 +306,38 @@ The plain `autopilot` label is intentionally not in the `cloud/*` namespace so i
 | `build-validator` | Build health | Implement |
 | `code-reviewer` | Code quality review | Review |
 | `security-auditor` | Security scanning | Review |
+| `feature-flags` | Feature flag rollout strategy | Plan |
+
+---
+
+## Feature-Flag Rollout
+
+The cloud pipeline ships user-visible, API-affecting, and data-path changes **dark by default** behind a feature flag. Neither `cloud-docs` nor `cloud-finish` enables flags — activation is always human-controlled.
+
+### Stage Responsibilities
+
+| Stage | Rollout Behavior |
+|-------|-----------------|
+| **Triage** | Classifies rollout status: `rollout-required`, `rollout-optional`, or `rollout-exempt` |
+| **Plan** | Embeds rollout checklist in plan comment, owns the flagging verdict for optional issues |
+| **Implement** | Custom instructions require default-off flag, old-path preservation, side-effect suppression |
+| **Review** | Blocks on missing dual-path validation, checks rollout compliance |
+| **Docs** | Documents both flag states, emits Azure App Configuration activation packet (key, label, value, prerequisites, validation steps, rollback steps) |
+| **Finish** | Backstop only: merges PR and closes issue. Does **not** create cleanup issues (known gap — see below) |
+
+### Cloud Activation
+
+Cloud flag activation is owned by `rbmathis` as the human release operator using [Azure App Configuration](https://learn.microsoft.com/en-us/azure/azure-app-configuration/) after the docs stage publishes the activation packet and any required migration prerequisites are met.
+
+### Migration Prerequisite
+
+When schema changes are involved, `dotnet ef database update` (or equivalent migration step) must run **before** flag activation. The docs stage documents this prerequisite in the activation packet.
+
+### Known Gap: Cleanup Backstop
+
+`cloud-finish.yml` does not currently create cleanup issues for temporary rollout flags. The local `deliver` agent has this backstop. For the cloud pipeline, cleanup issue creation relies on upstream stages (plan, review, docs). A future enhancement may add cleanup issue creation to `cloud-finish.yml`.
+
+See [`docs/feature-flag-rollout-contract.md`](docs/feature-flag-rollout-contract.md) for the full contract and [`docs/feature-flag-runtime-guide.md`](docs/feature-flag-runtime-guide.md) for implementation patterns.
 
 ---
 

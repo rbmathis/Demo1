@@ -28,6 +28,7 @@ If you're here to explore the agentic workflow itself, start with these guides:
 - **Rate limiting** – IP-based request throttling with configurable limits and informative response headers. See [`docs/configuration.md`](docs/configuration.md#rate-limiting) for details.
 - **Achievement system** – Earn badges by exploring the site. A `Channel<T>` + `BackgroundService` pattern tracks actions asynchronously with zero impact on page loads. Visit `/Achievement/TrophyCase` to see your progress.
 - **Component showcase** – Browsable catalog of UI components with isolated iframe previews, copy-to-clipboard markup snippets, and category filtering. Visit `/ComponentShowcase` to explore. See [`docs/component-showcase.md`](docs/component-showcase.md) for details.
+- **Dark-launch delivery** – The AI-SDLC pipeline ships new behavior behind default-off feature flags. Activation is human-controlled via local config or Azure App Configuration. See [`docs/feature-flag-rollout-contract.md`](docs/feature-flag-rollout-contract.md).
 
 ## Getting Started
 
@@ -152,6 +153,8 @@ dotnet test tests/Demo1.IntegrationTests
 - Build performance: [`docs/build-performance.md`](docs/build-performance.md) — SDK pinning, shared compilation, and analyzer suppression
 - Security Headers Playground: [`docs/security-lab.md`](docs/security-lab.md) — interactive lab for toggling HTTP security headers and observing attack behaviors
 - Component Showcase: [`docs/component-showcase.md`](docs/component-showcase.md) — browsable UI component catalog with isolated previews
+- Feature flag rollout: [`docs/feature-flag-rollout-contract.md`](docs/feature-flag-rollout-contract.md) — rollout policy, checklist contract, activation model
+- Feature flag runtime: [`docs/feature-flag-runtime-guide.md`](docs/feature-flag-runtime-guide.md) — implementation patterns, test seams, migration conventions
 
 ### XML Documentation
 
@@ -263,6 +266,7 @@ The pipeline delegates to these custom agents (defined in `.github/agents/`):
 | `code-reviewer` | MVC patterns, code quality, SOLID |
 | `security-auditor` | Security scanning and audit |
 | `build-validator` | Project files, dependencies |
+| `feature-flags` | Feature flag rollout strategy |
 
 ### Other Automated Workflows
 

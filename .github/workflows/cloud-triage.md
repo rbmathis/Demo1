@@ -92,3 +92,15 @@ You are the intake agent for an AI-SDLC pipeline. When dispatched with an issue 
 - Security issues always get `security` agent
 - After posting the triage comment and labels, ALWAYS dispatch `cloud-plan`
 - If you cannot dispatch the workflow, call `noop` with an explanation
+
+## Rollout Status Classification
+
+Classify each issue's rollout status and include it in the triage comment:
+
+| Status | When to use |
+|--------|-------------|
+| `rollout-required` | User-visible changes, API changes, side-effecting work, risky server logic, database changes |
+| `rollout-optional` | Low-risk user-invisible changes that may benefit from dark launch, internal refactors with regression risk |
+| `rollout-exempt` | Docs-only, test-only, no-behavior-change refactors, build/CI cleanup, emergency security fixes |
+
+Add a `Rollout status` row to the triage comment table. The plan agent uses this to decide whether rollout analysis is needed. See `docs/feature-flag-rollout-contract.md` for the full contract.
