@@ -31,30 +31,70 @@ jobs:
               return;
             }
 
-            // Scan recent PRs while keeping API usage conservative.
-            const MAX_PULLS_TO_SCAN = 50;
-            // Match GitHub auto-closing keywords (closes/fixes/resolves) for this issue number (case-insensitive).
-            const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s*:?\\s*#${issueNumber}\\b`, 'i');
+            // --- Strategy 1: Issue timeline cross-references (most reliable) ---
+            // GitHub records a cross-reference event whenever any PR/issue mentions this
+            // issue, regardless of whether it uses a closing keyword in its body text.
+            let linkedPR = null;
 
-            const findLinkedPr = async (state) => {
-              const { data: pulls } = await github.rest.pulls.list({
+            const { data: timeline } = await github.rest.issues.listEventsForTimeline({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100
+            });
+
+            // Collect unique PR numbers referenced in the timeline, most-recent first.
+            const referencedPrNumbers = [];
+            for (const event of timeline.reverse()) {
+              if (
+                event.event === 'cross-referenced' &&
+                event.source?.type === 'issue' &&
+                event.source.issue?.pull_request &&
+                !referencedPrNumbers.includes(event.source.issue.number)
+              ) {
+                referencedPrNumbers.push(event.source.issue.number);
+              }
+            }
+
+            // Fetch each referenced PR and prefer the first open one; fall back to merged.
+            for (const prNumber of referencedPrNumbers) {
+              const { data: pr } = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                state,
-                sort: 'updated',
-                direction: 'desc',
-                // Scan a larger recent window to avoid missing linked PRs in busy repos.
-                per_page: MAX_PULLS_TO_SCAN
+                pull_number: prNumber
               });
+              if (pr.state === 'open') {
+                linkedPR = pr;
+                break;
+              }
+              if (!linkedPR && pr.merged_at) {
+                linkedPR = pr; // keep as fallback for idempotent reruns
+              }
+            }
 
-              return pulls.find(pr =>
-                (pr.body && issueRefRegex.test(pr.body)) ||
-                (pr.title && issueRefRegex.test(pr.title))
-              );
-            };
+            // --- Strategy 2: Body/title keyword scan (fallback) ---
+            // Catches PRs whose branch never triggered a cross-reference event.
+            if (!linkedPR) {
+              // Match GitHub auto-closing keywords (closes/fixes/resolves) for this issue number (case-insensitive).
+              const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s*:?\\s*#${issueNumber}\\b`, 'i');
 
-            // Prefer an open PR, but allow already-merged PRs for reruns/idempotency.
-            const linkedPR = (await findLinkedPr('open')) ?? (await findLinkedPr('closed'));
+              const findByKeyword = async (state) => {
+                const { data: pulls } = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state,
+                  sort: 'updated',
+                  direction: 'desc',
+                  per_page: 50
+                });
+                return pulls.find(pr =>
+                  (pr.body && issueRefRegex.test(pr.body)) ||
+                  (pr.title && issueRefRegex.test(pr.title))
+                );
+              };
+
+              linkedPR = (await findByKeyword('open')) ?? (await findByKeyword('closed'));
+            }
 
             if (!linkedPR) {
               core.setFailed(`No PR found linked to issue #${issueNumber}`);
