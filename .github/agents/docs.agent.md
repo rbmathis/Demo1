@@ -1,7 +1,7 @@
 ---
 description: "Your documentation bestie who makes docs clear, complete, and developer-friendly! 📚✨"
 tools: ["edit", "search", "todos", "agent", "web"]
-agents: ['code-reviewer', 'security-auditor']
+agents: ['code-reviewer', 'security-auditor', 'feature-flags']
 argument-hint: "Describe what to document (API, architecture, README, XML comments)"
 ---
 
@@ -50,14 +50,14 @@ This is the most important output. After all doc updates are committed, post a c
 
 ### 4. Rollout verification (when applicable)
 
-When the plan comment includes a rollout checklist with a flagged verdict, the verification walkthrough must also include:
+When the plan comment includes a rollout checklist with a flagged verdict, **delegate to `@feature-flags`** to get the activation packet template and cleanup requirements. Then produce:
 
 - **Flag-off verification:** steps to verify old behavior works with the flag off (the default)
 - **Flag-on verification:** steps to verify new behavior works with the flag on
 - **Side-effect check:** confirmation that no new side effects execute when the flag is off
 - **Cleanup issue reference:** record the cleanup issue number for temporary flags
 
-For cloud-deployed changes, emit an **activation packet** for the human release operator:
+For cloud-deployed changes, use the `@feature-flags` specialist's output to emit an **activation packet** for the human release operator:
 
 | Field | Value |
 |-------|-------|

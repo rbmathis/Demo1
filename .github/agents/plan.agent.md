@@ -98,13 +98,21 @@ Everything else — headings, prose, crew briefings, dramatic sign-offs — is p
 
 ## Rollout-Aware Planning
 
-When triage classifies an issue as `rollout-required` or `rollout-optional`, you must consult the `feature-flags` specialist agent before finalizing the playbook. The specialist provides a rollout verdict, gating strategy, and a canonical checklist that you embed in the plan comment. See `docs/feature-flag-rollout-contract.md` for the full rollout contract.
+When triage classifies an issue as `rollout-required` or `rollout-optional`, you **MUST delegate to `@feature-flags`** before finalizing the playbook. This is not optional — invoke the agent, wait for its response, and incorporate the result.
 
-**For `rollout-required` issues:** always invoke the `feature-flags` specialist and embed its rollout checklist in your plan comment.
+**For `rollout-required` issues:**
+1. Delegate to `@feature-flags` with the issue context and triage rollout status
+2. Wait for the specialist's rollout verdict, gating strategy, and canonical checklist
+3. Embed the specialist's rollout checklist verbatim in your plan comment
+4. Do NOT finalize jobs until the rollout checklist is received
 
-**For `rollout-optional` issues:** invoke the `feature-flags` specialist, but **you own the final flagging verdict**. The specialist recommends; you decide and record the rationale. If the change ships ungated, the plan must say so explicitly and justify it.
+**For `rollout-optional` issues:**
+1. Delegate to `@feature-flags` with the issue context and triage rollout status
+2. The specialist recommends a verdict — you own the final decision
+3. If you agree with a flagged verdict, embed the checklist in your plan comment
+4. If you override to ship ungated, include the specialist's recommendation and your explicit justification for overriding it
 
-**For `rollout-exempt` issues:** skip rollout analysis entirely. No checklist needed.
+**For `rollout-exempt` issues:** skip rollout analysis entirely. No checklist needed. Do not invoke `@feature-flags`.
 
 ### Rollout Checklist in the Plan Comment
 
