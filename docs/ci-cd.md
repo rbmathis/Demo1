@@ -32,7 +32,7 @@ The project uses GitHub Actions workflows to automate building, testing, securit
 **Jobs:**
 
 - `build`: Builds and tests the application
-- `docker`: Creates and publishes Docker images
+- `docker`: Builds the Docker image in CI; push to GHCR is gated by the `GHCR_TOKEN` secret
 - `deploy-azure`: Deploys to Azure Web Apps (when configured)
 - `notify`: Reports deployment status
 

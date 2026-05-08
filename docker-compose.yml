@@ -27,6 +27,32 @@ services:
       retries: 3
       start_period: 10s
 
+  # Development hot-reload application service (optional profile)
+  demo1-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    command: ["dotnet", "watch", "run", "--project", "Demo1.csproj", "--urls", "http://0.0.0.0:8080"]
+    working_dir: /src
+    volumes:
+      - ./:/src
+    ports:
+      - "5556:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - APPLICATIONINSIGHTS__CONNECTIONSTRING=${APPLICATIONINSIGHTS_CONNECTIONSTRING:-}
+      - AZUREAPPCONFIGURATION__CONNECTIONSTRING=${AZURE_APP_CONFIG_CONNECTIONSTRING:-}
+      - REDIS__CONNECTIONSTRING=redis:6379
+      - CACHEPROVIDER=Redis
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - demo1-network
+
   # Redis for distributed caching and session state
   redis:
     image: redis:7-alpine
