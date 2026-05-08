@@ -77,4 +77,17 @@ public class ComponentShowcaseControllerTests
         // Assert
         Assert.IsType<NotFoundResult>(result);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Preview_NullOrEmpty_Returns_BadRequest(string? name)
+    {
+        // Act
+        var result = _controller.Preview(name!);
+
+        // Assert
+        Assert.IsType<BadRequestResult>(result);
+    }
 }

@@ -4,6 +4,10 @@
     var categories = Model.Select(c => c.Category).Distinct().OrderBy(c => c).ToList();
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/component-showcase.css" asp-append-version="true" />
+}
+
 <div class="py-4">
     <h1>Component Showcase</h1>
     <p class="lead text-muted">Browse, preview, and copy markup for all available UI components.</p>
@@ -38,9 +42,12 @@
                         <iframe src="/ComponentShowcase/Preview/@component.Name"
                                 class="component-preview-frame"
                                 title="@component.Name preview"
+                                sandbox="allow-scripts allow-same-origin"
                                 loading="lazy"></iframe>
                         <div class="card-body">
                             <p class="card-text">@component.Description</p>
+                            @* Safety: ExampleMarkup is hardcoded in the singleton ComponentRegistryService,
+                               never user-supplied. If the registry is ever externalized, this must be sanitized. *@
                             <copy-markup>@Html.Raw(component.ExampleMarkup)</copy-markup>
                         </div>
                     </div>
@@ -64,9 +71,12 @@
                             <iframe src="/ComponentShowcase/Preview/@component.Name"
                                     class="component-preview-frame"
                                     title="@component.Name preview"
+                                    sandbox="allow-scripts allow-same-origin"
                                     loading="lazy"></iframe>
                             <div class="card-body">
                                 <p class="card-text">@component.Description</p>
+                                @* Safety: ExampleMarkup is hardcoded in the singleton ComponentRegistryService,
+                                   never user-supplied. If the registry is ever externalized, this must be sanitized. *@
                                 <copy-markup>@Html.Raw(component.ExampleMarkup)</copy-markup>
                             </div>
                         </div>
@@ -76,3 +86,7 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script src="~/js/component-showcase.js" asp-append-version="true"></script>
+}

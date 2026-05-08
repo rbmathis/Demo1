@@ -11,6 +11,19 @@ namespace Demo1.Controllers;
 [Route("[controller]")]
 public class ComponentShowcaseController : Controller
 {
+    /// <summary>
+    /// Allow-list of known ViewComponent names that may be dynamically invoked.
+    /// Prevents arbitrary component invocation if the registry is ever externalized.
+    /// </summary>
+    private static readonly HashSet<string> AllowedViewComponents = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ButtonShowcase",
+        "CardShowcase",
+        "AlertShowcase",
+        "FormShowcase",
+        "BadgeShowcase"
+    };
+
     private readonly IComponentRegistryService _registryService;
     private readonly ILogger<ComponentShowcaseController> _logger;
 
@@ -41,13 +54,26 @@ public class ComponentShowcaseController : Controller
     /// </summary>
     /// <param name="name">The unique name of the component to preview.</param>
     /// <returns>The preview view for the component, or NotFound if the component does not exist.</returns>
-    [HttpGet("Preview/{name}")]
+    [HttpGet("Preview/{name:alpha:maxlength(50)}")]
     public IActionResult Preview(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return BadRequest();
+        }
+
         var component = _registryService.GetByName(name);
 
         if (component is null)
         {
+            _logger.LogWarning("Component preview requested for unknown name: {ComponentName}", name);
+            return NotFound();
+        }
+
+        if (!AllowedViewComponents.Contains(component.ViewComponentName))
+        {
+            _logger.LogWarning("Component {ComponentName} references disallowed ViewComponent: {ViewComponentName}",
+                name, component.ViewComponentName);
             return NotFound();
         }
 

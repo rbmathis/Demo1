@@ -8,7 +8,7 @@ namespace Demo1.Services;
 /// </summary>
 public class ComponentRegistryService : IComponentRegistryService
 {
-    private readonly List<ComponentDefinition> _components;
+    private readonly IReadOnlyList<ComponentDefinition> _components;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComponentRegistryService"/> class
@@ -42,7 +42,7 @@ public class ComponentRegistryService : IComponentRegistryService
                 "Badge variants including contextual colors, pills, and notification badges.",
                 "BadgeShowcase",
                 """<span class="badge bg-primary">Badge</span>""")
-        };
+        }.AsReadOnly();
     }
 
     /// <inheritdoc />
@@ -52,6 +52,7 @@ public class ComponentRegistryService : IComponentRegistryService
     }
 
     /// <inheritdoc />
+    // Future: Used by category filter feature
     public IEnumerable<ComponentDefinition> GetByCategory(string category)
     {
         return _components

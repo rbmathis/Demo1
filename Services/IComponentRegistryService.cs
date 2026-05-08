@@ -15,6 +15,7 @@ public interface IComponentRegistryService
 
     /// <summary>
     /// Gets component definitions filtered by category.
+    /// Future: Used by category filter feature.
     /// </summary>
     /// <param name="category">The category name to filter by (case-insensitive).</param>
     /// <returns>An enumerable of matching component definitions.</returns>

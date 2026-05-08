@@ -13,8 +13,8 @@
         const text = btn.getAttribute('data-clipboard-text');
         if (!text) return;
 
+        const originalText = btn.textContent;
         navigator.clipboard.writeText(text).then(() => {
-            const originalText = btn.textContent;
             btn.textContent = 'Copied!';
             btn.classList.add('btn-success');
             btn.classList.remove('btn-outline-secondary');
@@ -22,6 +22,11 @@
                 btn.textContent = originalText;
                 btn.classList.remove('btn-success');
                 btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        }).catch(() => {
+            btn.textContent = 'Failed';
+            setTimeout(() => {
+                btn.textContent = originalText;
             }, 2000);
         });
     });
