@@ -38,6 +38,7 @@ When invoked with an issue number, you execute each stage in sequence by delegat
 - **GitHub actions:** reads issue, posts triage comment, manages labels
 - **STOP handling:** If triage returns `status: "STOP"`, halt the entire pipeline immediately. Report the stop reasons to the user. Do NOT proceed to Plan or any subsequent stage.
 - **DUPLICATE handling:** If triage returns `status: "DUPLICATE"`, halt the pipeline cleanly, report the canonical duplicate reference(s), treat the issue as already resolved or already in flight rather than as a pipeline failure, and move the issue out of active pipeline labels.
+- **Comment verification:** Before advancing to Plan, verify the issue thread contains the triage handoff comment with one of the required triage headings. If the comment is missing, treat triage as failed and do not proceed.
 
 ### Stage 2: Plan
 - **Delegate to:** `plan` agent
@@ -76,8 +77,13 @@ When invoked with an issue number, you execute each stage in sequence by delegat
 1. **Run all stages sequentially** — do not pause between stages
 2. **Pass the issue number** to each stage agent
 3. **Check for success** after each stage before proceeding
-4. **If review requests changes:** loop back to implement → review (max 2 cycles)
-5. **If any stage fails after retries:** halt and report failure
+4. **Verify issue-thread handoff artifacts** before advancing between stages when a stage is supposed to post one
+5. **If review requests changes:** loop back to implement → review (max 2 cycles)
+6. **If any stage fails after retries:** halt and report failure
+
+For Triage specifically, success requires both:
+- a non-error return status from the triage agent, and
+- a visible triage comment on the issue thread
 
 ## Review Loop
 
