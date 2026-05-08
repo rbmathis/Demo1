@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Autopilot"
+name: "Autopilot — Autopilot"
 description: "Single entry point that kicks off the full AI-SDLC pipeline on an issue"
 
 on:

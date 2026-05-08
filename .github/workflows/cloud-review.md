@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Review"
+name: "Autopilot — Review"
 description: "Multi-agent code review on pull requests"
 
 on:

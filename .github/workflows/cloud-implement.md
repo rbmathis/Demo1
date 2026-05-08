@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Implement"
+name: "Autopilot — Implement"
 description: "Reads the plan from the issue and assigns Copilot coding agent"
 
 on:

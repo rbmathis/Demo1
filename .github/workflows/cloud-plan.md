@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Plan"
+name: "Autopilot — Plan"
 description: "Creates a detailed implementation plan and saves it to the issue"
 
 on:

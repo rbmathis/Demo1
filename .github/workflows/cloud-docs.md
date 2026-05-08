@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Docs"
+name: "Autopilot — Docs"
 description: "Documents the implemented changes after review approval"
 
 on:

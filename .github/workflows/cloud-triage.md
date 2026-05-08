@@ -1,5 +1,5 @@
 ---
-name: "Pipeline — Triage"
+name: "Autopilot — Triage"
 description: "Classifies issues and kicks off the planning stage"
 
 on:
