@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/_.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/component-showcase.css" asp-append-version="true" />
 </head>
 
 <body>
@@ -76,6 +77,10 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Achievement"
                                 asp-action="TrophyCase">🏅 Trophy Case</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="ComponentShowcase"
+                                asp-action="Index">🧩 Components</a>
                         </li>
                         <!-- 🎪 ANTI-PATTERN CIRCUS DROPDOWN 🎪 -->
                         <li class="nav-item dropdown">
@@ -171,6 +176,7 @@
     </footer>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/component-showcase.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 
