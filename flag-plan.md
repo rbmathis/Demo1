@@ -5,7 +5,7 @@ Add a dedicated feature-flag rollout specialist that both local and cloud autopi
 **Steps**
 1. Phase 1 — Define rollout contract and triage decision model. Create a repository-wide feature-flag delivery convention that classifies changes into rollout classes: UI/page behavior, controller/service behavior, API behavior, background/side-effecting work, and data/schema changes. At the same time, define triage outputs for rollout status: `rollout-required`, `rollout-optional`, or `rollout-exempt`, with explicit exemption rules for docs-only, test-only, internal refactors with no observable behavior change, build/CI/config cleanup with no runtime effect, and emergency security fixes. Define required plan outputs using a stable checklist artifact: flag name, default state, old-path behavior, new-path behavior, impacted surfaces, activation steps, rollback behavior, telemetry expectations, cleanup strategy, and side-effect behavior when the flag is off. This phase blocks all later work.
 2. Phase 1 — Design the new specialist agent. Add a new agent such as `feature-flags.agent.md` under `.github/agents/` with a narrow charter: for issues triage marked `rollout-required` or `rollout-optional`, decide the flag strategy, specify dual-path requirements, identify unsafe areas like schema or side effects, and emit a rollout checklist that downstream agents must follow. This agent should not replace backend/frontend/security/testing/docs; it should guide them.
-3. Phase 1 — Adopt real database migration conventions and define flag naming/storage conventions. Replace the current `Program.cs` startup assumption around `db.Database.EnsureCreated()` with an explicit EF Core migrations workflow for `AchievementDbContext`: check in a real baseline migration, document the command path for generating future migrations, and externalize migration execution into a dedicated step instead of relying on web-app startup. The chosen operating model is wrapper-driven externalization: local development uses a wrapper script or task that runs the migration step before app startup, integration tests invoke the same migration path from test setup or fixture code, and cloud delivery uses a separately invoked migration step before activation. The plan must state who invokes each path and what happens when it fails. Schema work uses expand/backfill/switch/contract sequencing, backward-compatible migrations land before flag activation, and destructive cleanup stays in a later cleanup issue. Extend the current runtime model around `Features/FeatureFlags.cs` and `FeatureManagement` configuration so new flags follow one documented naming rule, default off by default, and are representable both in local config and Azure App Configuration. Decide how temporary rollout flags differ from permanent product flags. This phase blocks implementation and docs updates.
+3. Phase 1 — Adopt real database migration conventions and define flag naming/storage conventions. Replace the current `Program.cs` startup assumption around `db.Database.EnsureCreated()` with an explicit EF Core migrations workflow for `AchievementDbContext`: check in a real baseline migration, document the command path for generating future migrations, and externalize migration execution into a dedicated step instead of relying on web-app startup. The chosen operating model is wrapper-driven externalization: local development uses a wrapper script or task that runs the migration step before app startup, integration tests invoke the same migration path from test setup or fixture code, and cloud delivery uses a separately invoked migration step before activation. The plan must state the human owner or automation path for each environment and what happens when it fails. Schema work uses expand/backfill/switch/contract sequencing, backward-compatible migrations land before flag activation, and destructive cleanup stays in a later cleanup issue. Extend the current runtime model around `Features/FeatureFlags.cs` and `FeatureManagement` configuration so new flags follow one documented naming rule, default off by default, and are representable both in local config and Azure App Configuration. Decide how temporary rollout flags differ from permanent product flags. This phase blocks implementation and docs updates.
 4. Phase 2 — Update triage in both pipelines to make the feature-gating call early. Modify local `triage.agent.md` and cloud `cloud-triage.md` so triage explicitly decides whether rollout gating is required, optional, or exempt, records the rationale on the issue, and passes that decision downstream as part of the handoff artifact. `rollout-optional` must mean "not exempt, but the plan agent must explicitly decide whether to ship behind a temporary flag or record why an ungated change is acceptable"; it cannot mean "skip rollout analysis." Review validates the plan artifact was completed, but the plan agent owns the yes/no flagging verdict for optional issues. This phase depends on 1-3 and blocks downstream prompt changes.
 5. Phase 2 — Update local planning/orchestration. Modify local autopilot, plan, implement, review, docs, and deliver agent prompts so the local pipeline reads triage’s rollout decision, invokes the new specialist during planning when appropriate, carries the rollout contract into implementation, validates flag-off and flag-on behavior in review, documents verification steps for both states in the standalone docs stage, and creates a cleanup follow-up issue for temporary flags. This phase depends on 1-4.
 6. Phase 2 — Update cloud planning/orchestration. Modify `cloud-plan.md`, `cloud-implement.md`, `cloud-review.md`, `cloud-docs.md`, and supporting cloud documentation so the cloud pipeline follows the same rollout contract. The cloud plan stage should embed the feature-flag rollout plan in the issue comment; cloud implement should instruct the Copilot coding agent to preserve old behavior behind a default-off flag and should stop treating docs as part of implement; cloud review should block on missing dual-path validation; cloud docs should publish how to verify both states and emit a human-run activation packet for Azure App Configuration that includes the key, label/environment, target value, prerequisites, validation steps, and rollback steps. The cloud pipeline must never auto-enable flags. This phase depends on 1-4 and can run in parallel with step 5.
@@ -62,7 +62,7 @@ Add a dedicated feature-flag rollout specialist that both local and cloud autopi
 - Triage ownership: triage is the first decision point for rollout status and must classify issues as rollout-required, rollout-optional, or rollout-exempt, with rationale recorded in the issue handoff.
 - Optional rollout semantics: `rollout-optional` still requires full rollout analysis. The plan agent makes and records the deliberate yes/no flagging decision instead of silently treating the change as exempt.
 - Cloud activation ownership: cloud flag activation is owned by `rbmathis` as the human release operator using Azure App Configuration after docs publishes the activation packet and prerequisites; neither `cloud-docs` nor `cloud-finish.yml` enables the flag.
-- Migration execution ownership: schema changes are applied by a dedicated migration step outside normal app startup. Local development uses a wrapper script or task, integration tests use fixture/setup-driven invocation of that same migration path, and cloud uses a separately invoked migration step before activation. The plan must name the operator or automation path for each environment.
+- Migration execution ownership: schema changes are applied by a dedicated migration step outside normal app startup. Local development uses a wrapper script or task, integration tests use fixture/setup-driven invocation of that same migration path, and cloud uses a separately invoked migration step before activation. The plan must name the human owner or automation path for each environment.
 - Temporary flag metadata: keep temporary flag metadata lightweight. Every temporary flag must declare only an owner, an intended cleanup milestone, and a cleanup issue reference.
 - Side-effect default: when a flag is off, side effects are suppressed by default. Shadow execution or replay behavior must be explicitly justified in the rollout checklist and paired with idempotency handling.
 - Canonical artifact shape: the rollout contract uses a checklist format in the plan comment so local and cloud stages validate the same fields consistently.
@@ -91,3 +91,67 @@ Add a dedicated feature-flag rollout specialist that both local and cloud autopi
 1. Keep the new specialist named `feature-flags`; it is clearer and easier for contributors to discover than `release-guard`.
 2. Prefer temporary rollout flags by default for issue-driven delivery; permanent product flags should be called out explicitly in the plan so cleanup automation does not misfire.
 3. Treat rollout decisions as part of issue state, not PR-only metadata, so local and cloud pipelines can stay aligned off the same handoff artifact.
+
+**Copilot CLI Execution**
+Use Copilot CLI in bounded phase-sized runs rather than one unattended end-to-end run. Each run should stop after its own deliverables are complete and should not opportunistically continue into the next phase.
+
+1. Phase 1 CLI run
+Objective: define the rollout contract, create the `feature-flags` specialist prompt, and lock in the migration/flagging conventions.
+Scope: `.github/agents/feature-flags.agent.md`, rollout-related updates to local/cloud planning guidance, and documentation/planning artifacts that establish the contract.
+Must decide: rollout statuses, checklist contract, optional-flag ownership, temporary-flag metadata, migration model, side-effect defaults.
+Must not do: runtime helper code, controller/view/service code changes, pilot execution.
+Stop condition: the repository contains the specialist agent, the prompt/workflow surfaces reference the rollout contract at a design level, and the contract is documented clearly enough that later implementation phases do not need to invent policy.
+
+2. Phase 2 CLI run
+Objective: wire the rollout contract into local and cloud orchestration.
+Scope: `.github/agents/autopilot.agent.md`, `.github/agents/triage.agent.md`, `.github/agents/plan.agent.md`, `.github/agents/implement.agent.md`, `.github/agents/review.agent.md`, `.github/agents/docs.agent.md`, `.github/agents/deliver.agent.md`, `.github/workflows/cloud-triage.md`, `.github/workflows/cloud-plan.md`, `.github/workflows/cloud-implement.md`, `.github/workflows/cloud-review.md`, `.github/workflows/cloud-docs.md`, and any required documentation updates that explain handoff artifacts.
+Must do: make triage emit rollout status, make plan own optional flagging verdicts, require the checklist artifact, require docs-stage activation packets, and keep `cloud-finish.yml` as backstop-only.
+Must not do: app runtime feature-flag helper implementation, EF migration code changes, pilot issue execution.
+Stop condition: local and cloud prompts/workflows consistently require the same rollout checklist and stage responsibilities.
+
+3. Phase 3 CLI run
+Objective: add the minimum runtime conventions, test expectations, and cleanup rules needed to implement flagged work safely.
+Scope: runtime guidance in app-facing docs, any minimal helper abstractions that are truly necessary, test guidance, migration-path guidance, and cleanup ownership behavior.
+Must do: define or add the minimum code/documentation support for default-off branching, side-effect suppression, deterministic test seams, migration-step expectations, and cleanup issue mechanics.
+Must not do: broad refactors unrelated to rollout support, end-to-end pilot validation, or feature-specific product work.
+Stop condition: contributors and downstream agents have enough concrete runtime/testing guidance to implement future flagged changes without inventing new conventions.
+
+4. Phase 4 CLI run
+Objective: document, compile, and validate the rollout-aware pipeline.
+Scope: `AI-SDLC-LOCAL.md`, `AI-SDLC-CLOUD.md`, `README.md`, `architecture.md`, relevant cloud workflow lock files, and the selected pilot issues.
+Must do: update docs, run `gh aw compile` after deleting affected `.lock.yml` files, and execute the pilot validation path described in this plan.
+Must not do: unrelated workflow cleanup or opportunistic prompt rewrites outside the rollout feature scope.
+Stop condition: docs are updated, workflow compilation succeeds, and the pilot exercises local/cloud behavior including migration handoff, docs output, and cleanup backstop behavior.
+
+**CLI Prompt Template**
+Use this shape for each Copilot CLI run:
+
+```text
+Implement Phase N of flag-plan.md only.
+
+Primary objective:
+- <phase objective>
+
+In scope:
+- <explicit files and surfaces for this phase>
+
+Out of scope:
+- <explicitly forbidden next-phase work>
+
+Required outcomes:
+- <flat list of concrete deliverables>
+
+Stop when:
+- <phase stop condition>
+
+Before finishing:
+- summarize what changed
+- summarize what remains for the next phase
+- do not begin the next phase
+```
+
+**CLI Safety Notes**
+1. Run one phase at a time and review the diff before starting the next phase.
+2. For workflow `.md` changes, delete the corresponding `.lock.yml` files and rerun `gh aw compile` in the same phase that changed them.
+3. Keep the plan artifact current if the CLI run makes a meaningful design decision that later phases depend on.
+4. If a phase encounters ambiguity outside its declared scope, stop and record the blocker instead of guessing and cascading into the next phase.
