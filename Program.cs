@@ -13,8 +13,20 @@ using System.Threading.Channels;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+try
+{
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -184,8 +196,7 @@ if (!string.IsNullOrWhiteSpace(appConfigEndpoint) || !string.IsNullOrWhiteSpace(
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Warning: Failed to configure Azure App Configuration: {ex.Message}");
-        Console.WriteLine("Azure App Configuration will be skipped. Feature flags will fallback to local config.");
+        Log.Warning(ex, "Failed to configure Azure App Configuration — falling back to local config");
     }
 }
 
@@ -250,6 +261,7 @@ if (enableSwagger)
 }
 
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
 app.UseMiddleware<ServerTimingMiddleware>();
 app.UseSecurityHeaders();
 app.UseSecurityLabHeaders();
@@ -283,6 +295,15 @@ app.MapControllerRoute(
 
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 /// <summary>
 /// Marker partial class used to host the application in integration tests.
