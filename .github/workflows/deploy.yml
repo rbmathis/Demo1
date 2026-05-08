@@ -91,7 +91,7 @@ jobs:
           echo "Revision: $REVISION"
 
       - name: Log in to Container Registry
-        if: ${{ secrets.GHCR_TOKEN != '' }}
+        if: secrets.GHCR_TOKEN != ''
         uses: docker/login-action@v3
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
