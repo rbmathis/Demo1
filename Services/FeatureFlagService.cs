@@ -72,13 +72,13 @@ public class FeatureFlagService : IFeatureFlagService
         {
             _logger.LogWarning(
                 "Feature flag toggle rejected — Azure App Configuration is not configured. Flag: {FlagName}",
-                flagName);
+                SanitizeForLog(flagName));
             return false;
         }
 
         if (!KnownFlags.Contains(flagName, StringComparer.Ordinal))
         {
-            _logger.LogWarning("Feature flag toggle rejected — unknown flag name: {FlagName}", flagName);
+            _logger.LogWarning("Feature flag toggle rejected — unknown flag name: {FlagName}", SanitizeForLog(flagName));
             return false;
         }
 
@@ -87,7 +87,7 @@ public class FeatureFlagService : IFeatureFlagService
         {
             _logger.LogError(
                 "Feature flag toggle failed — could not create Azure App Configuration client. Flag: {FlagName}",
-                flagName);
+                SanitizeForLog(flagName));
             return false;
         }
 
@@ -101,12 +101,19 @@ public class FeatureFlagService : IFeatureFlagService
 
         _logger.LogInformation(
             "Feature flag {FlagName} changed to {Enabled} in Azure App Configuration (label: '{Label}')",
-            flagName,
+            SanitizeForLog(flagName),
             enabled,
             _adminOptions.Label);
 
         return true;
     }
+
+    /// <summary>
+    /// Strips newline characters from a value before it is written to a log sink,
+    /// preventing log-forging via user-supplied input.
+    /// </summary>
+    private static string SanitizeForLog(string? value) =>
+        value?.ReplaceLineEndings(" ").Trim() ?? string.Empty;
 
     /// <summary>
     /// Creates an <see cref="Azure.Data.AppConfiguration.ConfigurationClient"/> from the stored options.

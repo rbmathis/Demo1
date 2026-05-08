@@ -74,12 +74,12 @@ public class AdminAuthController : Controller
 
         if (!usernameMatch || !passwordMatch)
         {
-            _logger.LogWarning("Failed admin login attempt for username: {Username}", username);
+            _logger.LogWarning("Failed admin login attempt for username: {Username}", SanitizeForLog(username));
             ModelState.AddModelError(string.Empty, "Invalid username or password.");
             return View();
         }
 
-        _logger.LogInformation("Admin user '{Username}' signed in", username);
+        _logger.LogInformation("Admin user '{Username}' signed in", SanitizeForLog(configUsername));
 
         var claims = new List<Claim>
         {
@@ -113,7 +113,14 @@ public class AdminAuthController : Controller
     {
         var username = User.Identity?.Name ?? "unknown";
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        _logger.LogInformation("Admin user '{Username}' signed out", username);
+        _logger.LogInformation("Admin user '{Username}' signed out", SanitizeForLog(username));
         return RedirectToAction("Index", "Home");
     }
+
+    /// <summary>
+    /// Strips newline and carriage-return characters from a value before it is written to a log sink,
+    /// preventing log-forging via user-supplied input.
+    /// </summary>
+    private static string SanitizeForLog(string? value) =>
+        value?.ReplaceLineEndings(" ").Trim() ?? string.Empty;
 }

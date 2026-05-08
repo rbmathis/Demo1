@@ -56,11 +56,12 @@ public class FeatureFlagController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Toggle(string flagName, bool enabled)
     {
-        var adminUser = User.Identity?.Name ?? "unknown";
+        var adminUser = SanitizeForLog(User.Identity?.Name);
+        var safeFlagName = SanitizeForLog(flagName);
 
         _logger.LogInformation(
             "Admin '{AdminUser}' requested flag toggle: {FlagName} → {Enabled}",
-            adminUser, flagName, enabled);
+            adminUser, safeFlagName, enabled);
 
         var success = await _featureFlagService.SetFlagAsync(flagName, enabled, HttpContext.RequestAborted);
 
@@ -68,7 +69,7 @@ public class FeatureFlagController : Controller
         {
             _logger.LogInformation(
                 "Feature flag changed — flag: {FlagName}, new state: {Enabled}, admin: {AdminUser}",
-                flagName, enabled, adminUser);
+                safeFlagName, enabled, adminUser);
 
             TempData["Success"] = $"Flag '{flagName}' has been {(enabled ? "enabled" : "disabled")}. " +
                                   "Changes propagate within the configured refresh interval.";
@@ -77,7 +78,7 @@ public class FeatureFlagController : Controller
         {
             _logger.LogWarning(
                 "Feature flag toggle failed — flag: {FlagName}, requested state: {Enabled}, admin: {AdminUser}",
-                flagName, enabled, adminUser);
+                safeFlagName, enabled, adminUser);
 
             TempData["Error"] = _featureFlagService.IsAzureAppConfigurationAvailable
                 ? $"Failed to update flag '{flagName}'. Check application logs for details."
@@ -86,4 +87,11 @@ public class FeatureFlagController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+    /// <summary>
+    /// Strips newline characters from a value before it is written to a log sink,
+    /// preventing log-forging via user-supplied input.
+    /// </summary>
+    private static string SanitizeForLog(string? value) =>
+        value?.ReplaceLineEndings(" ").Trim() ?? "unknown";
 }
