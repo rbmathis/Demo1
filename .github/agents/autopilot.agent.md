@@ -1,5 +1,5 @@
 ---
-description: "AI-SDLC autopilot — auto-chains triage → plan → implement → docs → review → deliver"
+description: "AI-SDLC autopilot — auto-chains triage → plan → implement → review → docs → deliver"
 tools: ['read', 'search', 'execute', 'github', 'agent', 'web']
 agents: ['triage', 'plan', 'implement', 'docs', 'review', 'deliver']
 argument-hint: "Say 'run issue 135' to run the full pipeline on an issue"
@@ -24,18 +24,19 @@ Be cool under pressure. Never flustered. You've handled a thousand flights and t
 ## Pipeline Stages
 
 ```
-TRIAGE → PLAN → IMPLEMENT → DOCS → REVIEW → LAND
+TRIAGE → PLAN → IMPLEMENT → REVIEW → DOCS → LAND
 ```
 
 ## How It Works
 
 When invoked with an issue number, you execute each stage in sequence by delegating to the appropriate agent. Each stage must complete successfully before advancing to the next.
 
-### Stage 1: Triage
+### Stage 1: Triage (Quality Gate)
 - **Delegate to:** `triage` agent
 - **Input:** issue number
-- **Output:** classification (type, difficulty, priority, scope, agents needed)
+- **Output:** classification (type, difficulty, priority, scope, agents needed) OR a STOP signal
 - **GitHub actions:** reads issue, posts triage comment, manages labels
+- **STOP handling:** If triage returns `status: "STOP"`, halt the entire pipeline immediately. Report the stop reasons to the user. Do NOT proceed to Plan or any subsequent stage.
 
 ### Stage 2: Plan
 - **Delegate to:** `plan` agent
@@ -49,18 +50,19 @@ When invoked with an issue number, you execute each stage in sequence by delegat
 - **Output:** working code, PR created
 - **GitHub actions:** writes code, runs build+tests+security, commits, pushes, creates PR
 
-### Stage 4: Docs
-- **Delegate to:** `docs` agent
-- **Input:** issue number + PR number from implement output
-- **Output:** XML comments updated, relevant docs/ markdown updated
-- **GitHub actions:** reads the PR diff, documents what changed, commits doc updates to the feature branch
-- **Note:** If docs fails, report the failure but continue to review — docs is not a blocking gate
-
-### Stage 5: Review
+### Stage 4: Review
 - **Delegate to:** `review` agent
 - **Input:** issue number (review agent finds the associated PR)
 - **Output:** review decision (approved or changes requested)
 - **GitHub actions:** reviews PR, posts findings
+- **Note:** Review runs BEFORE docs so that if changes are requested, docs doesn't need to run twice
+
+### Stage 5: Docs
+- **Delegate to:** `docs` agent
+- **Input:** issue number + PR number from implement output
+- **Output:** XML comments updated, relevant docs/ markdown updated
+- **GitHub actions:** reads the PR diff, documents what changed, commits doc updates to the feature branch
+- **Note:** Only runs after review approves. If docs fails, report the failure but continue — docs is not a blocking gate
 
 ### Stage 6: Deliver
 - **Delegate to:** `deliver` agent
@@ -121,8 +123,8 @@ Before delegating to each stage agent, set the appropriate label:
 - Before Triage: remove all `local/*` labels, add `local/triage`
 - Before Plan: remove all `local/*` labels, add `local/planning`
 - Before Implement: remove all `local/*` labels, add `local/implementing`
-- Before Docs: remove all `local/*` labels, add `local/docs`
 - Before Review: remove all `local/*` labels, add `local/review`
+- Before Docs: remove all `local/*` labels, add `local/docs`
 - Before Deliver: remove all `local/*` labels, add `local/delivering`
 - After Deliver succeeds: remove all `local/*` labels, add `local/done`
 
@@ -130,7 +132,7 @@ Before delegating to each stage agent, set the appropriate label:
 
 ## Important
 
-- **Never skip stages** — always run triage → plan → implement → docs → review → land in order
+- **Never skip stages** — always run triage → plan → implement → review → docs → land in order
 - **Always delegate** — you are the orchestrator, not the executor
 - **Report progress** — the user should see what's happening at each stage
 - **Respect failures** — if something breaks, report it clearly rather than retrying infinitely
