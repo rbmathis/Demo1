@@ -99,6 +99,7 @@ builder.Services.AddSingleton<IUserProfileService, InMemoryUserProfileService>()
 builder.Services.AddSingleton<IStyleGeneratorService, StyleGeneratorService>();
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
 builder.Services.AddSingleton<IPerformanceMetricsService, PerformanceMetricsService>();
+builder.Services.AddSingleton<IComponentRegistryService, ComponentRegistryService>();
 
 // ✅ Achievement System: EF Core + SQLite persistence
 builder.Services.AddDbContext<AchievementDbContext>(options =>

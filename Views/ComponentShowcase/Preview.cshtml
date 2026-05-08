@@ -1,0 +1,6 @@
+@model Demo1.Models.ComponentDefinition
+@{
+    Layout = "_ComponentPreview";
+}
+
+@await Component.InvokeAsync(Model.ViewComponentName)

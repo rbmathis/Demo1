@@ -25,12 +25,16 @@ Models/                 View models, API models, domain models
   Api/                  API response models
 Services/               Service interfaces and implementations
 Telemetry/              Custom telemetry initializers
+TagHelpers/             Custom Razor tag helpers
+ViewComponents/         Razor ViewComponents for reusable UI
 Views/                  Razor views
   Achievement/          Trophy case & anti-pattern demo views
+  ComponentShowcase/    Component showcase index and preview pages
   Home/                 Home, About, Privacy, anti-pattern pages
   Performance/          Performance dashboard views
   SecurityLab/          Security lab interactive views
   Shared/               Layout, partials, error pages
+    Components/         ViewComponent default views
 wwwroot/                Static assets (css, js, lib)
 docs/                   Developer documentation
 tests/
@@ -85,7 +89,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | Middleware | File | Purpose |
 |-----------|------|---------|
 | `ServerTimingMiddleware` | Middleware/ServerTimingMiddleware.cs | Adds `Server-Timing` header with request duration |
-| `SecurityHeadersMiddleware` | Middleware/SecurityHeadersMiddleware.cs | Adds CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy |
+| `SecurityHeadersMiddleware` | Middleware/SecurityHeadersMiddleware.cs | Adds CSP, X-Content-Type-Options, X-Frame-Options (path-aware: `SAMEORIGIN` for `/ComponentShowcase/Preview`, `DENY` elsewhere), Referrer-Policy |
 | `SecurityLabMiddleware` | Middleware/SecurityLabMiddleware.cs | Relaxes security headers on `/SecurityLab/*` routes for demo purposes |
 | `RateLimitHeadersMiddleware` | Middleware/RateLimitHeadersMiddleware.cs | Adds `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers |
 | `AchievementMiddleware` | Middleware/AchievementMiddleware.cs | Publishes request events to `Channel<AchievementEventMessage>` for async badge processing |
@@ -101,6 +105,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `IStyleGeneratorService` | `StyleGeneratorService` | Singleton | CSS style generation for demos |
 | `IUptimeService` | `UptimeService` | Singleton | Application uptime tracking |
 | `IPerformanceMetricsService` | `PerformanceMetricsService` | Singleton | Performance budget monitoring |
+| `IComponentRegistryService` | `ComponentRegistryService` | Singleton | Component showcase catalog registry |
 | `IAchievementService` | `AchievementService` | Scoped | Achievement data retrieval and progress calculation |
 | `AchievementProcessorService` | (self — `BackgroundService`) | Hosted (Singleton) | Consumes `Channel<T>` events, persists and evaluates achievement rules |
 | `AchievementDbContext` | (self — `DbContext`) | Scoped | EF Core context for achievement SQLite database |
@@ -117,6 +122,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `SecurityLabController` | `/SecurityLab/*` | Interactive XSS/injection attack demos |
 | `HealthController` | `/health/*` | Health check endpoints |
 | `AchievementController` | `/Achievement/*` | Trophy case, badges API (`/Achievement/api/badges`), anti-pattern demo |
+| `ComponentShowcaseController` | `/ComponentShowcase/*` | Browsable UI component catalog with isolated previews |
 
 ### API Controllers
 
@@ -124,6 +130,22 @@ Order matters — this is the actual registration order in `Program.cs`:
 |-----------|-------|---------|
 | `WeatherForecastController` (V1) | `/api/v1/weatherforecast` | Weather forecast API v1 |
 | `WeatherForecastController` (V2) | `/api/v2/weatherforecast` | Weather forecast API v2 (enhanced) |
+
+## ViewComponents
+
+| ViewComponent | View | Purpose |
+|--------------|------|---------|
+| `ButtonShowcaseViewComponent` | `Views/Shared/Components/ButtonShowcase/Default.cshtml` | Bootstrap button variants (contextual, outline, sizes) |
+| `CardShowcaseViewComponent` | `Views/Shared/Components/CardShowcase/Default.cshtml` | Card layouts (basic, header/footer, list group) |
+| `AlertShowcaseViewComponent` | `Views/Shared/Components/AlertShowcase/Default.cshtml` | Alert variants (contextual, dismissible) |
+| `FormShowcaseViewComponent` | `Views/Shared/Components/FormShowcase/Default.cshtml` | Form elements (inputs, selects, checkboxes, radios, textarea) |
+| `BadgeShowcaseViewComponent` | `Views/Shared/Components/BadgeShowcase/Default.cshtml` | Badge variants (contextual, pill, in heading/button) |
+
+## Custom Tag Helpers
+
+| Tag Helper | Target Element | Purpose |
+|-----------|---------------|---------|
+| `CopyMarkupTagHelper` | `<copy-markup>` | Renders child HTML as encoded `<pre><code>` block with copy-to-clipboard button |
 
 ## Anti-Pattern Showcases
 
@@ -180,11 +202,11 @@ dotnet run
 
 | Project | Tests | Categories |
 |---------|-------|------------|
-| `Demo1.UnitTests` | ~140 | Controllers (6 files), Services (7 files), Models (1 file), Middleware (4 files), Telemetry (1 file) |
-| `Demo1.IntegrationTests` | ~40 | Controller routes (6 files), Middleware headers (1 file) |
+| `Demo1.UnitTests` | ~155 | Controllers (7 files), Services (8 files), TagHelpers (1 file), Models (1 file), Middleware (4 files), Telemetry (1 file) |
+| `Demo1.IntegrationTests` | ~44 | Controller routes (7 files), Middleware headers (1 file) |
 | `Demo1.PlaywrightTests` | ~12 | Browser-based E2E smoke tests |
 
-**Total: 192 tests** across unit, integration, and E2E layers. See [`docs/testing.md`](docs/testing.md) for full details.
+**Total: ~211 tests** across unit, integration, and E2E layers. See [`docs/testing.md`](docs/testing.md) for full details.
 
 ## Containerization
 
