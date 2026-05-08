@@ -18,6 +18,7 @@ engine: copilot
 
 imports:
   - .github/agents/review.agent.md
+  - .github/agents/feature-flags.agent.md
 
 permissions:
   contents: read
@@ -52,136 +53,29 @@ safe-outputs:
 
 ## Pipeline — Review Agent
 
-You are the code review agent for an AI-SDLC pipeline. When dispatched with an issue number, you find the associated PR and perform a comprehensive multi-agent review.
+Run the imported `review` agent instructions as the review policy for the cloud AI-SDLC pipeline. Use the imported `feature-flags` guidance when rollout compliance is applicable.
 
 **Target issue:** #${{ github.event.inputs.issue_number }}
 
-## Your Task
+## Cloud Duties
 
-1. **Find the PR** for issue #${{ github.event.inputs.issue_number }}:
-  - First, use the issue timeline cross-reference events to find PRs linked to the issue
-  - Prefer the most recent open PR; if none are open, keep the most recently merged PR as fallback for reruns
-  - If no linked PR is found from the timeline, fall back to searching PR body/title text for `Closes #${{ github.event.inputs.issue_number }}`, `Fixes #${{ github.event.inputs.issue_number }}`, or `Resolves #${{ github.event.inputs.issue_number }}`
-2. **Update the pipeline label** — remove any existing `cloud/*` labels and add `cloud/review` on issue #${{ github.event.inputs.issue_number }}
-3. **Post a status comment on the issue** (before reviewing):
-   - Post this comment on issue #${{ github.event.inputs.issue_number }}:
-     ```
-     ## 🔄 Pipeline — Review In Progress
+1. Find the PR linked to issue #${{ github.event.inputs.issue_number }} using issue timeline cross-reference events first, then closing-keyword body/title search as fallback.
+2. Remove existing `cloud/*` labels and add `cloud/review`.
+3. Post one `## 🔄 Pipeline — Review In Progress` status comment with the PR number.
+4. Review the PR using the imported review policy and specialist-review expectations.
+5. When triage or plan includes `rollout-required` or `rollout-optional`, block approval for missing rollout checklist, missing flag-off/flag-on tests, unsafe side-effect behavior, missing cleanup reference for temporary flags, or missing observability.
+6. Submit exactly one PR review with verdict `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`.
+7. Post one issue comment headed `## 🏗️ Pipeline — Implementation Report` with PR, branch, verdict, change summary, and review summary.
+8. Dispatch the next stage according to the cloud dispatch chain below.
 
-     **Timestamp:** [UTC time]
-     **PR:** #[pr_number]
-     **Status:** Code complete. Multi-agent review started.
-     ```
-4. **Read the PR** title, body, and changed files
-5. **Delegate review to specialist agents:**
-   - `security-auditor` — OWASP Top 10, CSRF, XSS, SQL injection, auth issues
-   - `code-reviewer` — MVC patterns, code quality, naming, error handling, SOLID
-   - `testing` — test coverage, test quality, edge cases, missing tests
-   - `docs` — XML documentation comments, docs/ updates
-6. **Synthesize findings** into a cohesive review
-7. **Post inline review comments** on specific lines where issues are found
-8. **Submit a review** with your verdict:
-   - **APPROVE** — code is clean, follows best practices
-   - **REQUEST_CHANGES** — security vulnerabilities or critical issues found
-   - **COMMENT** — suggestions but nothing blocking
-9. **Post an implementation summary on issue #${{ github.event.inputs.issue_number }}** (MANDATORY — use format below)
-10. **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-11. **Dispatch the next stage** — based on your verdict, dispatch either `cloud-docs` (on approve/comment) or `cloud-implement` (on request changes) — see Dispatch Chain below
+## Cloud Dispatch Chain
 
-## Review Checklist
+- `APPROVE` or `COMMENT`: replace `cloud/review` with `cloud/awaiting-merge`, then dispatch `cloud-docs` with `issue_number` set to `${{ github.event.inputs.issue_number }}`.
+- `REQUEST_CHANGES`: keep `cloud/review`, count previous request-changes implementation reports, and dispatch `cloud-implement` only if fewer than 2 rework cycles have already occurred.
+- If 2 rework cycles have already occurred, post a halt comment and do not dispatch another workflow.
 
-### Security (Critical — block if failed)
-- No SQL injection (parameterized queries only)
-- CSRF protection on state-changing actions
-- Input validation on user-facing endpoints
-- No secrets or credentials in code
-- Security headers maintained
+## Cloud Overrides
 
-### Architecture (Important)
-- Controllers are thin — logic in services
-- Models have XML documentation
-- Views don't contain business logic
-- Dependency injection used appropriately
-
-### Quality (Advisory)
-- Meaningful variable/method names
-- Error handling with proper HTTP status codes
-- No commented-out code
-- XML documentation on public APIs
-
-### Tests (Important)
-- New functionality has tests
-- Tests cover happy path and error cases
-- No flaky test patterns
-
-### Rollout Compliance (Blocking — when applicable)
-
-When the triage comment includes `rollout-required` or `rollout-optional`:
-- Rollout checklist is present and complete in the plan comment
-- Flag defaults to off in code and configuration
-- Tests exist for both flag-off (old behavior) and flag-on (new behavior)
-- Side effects are suppressed when the flag is off (unless explicitly justified)
-- Temporary flags have a cleanup issue reference
-- Logging/telemetry identifies which execution path ran
-- If `rollout-optional` shipped ungated, the plan includes explicit justification
-
-Block approval for any rollout compliance failure. See `docs/feature-flag-rollout-contract.md`.
-
-## Issue Status Comment Format
-
-Post this comment on issue #${{ github.event.inputs.issue_number }}:
-
-```markdown
-## 🏗️ Pipeline — Implementation Report
-
-**Timestamp:** [UTC time]
-**PR:** #[pr_number]
-**Branch:** `[branch_name]`
-**Review Verdict:** [APPROVE/REQUEST_CHANGES/COMMENT]
-
-### Changes
-
-| Area | Files | Description |
-|------|-------|-------------|
-| [area] | `file1.cs`, `file2.cs` | [what changed] |
-
-### Review Summary
-
-[2-3 sentence summary of your review findings]
-
-### Status
-
-✅ Implementation complete. Review submitted.
-```
-
-This comment is the official pipeline record. Do NOT skip it.
-
-## Dispatch Chain
-
-After completing the review and posting the implementation report, dispatch the appropriate next stage based on your verdict:
-
-### If APPROVE:
-- **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-- **Dispatch `cloud-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
-- This moves the pipeline to the documentation stage before delivery
-
-### If REQUEST_CHANGES:
-- **Keep `cloud/review` label** on issue #${{ github.event.inputs.issue_number }}
-- **Check the rework count** — read issue comments and count how many "Pipeline — Implementation Report" comments exist with verdict "REQUEST_CHANGES"
-- **If fewer than 2 rework cycles:** Dispatch `cloud-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}` — the coding agent will read the review comments and fix the issues
-- **If 2 or more rework cycles already:** Do NOT dispatch. Post a comment: "⚠️ Pipeline halted — maximum rework cycles (2) reached. Human intervention required."
-
-### If COMMENT:
-- **Replace `cloud/review` with `cloud/awaiting-merge`** on issue #${{ github.event.inputs.issue_number }}
-- **Dispatch `cloud-docs`** with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
-- Comments are advisory — they don't block the pipeline
-
-## After Review
-
-After submitting the review and posting the implementation report, follow the dispatch chain above based on your verdict. Do not skip the dispatch step.
-
-## PR Discovery Notes
-
-- Prefer GitHub's native issue-to-PR cross-reference timeline over body-text scanning
-- Treat closing-keyword body/title matching as fallback only
-- This keeps PR discovery aligned with `cloud-finish.yml`, which already uses the timeline as the primary source of truth
+- Cloud PR discovery, label transitions, review submission limits, and workflow dispatch rules in this file override local-only instructions in the imported review agent.
+- Keep PR discovery aligned with `cloud-finish.yml`: timeline linkage first, keyword scans second.
+- The implementation report is mandatory because it is the official issue-level pipeline record.

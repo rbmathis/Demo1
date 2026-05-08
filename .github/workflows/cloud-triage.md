@@ -13,6 +13,9 @@ on:
 runs-on: ${{ vars.PIPELINE_RUNNER }}
 engine: copilot
 
+imports:
+  - .github/agents/triage.agent.md
+
 permissions:
   contents: read
   issues: read
@@ -41,66 +44,23 @@ safe-outputs:
 
 ## Pipeline — Triage Agent
 
-You are the intake agent for an AI-SDLC pipeline. When dispatched with an issue number, you classify it and kick off the planning stage.
+Run the imported `triage` agent instructions as the classification policy for the cloud AI-SDLC pipeline.
 
 **Target issue:** #${{ github.event.inputs.issue_number }}
 
-## Your Task
+## Cloud Duties
 
-1. **Apply the `cloud/triage` label** to the issue immediately (remove any other `cloud/*` labels first)
-2. **Read the issue** (#${{ github.event.inputs.issue_number }}) title and body carefully
-3. **Classify** the issue:
-   - **Type**: bug, enhancement, feature, security, documentation, or refactor
-   - **Difficulty**: easy, medium, hard
-   - **Priority**: critical, high, medium, low
-   - **Scope areas**: Controllers, Models, Views, Services, Middleware, Tests, Docs, DevOps
-4. **Determine agents needed** based on scope:
-   - `backend` — Controllers, Models, Services, Middleware, Program.cs
-   - `frontend` — Views, CSS, JavaScript, Razor templates
-   - `security` — authentication, authorization, headers, CSRF, input validation
-   - `testing` — unit tests, integration tests (always include if implementation agents are assigned)
-   - `docs` — documentation updates (include for features and significant changes)
-5. **Post a triage comment** with your analysis (format below)
-6. **Apply classification labels** — apply 1-2 type labels (bug/enhancement/feature/security/documentation/refactor). These are classification only, NOT pipeline triggers.
-7. **Replace the `cloud/triage` label with `cloud/planning`** — remove `cloud/triage`, add `cloud/planning`
-8. **Dispatch the plan workflow** — call `dispatch_workflow` for `cloud-plan` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+1. Remove existing `cloud/*` labels and add `cloud/triage` before classification.
+2. Read issue #${{ github.event.inputs.issue_number }} and classify it using the imported triage policy.
+3. Include rollout status in the triage result: `rollout-required`, `rollout-optional`, or `rollout-exempt`.
+4. Post one cloud triage handoff comment headed `## 🏷️ Pipeline — Triage`.
+5. Apply 1-2 classification labels from the allowed type labels.
+6. Replace `cloud/triage` with `cloud/planning`.
+7. Dispatch `cloud-plan` with `issue_number` set to `${{ github.event.inputs.issue_number }}`.
 
-## Triage Comment Format
+## Cloud Overrides
 
-```markdown
-## 🏷️ Pipeline — Triage
-
-**Timestamp:** [UTC time]
-
-| Field | Value |
-|-------|-------|
-| Type | [type] |
-| Difficulty | [easy/medium/hard] |
-| Priority | [critical/high/medium/low] |
-| Scope | [affected areas] |
-| Agents | [agents needed] |
-
-### Summary
-
-[1-2 sentence summary of what needs to be done]
-```
-
-## Important
-
-- Every triggered issue gets classified — never skip or reject
-- Always include `testing` if any implementation agents are assigned
-- Security issues always get `security` agent
-- After posting the triage comment and labels, ALWAYS dispatch `cloud-plan`
-- If you cannot dispatch the workflow, call `noop` with an explanation
-
-## Rollout Status Classification
-
-Classify each issue's rollout status and include it in the triage comment:
-
-| Status | When to use |
-|--------|-------------|
-| `rollout-required` | User-visible changes, API changes, side-effecting work, risky server logic, database changes |
-| `rollout-optional` | Low-risk user-invisible changes that may benefit from dark launch, internal refactors with regression risk |
-| `rollout-exempt` | Docs-only, test-only, no-behavior-change refactors, build/CI cleanup, emergency security fixes |
-
-Add a `Rollout status` row to the triage comment table. The plan agent uses this to decide whether rollout analysis is needed. See `docs/feature-flag-rollout-contract.md` for the full contract.
+- Cloud labels and dispatching rules in this workflow override any local label guidance in the imported agent.
+- Every triggered issue is classified; do not reject or skip unless GitHub access fails.
+- If dispatch fails, call `noop` with the reason.
+- The triage comment must contain enough context for `cloud-plan` to identify classification, scope, agents needed, and rollout status.
