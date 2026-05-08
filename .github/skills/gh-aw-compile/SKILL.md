@@ -33,7 +33,23 @@ Focus on agentic workflow source files such as:
 
 Do not treat plain YAML workflows like `cloud-finish.yml` as gh-aw compile targets.
 
-### Step 2: Delete Existing Lockfiles First
+### Step 2: Check Local gh-aw Version
+
+Before deleting lockfiles or recompiling, verify that the local `gh aw` extension is current.
+
+Run this from the repository root.
+
+Run:
+
+```powershell
+& .\scripts\check-gh-aw-version.ps1
+```
+
+If the script reports `UPDATE NEEDED`, stop and upgrade `gh-aw` first. Regenerating lockfiles with an outdated local compiler can reproduce stale AWF pins even if you deleted the old `.lock.yml` files.
+
+If the script cannot determine the latest version because GitHub release access is blocked, fix local `gh` authentication first and rerun the check before compiling.
+
+### Step 3: Delete Existing Lockfiles First
 
 Before running `gh aw compile`, delete the existing compiled lockfiles.
 
@@ -50,7 +66,7 @@ Why this matters:
 - Old pinned releases can disappear upstream and later fail with 404-style workflow errors
 - Deleting first forces a fresh lockfile with the latest available pinned version
 
-### Step 3: Recompile
+### Step 4: Recompile
 
 Run:
 
@@ -60,7 +76,7 @@ gh aw compile
 
 Run this from the repository root.
 
-### Step 4: Validate Result
+### Step 5: Validate Result
 
 Treat compilation as successful only if:
 - `gh aw compile` exits successfully
@@ -70,7 +86,7 @@ Treat compilation as successful only if:
 
 If compile fails, stop and fix the workflow source rather than editing the `.lock.yml` file directly.
 
-### Step 5: Pre-Commit Check
+### Step 6: Pre-Commit Check
 
 Before committing workflow changes:
 - Confirm the `.md` source files are present in the diff
@@ -80,12 +96,14 @@ Before committing workflow changes:
 ## Decision Rules
 
 - If only `cloud-finish.yml` changed: do not run this skill; that file is plain YAML, not gh-aw source
-- If any `cloud-*.md` file changed: delete lockfiles first, then run `gh aw compile`
+- If any `cloud-*.md` file changed: run `& .\scripts\check-gh-aw-version.ps1`, then delete lockfiles, then run `gh aw compile`
 - If both `.md` workflow files and their `.lock.yml` files already changed: still prefer deleting the current lockfiles and recompiling rather than trusting the existing generated output
+- If the version check reports that the local compiler is outdated: upgrade `gh-aw` before compiling
 
 ## Completion Criteria
 
 The task is complete when all of the following are true:
+- The local `gh aw` version check passed
 - Old lockfiles were deleted before compilation
 - `gh aw compile` completed successfully
 - Updated `.lock.yml` files were regenerated
@@ -95,6 +113,7 @@ The task is complete when all of the following are true:
 
 - Never edit `.lock.yml` files by hand
 - Never skip lockfile regeneration after changing `cloud-*.md`
+- Never skip the local `gh aw` version check before compiling
 - Prefer deleting all `cloud-*.lock.yml` files when in doubt
 - Use the repository root as the working directory when running the commands
 
