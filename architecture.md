@@ -89,7 +89,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | Middleware | File | Purpose |
 |-----------|------|---------|
 | `ServerTimingMiddleware` | Middleware/ServerTimingMiddleware.cs | Adds `Server-Timing` header with request duration |
-| `SecurityHeadersMiddleware` | Middleware/SecurityHeadersMiddleware.cs | Adds CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy |
+| `SecurityHeadersMiddleware` | Middleware/SecurityHeadersMiddleware.cs | Adds CSP, X-Content-Type-Options, X-Frame-Options (path-aware: `SAMEORIGIN` for `/ComponentShowcase/Preview`, `DENY` elsewhere), Referrer-Policy |
 | `SecurityLabMiddleware` | Middleware/SecurityLabMiddleware.cs | Relaxes security headers on `/SecurityLab/*` routes for demo purposes |
 | `RateLimitHeadersMiddleware` | Middleware/RateLimitHeadersMiddleware.cs | Adds `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers |
 | `AchievementMiddleware` | Middleware/AchievementMiddleware.cs | Publishes request events to `Channel<AchievementEventMessage>` for async badge processing |
