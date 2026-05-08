@@ -57,13 +57,19 @@ jobs:
               }
             }
 
-            // Fetch each referenced PR and prefer the first open one; fall back to merged.
-            for (const prNumber of referencedPrNumbers) {
-              const { data: pr } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
+            // Fetch all referenced PRs in parallel, then pick the best match:
+            // prefer the first open PR; keep the most-recently-merged one as fallback.
+            const prResults = await Promise.all(
+              referencedPrNumbers.map(prNumber =>
+                github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber
+                }).then(r => r.data)
+              )
+            );
+
+            for (const pr of prResults) {
               if (pr.state === 'open') {
                 linkedPR = pr;
                 break;
