@@ -57,6 +57,19 @@ If you're here to explore the agentic workflow itself, start with these guides:
 
 The application will be available at `https://localhost:7XXX` and `http://localhost:5XXX` (ports will be displayed in the terminal).
 
+### Docker
+
+```bash
+docker build -t demo1 .
+docker run -p 5555:8080 demo1
+docker compose up
+docker compose --profile dev up
+```
+
+- `docker compose up` starts the app + Redis stack.
+- `docker compose --profile dev up` starts the hot-reload development profile on `http://localhost:5556` (while the standard service remains on `http://localhost:5555`).
+- CI Docker image build/push is handled in [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml); image push is gated by the `GHCR_TOKEN` secret.
+
 ### VS Code Tasks
 
 This project includes VS Code tasks that you can run via:

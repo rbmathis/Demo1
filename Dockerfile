@@ -12,12 +12,6 @@ ARG PUBLISHED_DIR=
 ARG VERSION=0.0.0
 ARG REVISION=unknown
 
-# Install LibMan for client-side library management
-RUN dotnet tool install -g Microsoft.Web.LibraryManager.Cli
-
-# Add .NET tools to PATH
-ENV PATH="${PATH}:/root/.dotnet/tools"
-
 # Copy everything (restore will resolve packages for the whole solution)
 COPY . ./
 
@@ -29,11 +23,18 @@ RUN if [ -n "$PUBLISHED_DIR" ] && [ -d "$PUBLISHED_DIR" ]; then \
   else \
   echo "No pre-published output provided; restoring and publishing"; \
   dotnet restore Demo1.sln && \
-  libman restore && \
   dotnet publish Demo1.csproj -c Release -o /app/publish --no-restore; \
   fi
 
-# Stage 2: Runtime
+# Stage 2: Dev (optional, for docker-compose hot reload)
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dev
+WORKDIR /src
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080 \
+  ASPNETCORE_ENVIRONMENT=Development
+CMD ["dotnet", "watch", "run", "--project", "Demo1.csproj", "--urls", "http://0.0.0.0:8080"]
+
+# Stage 3: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
@@ -49,7 +50,7 @@ LABEL org.opencontainers.image.title="Demo1"
 
 # Install curl for health check
 USER root
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN groupadd -r demo1 && useradd -r -g demo1 demo1
