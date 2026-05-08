@@ -75,15 +75,16 @@ Order matters — this is the actual registration order in `Program.cs`:
 5. SecurityHeadersMiddleware         (custom — CSP, X-Frame-Options, etc.)
 6. SecurityLabMiddleware             (custom — relaxed headers for security lab pages)
 7. StatusCodePages                   (re-execute to /Home/Error{code})
-8. Routing
-9. RateLimiter                       (IP-based fixed-window)
-10. RateLimitHeadersMiddleware       (custom — X-RateLimit-* headers)
-11. Session                          (required for achievement tracking)
-12. AchievementMiddleware             (custom — publishes events to Channel<T>)
-13. AzureAppConfiguration            (feature flag refresh, when configured)
-14. Authorization
-15. Static Assets / Controllers
-16. Health Checks                    (/health/ready)
+8. ThemePreferenceMiddleware         (custom — reads theme-preference cookie; gated by DarkMode flag)
+9. Routing
+10. RateLimiter                       (IP-based fixed-window)
+11. RateLimitHeadersMiddleware       (custom — X-RateLimit-* headers)
+12. Session                          (required for achievement tracking)
+13. AchievementMiddleware             (custom — publishes events to Channel<T>)
+14. AzureAppConfiguration            (feature flag refresh, when configured)
+15. Authorization
+16. Static Assets / Controllers
+17. Health Checks                    (/health/ready)
 ```
 
 ## Custom Middleware
@@ -95,6 +96,7 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `SecurityLabMiddleware` | Middleware/SecurityLabMiddleware.cs | Relaxes security headers on `/SecurityLab/*` routes for demo purposes |
 | `RateLimitHeadersMiddleware` | Middleware/RateLimitHeadersMiddleware.cs | Adds `X-RateLimit-Limit` and `X-RateLimit-Remaining` headers |
 | `AchievementMiddleware` | Middleware/AchievementMiddleware.cs | Publishes request events to `Channel<AchievementEventMessage>` for async badge processing |
+| `ThemePreferenceMiddleware` | Middleware/ThemePreferenceMiddleware.cs | Reads `theme-preference` cookie and stores validated value in `HttpContext.Items`; suppressed entirely when `DarkMode` flag is off |
 
 ## Registered Services
 
@@ -175,7 +177,7 @@ Managed via Azure App Configuration (when configured) or local `appsettings.json
 | Flag | Purpose | Type |
 |------|---------|------|
 | `Feature1` | Example toggle | Permanent |
-| `DarkMode` | Dark mode UI toggle | Permanent |
+| `DarkMode` | Dark mode UI toggle — gates toggle visibility in navbar, `ThemePreferenceMiddleware` activation, and server-side FOUC prevention via cookie; default `false` | Permanent |
 | `ContactForm` | Contact form visibility | Permanent |
 | `BetaFeatures` | Master toggle for beta features | Permanent |
 
