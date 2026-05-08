@@ -58,7 +58,10 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
 
 ## Your Task
 
-1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
+1. **Find the PR** for issue #${{ github.event.inputs.issue_number }}:
+  - First, use the issue timeline cross-reference events to find PRs linked to the issue
+  - Prefer the most recent open PR; if none are open, keep the most recently merged PR as fallback for reruns
+  - If no linked PR is found from the timeline, fall back to searching PR body/title text for `Closes #${{ github.event.inputs.issue_number }}`, `Fixes #${{ github.event.inputs.issue_number }}`, or `Resolves #${{ github.event.inputs.issue_number }}`
 2. **Update the pipeline label** — remove any existing `cloud/*` labels and add `cloud/review` on issue #${{ github.event.inputs.issue_number }}
 3. **Post a status comment on the issue** (before reviewing):
    - Post this comment on issue #${{ github.event.inputs.issue_number }}:
@@ -163,3 +166,9 @@ After completing the review and posting the implementation report, dispatch the 
 ## After Review
 
 After submitting the review and posting the implementation report, follow the dispatch chain above based on your verdict. Do not skip the dispatch step.
+
+## PR Discovery Notes
+
+- Prefer GitHub's native issue-to-PR cross-reference timeline over body-text scanning
+- Treat closing-keyword body/title matching as fallback only
+- This keeps PR discovery aligned with `cloud-finish.yml`, which already uses the timeline as the primary source of truth

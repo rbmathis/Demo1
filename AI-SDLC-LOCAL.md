@@ -210,6 +210,12 @@ Does NOT close the issue — the autopilot manages final status.
 
 The **autopilot** manages all `local/*` label transitions — stage agents do not set labels:
 
+Persistent provenance label:
+
+| Label | Meaning |
+|-------|---------|
+| `local` | Issue has been handled by the local AI-SDLC pipeline |
+
 | Label | Stage | Set By Pipeline Before |
 |-------|-------|------------------------|
 | `local/triage` | Being classified | Triage delegation |
@@ -219,6 +225,8 @@ The **autopilot** manages all `local/*` label transitions — stage agents do no
 | `local/review` | PR under review | Review delegation |
 | `local/delivering` | Merging to main | Deliver delegation |
 | `local/done` | Pipeline complete | After Deliver succeeds |
+
+The plain `local` label is permanent provenance, while `local/*` labels remain transient stage state.
 
 The cloud pipeline uses `cloud/autopilot` as its trigger — completely separate namespace.
 

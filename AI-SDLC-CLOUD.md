@@ -81,6 +81,7 @@ The autopilot:
 
 - Validates the issue has enough information to proceed
 - Removes any stale `cloud/*` labels
+- Adds the persistent `autopilot` label to mark cloud-pipeline ownership
 - Posts an "Autopilot Engaged" comment with the full pipeline stage table
 - Dispatches `cloud-triage` (or applies `cloud/triage-requested` label)
 
@@ -160,6 +161,7 @@ The implement agent:
 The review agent:
 
 - Finds the PR associated with the given issue number
+- Uses issue timeline cross-references as the primary PR lookup path, with PR body keyword scans only as fallback
 - **Posts a "Review In Progress" status comment** on the issue (confirms code is complete)
 - Reads the PR and changed files
 - Delegates to specialist review agents:
@@ -189,12 +191,15 @@ If the review agent submits `REQUEST_CHANGES`, it re-dispatches `cloud-implement
 The docs agent:
 
 - Finds the PR associated with the issue
+- Uses issue timeline cross-references as the primary PR lookup path, with PR body keyword scans only as fallback
 - Reads the diff to understand what was implemented
 - Adds XML documentation to new/modified public methods and classes
 - Updates docs/ markdown if architecture or APIs changed
 - Commits documentation to the feature branch
 - Posts a documentation summary comment on the issue
 - Dispatches `cloud-finish` with the issue number
+
+Pipeline-managed PRs should carry the `automated` label. The Docs stage only pushes follow-up commits to PR branches that have that label, which narrows write access to pipeline-owned PRs.
 
 ### ⏸️ Human Touchpoint: Resume After Copilot Finishes
 
@@ -250,7 +255,13 @@ Downstream stages read upstream comments to understand context — no separate s
 
 ## Labels
 
-Labels serve two purposes: **issue classification** and **stage tracking**.
+Labels serve three purposes: **issue classification**, **stage tracking**, and **pipeline provenance**.
+
+### Provenance Labels (persistent)
+
+| Label | Purpose |
+| ------- | --------- |
+| `autopilot` | Issue has been handled by the cloud AI-SDLC pipeline |
 
 ### Classification Labels (applied by Triage)
 
@@ -267,7 +278,7 @@ Labels serve two purposes: **issue classification** and **stage tracking**.
 
 | Label | Applied By | Meaning |
 | ------- | ----------- | --------- |
-| `cloud/autopilot` | Human | Initial trigger — kicks off the pipeline |
+| `cloud/autopilot` | Human | Reusable trigger — kicks off the pipeline |
 | `cloud/triage-requested` | Autopilot | Triggers Triage via label_command |
 | `cloud/triage` | Triage | Classifying |
 | `cloud/planning` | Plan | Creating implementation plan |
@@ -278,6 +289,8 @@ Labels serve two purposes: **issue classification** and **stage tracking**.
 | `cloud/done` | Finish | Pipeline complete |
 
 Stage labels are mutually exclusive — each stage removes prior `cloud/*` labels before applying its own. Stage transitions still use `dispatch-workflow`; labels provide at-a-glance status.
+
+The plain `autopilot` label is intentionally not in the `cloud/*` namespace so it survives stage cleanup and does not block future reruns of the `cloud/autopilot` trigger label.
 
 ---
 

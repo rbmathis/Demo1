@@ -131,6 +131,8 @@ All of these trigger the same full autopilot run.
 
 The autopilot owns ALL label transitions. Stage agents do NOT manage labels — only the autopilot does.
 
+Use the plain `local` label as a persistent origin marker for issues handled by the local pipeline. Do not remove it during stage transitions.
+
 Before delegating to each stage agent, set the appropriate label:
 - Before Triage: remove all `local/*` labels, add `local/triage`
 - Before Plan: remove all `local/*` labels, add `local/planning`
@@ -142,6 +144,8 @@ Before delegating to each stage agent, set the appropriate label:
 - After Triage returns `DUPLICATE`: remove all `local/*` labels, add `local/done`
 
 **Set the label BEFORE delegating to the agent, not after.**
+
+At the start of every autopilot run, ensure the plain `local` label is present on the issue. That label is permanent provenance, not transient stage state.
 
 ## Important
 
