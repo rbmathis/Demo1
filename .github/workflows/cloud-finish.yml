@@ -25,9 +25,14 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
         with:
           script: |
-            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
-            // Balance between catching recent PRs and keeping API calls small.
-            const MAX_PRS_TO_SCAN = 100;
+            const issueNumber = Number.parseInt(process.env.ISSUE_NUMBER, 10);
+            if (!Number.isInteger(issueNumber) || issueNumber <= 0) {
+              core.setFailed(`Invalid issue number: ${process.env.ISSUE_NUMBER}`);
+              return;
+            }
+
+            // Scan recent PRs while keeping API usage conservative.
+            const MAX_PRS_TO_SCAN = 50;
             // Match closing keywords that reference this issue number (case-insensitive).
             const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
 
@@ -58,7 +63,7 @@ jobs:
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
 
-            const isAlreadyMerged = Boolean(linkedPR.merged_at);
+            const isAlreadyMerged = !!linkedPR.merged_at;
             if (isAlreadyMerged) {
               core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
             }
