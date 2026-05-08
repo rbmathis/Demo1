@@ -34,7 +34,7 @@ jobs:
             // Scan recent PRs while keeping API usage conservative.
             const MAX_PULLS_TO_SCAN = 50;
             // Match GitHub auto-closing keywords (closes/fixes/resolves) for this issue number (case-insensitive).
-            const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
+            const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s*:?\\s*#${issueNumber}\\b`, 'i');
 
             const findLinkedPr = async (state) => {
               const { data: pulls } = await github.rest.pulls.list({
@@ -47,7 +47,10 @@ jobs:
                 per_page: MAX_PULLS_TO_SCAN
               });
 
-              return pulls.find(pr => pr.body && issueRefRegex.test(pr.body));
+              return pulls.find(pr =>
+                (pr.body && issueRefRegex.test(pr.body)) ||
+                (pr.title && issueRefRegex.test(pr.title))
+              );
             };
 
             // Prefer an open PR, but allow already-merged PRs for reruns/idempotency.
@@ -63,7 +66,7 @@ jobs:
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
 
-            const isMerged = !!linkedPR.merged_at;
+            const isMerged = linkedPR.merged_at !== null;
             if (isMerged) {
               core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
             }
