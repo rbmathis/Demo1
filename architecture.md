@@ -107,9 +107,11 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `IPerformanceMetricsService` | `PerformanceMetricsService` | Singleton | Performance budget monitoring |
 | `IComponentRegistryService` | `ComponentRegistryService` | Singleton | Component showcase catalog registry |
 | `IAchievementService` | `AchievementService` | Scoped | Achievement data retrieval and progress calculation |
+| `IFeatureFlagService` | `FeatureFlagService` | Scoped | Feature flag read (via `IFeatureManager`) and write (via Azure App Configuration SDK) |
 | `AchievementProcessorService` | (self — `BackgroundService`) | Hosted (Singleton) | Consumes `Channel<T>` events, persists and evaluates achievement rules |
 | `AchievementDbContext` | (self — `DbContext`) | Scoped | EF Core context for achievement SQLite database |
 | `Channel<AchievementEventMessage>` | Bounded channel (1 000 cap, DropOldest) | Singleton | In-memory producer-consumer queue for achievement events |
+| `AzureAppConfigAdminOptions` | (POCO singleton) | Singleton | Carries Azure App Config connectivity state for the admin dashboard |
 
 ## Controllers
 
@@ -123,6 +125,8 @@ Order matters — this is the actual registration order in `Program.cs`:
 | `HealthController` | `/health/*` | Health check endpoints |
 | `AchievementController` | `/Achievement/*` | Trophy case, badges API (`/Achievement/api/badges`), anti-pattern demo |
 | `ComponentShowcaseController` | `/ComponentShowcase/*` | Browsable UI component catalog with isolated previews |
+| `FeatureFlagController` | `/FeatureFlag/*` | Admin-only feature flag dashboard; requires `AdminOnly` policy |
+| `AdminAuthController` | `/AdminAuth/*` | Cookie-based admin login/logout for the feature flag dashboard |
 
 ### API Controllers
 
@@ -220,6 +224,19 @@ Using `DarkMode` as the example flag:
 | **Flag on** | Dark-mode CSS loads; UI elements inside `<feature name="DarkMode">` blocks become visible; `[FeatureGate(FeatureFlags.DarkMode)]` endpoints return 200 instead of 404 |
 
 The `[FeatureGate]` attribute, `IFeatureManager` checks, and Razor `<feature>` tag helpers are the three gating mechanisms. See the runtime guide for patterns.
+
+### Feature Flag Admin Dashboard
+
+An admin-only dashboard at `/FeatureFlag` lets operators inspect and toggle flags in real time when Azure App Configuration is the backing store. See [`docs/feature-flag-dashboard.md`](docs/feature-flag-dashboard.md) for full details.
+
+| Aspect | Detail |
+|--------|--------|
+| Route | `/FeatureFlag` (GET dashboard), `/FeatureFlag/Toggle` (POST) |
+| Auth | Cookie-based — requires `AdminOnly` policy (Admin role) |
+| Login | `/AdminAuth/Login` — credentials from `AdminDashboard:Username` / `AdminDashboard:Password` config |
+| Read-only mode | Shown when `AZUREAPPCONFIGURATION__ENDPOINT` / `AZUREAPPCONFIGURATION__CONNECTIONSTRING` is not set |
+| CSRF | All state-changing POST actions protected with `[ValidateAntiForgeryToken]` |
+| Audit logging | Flag changes logged via Serilog at `Information` level with flag name and new state |
 
 ## External Integrations
 

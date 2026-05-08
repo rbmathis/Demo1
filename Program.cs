@@ -5,6 +5,7 @@ using Demo1.Models;
 using Demo1.Telemetry;
 using Demo1.Services;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Azure.Identity;
@@ -88,6 +89,28 @@ builder.Services.AddRateLimiter(options =>
         await context.HttpContext.Response.WriteAsync(
             "Too many requests. Please try again later.", cancellationToken);
     };
+});
+
+// ✅ Admin dashboard: Cookie authentication + AdminOnly authorization policy
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/AdminAuth/Login";
+        options.LogoutPath = "/AdminAuth/Logout";
+        options.AccessDeniedPath = "/AdminAuth/Login";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.Name = ".Demo1.Admin";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin")
+              .RequireAuthenticatedUser());
 });
 
 // ✅ 12-FACTOR: Register application services via dependency injection
@@ -206,6 +229,16 @@ builder.Services.AddFeatureManagement();
 // Ensure Azure App Configuration services are registered so the middleware can be used safely
 builder.Services.AddAzureAppConfiguration();
 
+// ✅ Feature flag admin: expose connectivity info as a singleton so the dashboard service can use it
+builder.Services.AddSingleton(new AzureAppConfigAdminOptions
+{
+    IsAvailable = azureAppConfigRegistered,
+    Endpoint = azureAppConfigRegistered ? appConfigEndpoint : null,
+    ConnectionString = azureAppConfigRegistered ? appConfigConnectionString : null,
+    Label = appConfigLabel,
+});
+builder.Services.AddScoped<IFeatureFlagService, FeatureFlagService>();
+
 // ✅ 12-FACTOR: Externalized Application Insights configuration
 var appInsightsConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS__CONNECTIONSTRING")
     ?? builder.Configuration["ApplicationInsights:ConnectionString"];
@@ -287,6 +320,7 @@ if (azureAppConfigRegistered)
     app.UseAzureAppConfiguration();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
