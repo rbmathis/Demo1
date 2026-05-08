@@ -26,6 +26,7 @@ jobs:
         with:
           script: |
             const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
+            const MAX_PRS_TO_SCAN = 100;
             const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
 
             const findLinkedPr = async (state) => {
@@ -36,7 +37,7 @@ jobs:
                 sort: 'updated',
                 direction: 'desc',
                 // Scan a larger recent window to avoid missing linked PRs in busy repos.
-                per_page: 100
+                per_page: MAX_PRS_TO_SCAN
               });
 
               return pulls.find(pr => pr.body && issueRefRegex.test(pr.body));
@@ -55,54 +56,56 @@ jobs:
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
 
-            if (linkedPR.merged_at) {
+            const isAlreadyMerged = Boolean(linkedPR.merged_at);
+            if (isAlreadyMerged) {
               core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
-              return;
             }
 
-            // Verify review status
-            const { data: reviews } = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: linkedPR.number
-            });
-
-            const approved = reviews.some(r => r.state === 'APPROVED');
-            const blocked = reviews.some(r => r.state === 'CHANGES_REQUESTED');
-
-            if (blocked) {
-              core.setFailed(`PR #${linkedPR.number} has outstanding change requests. Cannot merge.`);
-              return;
-            }
-
-            if (!approved) {
-              core.warning(`PR #${linkedPR.number} has no approving review. Proceeding anyway (pipeline-approved).`);
-            }
-
-            // Squash-merge the PR
-            try {
-              await github.rest.pulls.merge({
+            if (!isAlreadyMerged) {
+              // Verify review status
+              const { data: reviews } = await github.rest.pulls.listReviews({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                pull_number: linkedPR.number,
-                merge_method: 'squash'
+                pull_number: linkedPR.number
               });
-              core.info(`Successfully merged PR #${linkedPR.number}`);
-            } catch (error) {
-              core.setFailed(`Failed to merge PR #${linkedPR.number}: ${error.message}`);
-              return;
-            }
 
-            // Delete the feature branch
-            try {
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: `heads/${linkedPR.head.ref}`
-              });
-              core.info(`Deleted branch: ${linkedPR.head.ref}`);
-            } catch (error) {
-              core.warning(`Could not delete branch ${linkedPR.head.ref}: ${error.message}`);
+              const approved = reviews.some(r => r.state === 'APPROVED');
+              const blocked = reviews.some(r => r.state === 'CHANGES_REQUESTED');
+
+              if (blocked) {
+                core.setFailed(`PR #${linkedPR.number} has outstanding change requests. Cannot merge.`);
+                return;
+              }
+
+              if (!approved) {
+                core.warning(`PR #${linkedPR.number} has no approving review. Proceeding anyway (pipeline-approved).`);
+              }
+
+              // Squash-merge the PR
+              try {
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: linkedPR.number,
+                  merge_method: 'squash'
+                });
+                core.info(`Successfully merged PR #${linkedPR.number}`);
+              } catch (error) {
+                core.setFailed(`Failed to merge PR #${linkedPR.number}: ${error.message}`);
+                return;
+              }
+
+              // Delete the feature branch
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${linkedPR.head.ref}`
+                });
+                core.info(`Deleted branch: ${linkedPR.head.ref}`);
+              } catch (error) {
+                core.warning(`Could not delete branch ${linkedPR.head.ref}: ${error.message}`);
+              }
             }
 
       - name: Update labels and close issue
