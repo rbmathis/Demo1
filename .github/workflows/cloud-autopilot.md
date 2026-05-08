@@ -29,6 +29,11 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
+  add-labels:
+    allowed: ["autopilot"]
+    max: 1
+    target: "*"
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   remove-labels:
     allowed: ["cloud/triage", "cloud/planning", "cloud/implementing", "cloud/review", "cloud/awaiting-merge", "cloud/documenting", "cloud/done"]
     max: 9
@@ -61,8 +66,9 @@ Each stage dispatches the next. The only manual step is applying the `cloud/revi
    - A clear title describing work to be done
    - A body with enough context to classify and plan
 3. **Remove any existing `cloud/*` labels** from the issue (clean slate)
-4. **Post an autopilot engagement comment** on issue #${{ github.event.inputs.issue_number || github.event.issue.number }} (format below)
-5. **Dispatch `cloud-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number || github.event.issue.number }}`
+4. **Add the persistent `autopilot` label** to mark that this issue is handled by the cloud pipeline
+5. **Post an autopilot engagement comment** on issue #${{ github.event.inputs.issue_number || github.event.issue.number }} (format below)
+6. **Dispatch `cloud-triage`** with input `issue_number` set to `${{ github.event.inputs.issue_number || github.event.issue.number }}`
 
 ## Autopilot Comment Format
 
@@ -92,6 +98,8 @@ Each stage will post its own status comment as it completes. After Implement, ap
 ## Label Trigger Usage
 
 When triggered via the `cloud/autopilot` label on an issue, the issue number is the issue where the label was applied. Use that as the target.
+
+The `cloud/autopilot` label is a reusable trigger, not a permanent marker. Keep the separate `autopilot` label on issues that have been handled by the cloud pipeline so reruns can still be triggered later by reapplying `cloud/autopilot`.
 
 ## Important
 

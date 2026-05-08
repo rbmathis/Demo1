@@ -81,6 +81,12 @@ safe-outputs:
 
       This line is required for the pipeline to automatically detect the linked issue and trigger the review stage. Do not omit it.
 
+      ## CRITICAL: PR LABEL REQUIREMENT
+
+      When creating the pull request, apply the `automated` label to the PR.
+
+      That label is required because later pipeline stages are only allowed to push follow-up documentation commits to PR branches explicitly marked as pipeline-managed.
+
       NOTE: Do NOT post an implementation report on the issue. The review pipeline handles that automatically.
 ---
 

@@ -44,6 +44,7 @@ safe-outputs:
   push-to-pull-request-branch:
     max: 1
     target: "*"
+    labels: [automated]
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }}
   dispatch-workflow: [cloud-finish]
 ---
@@ -56,7 +57,10 @@ You are the documentation agent. After code has been reviewed and approved, you 
 
 ## Your Task
 
-1. **Find the PR** for issue #${{ github.event.inputs.issue_number }} — search for open PRs whose body contains "Closes #${{ github.event.inputs.issue_number }}" or "Fixes #${{ github.event.inputs.issue_number }}"
+1. **Find the PR** for issue #${{ github.event.inputs.issue_number }}:
+  - First, use the issue timeline cross-reference events to find PRs linked to the issue
+  - Prefer the most recent open PR; if none are open, keep the most recently merged PR as fallback for reruns
+  - If no linked PR is found from the timeline, fall back to searching PR body/title text for `Closes #${{ github.event.inputs.issue_number }}`, `Fixes #${{ github.event.inputs.issue_number }}`, or `Resolves #${{ github.event.inputs.issue_number }}`
 2. **Remove all `cloud/*` labels** and **add `cloud/documenting`** on issue #${{ github.event.inputs.issue_number }}
 3. **Read the PR diff** — understand all changed/created files
 4. **Add/update XML documentation:**
@@ -109,5 +113,7 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 
 - Documentation is non-blocking — if you cannot document something, note it in the comment but still dispatch finish
 - Never modify implementation code — only add documentation comments and docs/ files
+- Only push to PR branches that carry the `automated` label; that label is the safety boundary for pipeline-managed PRs
 - Always dispatch `cloud-finish` after completing (even if docs were minimal)
 - Keep XML docs concise — don't over-document obvious getters/setters
+- Keep PR discovery aligned with `cloud-finish.yml`: use issue timeline linkage first, keyword scans second
