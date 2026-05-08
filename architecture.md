@@ -30,8 +30,10 @@ ViewComponents/         Razor ViewComponents for reusable UI
 Views/                  Razor views
   Achievement/          Trophy case & anti-pattern demo views
   ComponentShowcase/    Component showcase index and preview pages
-  Home/                 Home, About, Privacy, anti-pattern pages
+  Demo/                 Anti-pattern demo pages (RawSqlSearch, ViewLogicCalculator, CallbackHellWeather, InlineCssHell)
+  Home/                 Home, About, Privacy, Contact, error pages
   Performance/          Performance dashboard views
+  Profile/              Profile management demo page (GodObjectProfile)
   SecurityLab/          Security lab interactive views
   Shared/               Layout, partials, error pages
     Components/         ViewComponent default views
@@ -119,7 +121,9 @@ Order matters — this is the actual registration order in `Program.cs`:
 
 | Controller | Routes | Purpose |
 |-----------|--------|---------|
-| `HomeController` | `/`, `/Home/*` | Index, About, Contact, Privacy, anti-pattern demo pages |
+| `HomeController` | `/`, `/Home/*` | Index, About, Contact, Privacy, error pages |
+| `DemoController` | `/Home/RawSqlSearch`, `/Home/ViewLogicCalculator`, `/Home/CallbackHellWeather`, `/Home/InlineCssHell` | Anti-pattern demo pages (routes preserved via `[Route("Home/[action]")]` attribute) |
+| `ProfileController` | `/Home/GodObjectProfile`, `/Home/GodObjectProfileUpdate` | Profile management demo (routes preserved via `[Route("Home/[action]")]` attribute) |
 | `PerformanceController` | `/Performance/*` | Performance dashboard and budget monitoring |
 | `SecurityLabController` | `/SecurityLab/*` | Interactive XSS/injection attack demos |
 | `HealthController` | `/health/*` | Health check endpoints |
@@ -157,11 +161,11 @@ Intentionally bad code for teaching purposes. Each page demonstrates a common mi
 
 | Page | Anti-Pattern | Location |
 |------|-------------|----------|
-| GodObjectProfile | God object — one class does everything | Views/Home/GodObjectProfile.cshtml |
-| InlineCssHell | Inline styles instead of CSS classes | Views/Home/InlineCssHell.cshtml |
-| CallbackHellWeather | Deeply nested async callbacks | Views/Home/CallbackHellWeather.cshtml |
-| ViewLogicCalculator | Business logic in Razor views | Views/Home/ViewLogicCalculator.cshtml |
-| RawSqlSearch | Raw SQL queries (injection risk) | Views/Home/RawSqlSearch.cshtml |
+| GodObjectProfile | God object — one class does everything | Views/Profile/GodObjectProfile.cshtml |
+| InlineCssHell | Inline styles instead of CSS classes | Views/Demo/InlineCssHell.cshtml |
+| CallbackHellWeather | Deeply nested async callbacks | Views/Demo/CallbackHellWeather.cshtml |
+| ViewLogicCalculator | Business logic in Razor views | Views/Demo/ViewLogicCalculator.cshtml |
+| RawSqlSearch | Raw SQL queries (injection risk) | Views/Demo/RawSqlSearch.cshtml |
 | SynchronousAntiPattern | Synchronous inline achievement checking (blocks request thread) | Views/Achievement/SynchronousAntiPattern.cshtml |
 
 ## Feature Flags

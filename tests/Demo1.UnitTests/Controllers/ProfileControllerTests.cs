@@ -1,4 +1,5 @@
 using Demo1.Controllers;
+using Demo1.Models;
 using Demo1.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +9,18 @@ using Moq;
 
 namespace Demo1.UnitTests.Controllers;
 
-public class HomeControllerCsrfTests
+/// <summary>
+/// Tests for the profile management actions in ProfileController.
+/// </summary>
+public class ProfileControllerTests
 {
-    private static HomeController CreateController(
+    private static ProfileController CreateController(
         IUserProfileService userProfileService,
-        ILogger<HomeController>? logger = null)
+        ILogger<ProfileController>? logger = null)
     {
-        var controller = new HomeController(
-            logger ?? Mock.Of<ILogger<HomeController>>(),
-            Mock.Of<ISearchService>(),
-            Mock.Of<IWeatherService>(),
-            userProfileService,
-            Mock.Of<IStyleGeneratorService>());
+        var controller = new ProfileController(
+            logger ?? Mock.Of<ILogger<ProfileController>>(),
+            userProfileService);
 
         controller.ControllerContext = new ControllerContext
         {
@@ -74,7 +75,7 @@ public class HomeControllerCsrfTests
     public async Task GodObjectProfileUpdate_Post_WithInvalidField_SetsError()
     {
         var exception = new ArgumentException("Field 'Password' is not updatable.");
-        var logger = new Mock<ILogger<HomeController>>();
+        var logger = new Mock<ILogger<ProfileController>>();
         var userProfileService = new Mock<IUserProfileService>();
         userProfileService
             .Setup(service => service.UpdateFieldAsync("", "Password", "secret"))
@@ -100,6 +101,6 @@ public class HomeControllerCsrfTests
         var result = await controller.GodObjectProfileUpdate("Name", "Alice");
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(HomeController.GodObjectProfile), redirect.ActionName);
+        Assert.Equal(nameof(ProfileController.GodObjectProfile), redirect.ActionName);
     }
 }

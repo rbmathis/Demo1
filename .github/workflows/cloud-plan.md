@@ -16,6 +16,7 @@ engine:
   model: claude-opus-4.6
 
 imports:
+  - .github/agents/plan.agent.md
   - .github/agents/feature-flags.agent.md
 
 permissions:
@@ -52,74 +53,24 @@ safe-outputs:
 
 ## Pipeline — Plan Agent
 
-You are the planning agent for an AI-SDLC pipeline. You create detailed, actionable implementation plans and save them directly into the issue.
+Run the imported `plan` agent instructions as the planning policy for the cloud AI-SDLC pipeline. Use the imported `feature-flags` specialist whenever the triage handoff requires rollout analysis.
 
 **Target issue:** #${{ github.event.inputs.issue_number }}
 
-## Your Task
+## Cloud Duties
 
-1. **Read the issue** (#${{ github.event.inputs.issue_number }}) — title, body, and all comments
-2. **Remove any existing `cloud/*` labels** and **add `cloud/planning`** to issue #${{ github.event.inputs.issue_number }}
-3. **Find the triage comment** — look for the comment containing "Pipeline — Triage" to understand classification, scope, and agents needed
-3. **Analyze the codebase** — use GitHub tools to explore relevant files and understand the current state
-4. **Create a detailed implementation plan** including:
-   - Branch name: `feat/issue-${{ github.event.inputs.issue_number }}-{slugified-title-max-30-chars}`
-   - Files to create/modify (with specific descriptions of changes)
-   - Agent delegation order (which specialist agents handle which files)
-   - Acceptance criteria (what "done" looks like)
-   - Testing requirements (what tests to write)
-5. **Post the plan as a comment** on the issue (format below)
-6. **Dispatch the implement workflow** — call `dispatch_workflow` for `cloud-implement` with input `issue_number` set to `${{ github.event.inputs.issue_number }}`
+1. Remove existing `cloud/*` labels and add `cloud/planning`.
+2. Read issue #${{ github.event.inputs.issue_number }}, including the `Pipeline — Triage` handoff comment.
+3. Use the imported plan agent to research the codebase and create the implementation plan.
+4. If triage says `rollout-required` or `rollout-optional`, apply the imported `feature-flags` specialist guidance and embed the canonical rollout checklist in the plan comment.
+5. If triage says `rollout-exempt`, state that the issue is rollout-exempt and skip rollout analysis.
+6. Post one plan comment headed `## 📋 Pipeline — Plan` with branch, implementation steps, agent delegation, acceptance criteria, testing requirements, and rollout consultation status.
+7. Replace `cloud/planning` with `cloud/implementing`.
+8. Dispatch `cloud-implement` with `issue_number` set to `${{ github.event.inputs.issue_number }}`.
 
-## Plan Comment Format
+## Cloud Overrides
 
-Post this as a comment on issue #${{ github.event.inputs.issue_number }}:
-
-```markdown
-## 📋 Pipeline — Plan
-
-**Timestamp:** [UTC time]
-**Branch:** `feat/issue-{number}-{slug}`
-
-### Implementation Steps
-
-1. **[Area]** — [description of change]
-   - File: `path/to/file.cs`
-   - Action: [create/modify/delete]
-   - Details: [specific changes needed]
-
-2. **[Area]** — [description]
-   ...
-
-### Agent Delegation
-
-| Order | Agent | Responsibility |
-|-------|-------|---------------|
-| 1 | [agent] | [what they implement] |
-| 2 | testing | [what tests to write] |
-| 3 | docs | [what to document] |
-
-### Acceptance Criteria
-
-- [ ] [criterion 1]
-- [ ] [criterion 2]
-- [ ] All tests pass
-- [ ] Project builds cleanly
-
-### Testing Requirements
-
-- [specific tests to write]
-```
-
-## Important
-
-- Be specific about file paths and exact changes needed
-- Always include testing and documentation steps
-- The plan should be detailed enough for Copilot coding agent to execute without ambiguity
-- After posting the plan, ALWAYS dispatch `cloud-implement`
-- **Before dispatching**, replace `cloud/planning` with `cloud/implementing` on the issue
-- If you cannot determine a plan, post what you know and dispatch anyway
-
-## Rollout-Aware Planning
-
-When the triage comment classifies an issue as `rollout-required` or `rollout-optional`, follow the imported `feature-flags` specialist guidance to produce a rollout checklist in the plan comment. For `rollout-exempt` issues, skip rollout analysis entirely. See `docs/feature-flag-rollout-contract.md` for the canonical checklist shape.
+- Cloud labels, branch naming, issue comment headings, and workflow dispatch rules in this file override local-only instructions in the imported plan agent.
+- The plan must be specific enough for the asynchronous Copilot coding agent assigned by `cloud-implement` to execute without ambiguity.
+- Documentation and tests must be represented in the plan even though docs run as a separate cloud stage after review.
+- If the plan cannot be fully determined, post the best known plan and still dispatch `cloud-implement`.

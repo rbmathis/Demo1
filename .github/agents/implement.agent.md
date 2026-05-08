@@ -80,9 +80,30 @@ After all tasks:
 
 ### Create PR
 
-- **Title:** Issue title
-- **Body:** Summary + `Refs #{issue-number}` (NOT `Closes` — the pipeline controller manages issue closure)
+- **Title:** Generate a spicy, confident PR title based on the actual changes and the issue title. Do not reuse the issue title verbatim unless it is already fun enough to earn it.
+- **Body:** Use the snarky PR body style from `.github/skills/snarky-commit/SKILL.md`, adapted for the pipeline. Include what changed, quality checks, commit messages, and side effects with personality.
+- **Issue link:** Include `Refs #{issue-number}` in the PR body (NOT `Closes` — the pipeline controller manages issue closure).
 - **Labels:** From issue classification
+
+### Snarky PR Personality
+
+When committing and opening PRs, follow the spirit of `.github/skills/snarky-commit/SKILL.md` even if the skill cannot be invoked directly from this agent. The goal is not random jokes; it is accurate engineering context with a little swagger.
+
+**PR title style rules:**
+- Sell the change with confidence and flair, while still naming the real work.
+- Keep it PG-13 and repository-appropriate.
+- One emoji is fine; three is trying too hard.
+- Examples:
+   - `🔥 HomeController got split before it became a zoning violation`
+   - `💅 Search is parameterized, tested, and done pretending string concat was fine`
+   - `🧪 Tests arrived, chaos has been temporarily inconvenienced`
+
+**PR body requirements:**
+- Include a short "What's This?" summary.
+- Include quality checks with build/test status.
+- Include the snarky commit messages.
+- Include side effects or rollout notes when relevant.
+- Keep the required issue reference line exactly as specified for this pipeline.
 
 ## Status Comment Format
 

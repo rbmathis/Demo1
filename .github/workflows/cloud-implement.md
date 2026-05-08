@@ -85,6 +85,25 @@ safe-outputs:
 
       Use `build-validator` agent to verify the project builds cleanly and tests pass.
 
+      ## STEP 5: COMMIT AND PR WITH PERSONALITY
+
+      Follow the spirit of `.github/skills/snarky-commit/SKILL.md` even if you cannot invoke the skill directly from the cloud coding-agent environment.
+
+      **Commit messages:**
+      - Use conventional commit format when practical, but make the description vivid and specific.
+      - Describe the real change with a little swagger, not generic filler like `update files`.
+      - Keep the subject concise and PG-13.
+
+      **PR title:**
+      - Generate a spicy, confident PR title based on the actual changes and the issue title.
+      - Do not reuse the issue title verbatim unless it is already interesting.
+      - One emoji is fine; three is trying too hard.
+
+      **PR body:**
+      - Use the snarky PR body shape: `What's This?`, `Quality Checks`, `Commit Messages`, and `Side Effects` or rollout notes.
+      - Keep the tone playful but still useful to reviewers.
+      - Preserve every required pipeline line below, especially the closing keyword and automated-label behavior.
+
       ## CRITICAL: PR BODY REQUIREMENT
 
       When creating the pull request, the PR body MUST include a closing keyword line:

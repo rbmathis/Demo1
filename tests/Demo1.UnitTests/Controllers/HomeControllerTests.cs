@@ -1,6 +1,5 @@
 using Demo1.Controllers;
 using Demo1.Models;
-using Demo1.Services;
 using Demo1.UnitTests.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -14,11 +13,7 @@ public class HomeControllerTests
     private static HomeController CreateController(ILogger<HomeController>? logger = null)
     {
         return new HomeController(
-            logger ?? Mock.Of<ILogger<HomeController>>(),
-            Mock.Of<ISearchService>(),
-            Mock.Of<IWeatherService>(),
-            Mock.Of<IUserProfileService>(),
-            Mock.Of<IStyleGeneratorService>()
+            logger ?? Mock.Of<ILogger<HomeController>>()
         );
     }
 

@@ -9,28 +9,16 @@ using Moq;
 namespace Demo1.UnitTests.Controllers;
 
 /// <summary>
-/// Tests for the anti-pattern demo actions in HomeController.
+/// Tests for the anti-pattern demo actions in DemoController.
 /// These actions demonstrate refactored "bad code" patterns while retaining chaotic UI styling.
 /// </summary>
-public class HomeControllerAntiPatternTests
+public class DemoControllerTests
 {
-    private static HomeController CreateController()
+    private static (DemoController controller, Mock<ISearchService> searchMock, Mock<IWeatherService> weatherMock, Mock<IStyleGeneratorService> styleMock) CreateControllerWithMocks()
     {
-        return new HomeController(
-            Mock.Of<ILogger<HomeController>>(),
-            Mock.Of<ISearchService>(),
-            Mock.Of<IWeatherService>(),
-            Mock.Of<IUserProfileService>(),
-            Mock.Of<IStyleGeneratorService>()
-        );
-    }
-
-    private static (HomeController controller, Mock<ISearchService> searchMock, Mock<IWeatherService> weatherMock, Mock<IStyleGeneratorService> styleMock, Mock<IUserProfileService> profileMock) CreateControllerWithMocks()
-    {
-        var loggerMock = new Mock<ILogger<HomeController>>();
+        var loggerMock = new Mock<ILogger<DemoController>>();
         var searchMock = new Mock<ISearchService>();
         var weatherMock = new Mock<IWeatherService>();
-        var profileMock = new Mock<IUserProfileService>();
         var styleMock = new Mock<IStyleGeneratorService>();
 
         searchMock.Setup(s => s.SearchAsync(It.IsAny<SearchQuery>()))
@@ -48,15 +36,14 @@ public class HomeControllerAntiPatternTests
         styleMock.Setup(s => s.GetRandomColor()).Returns("#FF00FF");
         styleMock.Setup(s => s.GenerateChaosStyle()).Returns("color: #FF00FF; font-size: 24px;");
 
-        var controller = new HomeController(
+        var controller = new DemoController(
             loggerMock.Object,
             searchMock.Object,
             weatherMock.Object,
-            profileMock.Object,
             styleMock.Object
         );
 
-        return (controller, searchMock, weatherMock, styleMock, profileMock);
+        return (controller, searchMock, weatherMock, styleMock);
     }
 
     // ===================================================================
@@ -67,7 +54,7 @@ public class HomeControllerAntiPatternTests
     public async Task RawSqlSearch_ReturnsViewResult()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = await controller.RawSqlSearch();
@@ -80,7 +67,7 @@ public class HomeControllerAntiPatternTests
     public async Task RawSqlSearch_CallsSearchService()
     {
         // Arrange
-        var (controller, searchMock, _, _, _) = CreateControllerWithMocks();
+        var (controller, searchMock, _, _) = CreateControllerWithMocks();
 
         // Act
         await controller.RawSqlSearch("hello");
@@ -97,7 +84,7 @@ public class HomeControllerAntiPatternTests
         {
             new() { id = 1, title = "Result 1", description = "Desc", category = "docs" }
         };
-        var (controller, searchMock, _, _, _) = CreateControllerWithMocks();
+        var (controller, searchMock, _, _) = CreateControllerWithMocks();
         searchMock.Setup(s => s.SearchAsync(It.IsAny<SearchQuery>()))
             .ReturnsAsync(expectedResults);
 
@@ -113,7 +100,7 @@ public class HomeControllerAntiPatternTests
     public async Task RawSqlSearch_SetsViewBagQuery()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = await controller.RawSqlSearch("findme");
@@ -128,7 +115,7 @@ public class HomeControllerAntiPatternTests
     public async Task RawSqlSearch_DefaultParams_UsesDefaults()
     {
         // Arrange
-        var (controller, searchMock, _, _, _) = CreateControllerWithMocks();
+        var (controller, searchMock, _, _) = CreateControllerWithMocks();
         SearchQuery? capturedQuery = null;
         searchMock.Setup(s => s.SearchAsync(It.IsAny<SearchQuery>()))
             .Callback<SearchQuery>(q => capturedQuery = q)
@@ -149,7 +136,7 @@ public class HomeControllerAntiPatternTests
     public async Task RawSqlSearch_WithQuery_PassesTermToService()
     {
         // Arrange
-        var (controller, searchMock, _, _, _) = CreateControllerWithMocks();
+        var (controller, searchMock, _, _) = CreateControllerWithMocks();
         SearchQuery? capturedQuery = null;
         searchMock.Setup(s => s.SearchAsync(It.IsAny<SearchQuery>()))
             .Callback<SearchQuery>(q => capturedQuery = q)
@@ -171,7 +158,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_ReturnsViewResult()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = await controller.CallbackHellWeather();
@@ -184,7 +171,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_SetsViewBagWeather()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
         var expectedWeather = new WeatherData { city = "Chaosville", temp = 22, condition = "Chaotic", isReal = false };
         weatherMock.Setup(w => w.GetWeatherAsync("Chaosville", It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedWeather);
@@ -201,7 +188,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_DefaultCity_IsChaosville()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
 
         // Act
         await controller.CallbackHellWeather();
@@ -214,7 +201,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_CustomCity_PassedToService()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
 
         // Act
         await controller.CallbackHellWeather("Paris");
@@ -227,7 +214,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_WhenServiceThrows_SetsErrors()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
         weatherMock.Setup(w => w.GetWeatherAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Service exploded"));
 
@@ -245,7 +232,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_WhenServiceThrows_StillReturnsView()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
         weatherMock.Setup(w => w.GetWeatherAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Total meltdown"));
 
@@ -260,7 +247,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_SetsApiCallsFromStats()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
         weatherMock.Setup(w => w.GetStats())
             .Returns(new WeatherServiceStats { ApiCallCount = 42, IsHealthy = true, LastUpdated = DateTime.UtcNow });
 
@@ -276,7 +263,7 @@ public class HomeControllerAntiPatternTests
     public async Task CallbackHellWeather_HealthyService_ShowsHealthy()
     {
         // Arrange
-        var (controller, _, weatherMock, _, _) = CreateControllerWithMocks();
+        var (controller, _, weatherMock, _) = CreateControllerWithMocks();
         weatherMock.Setup(w => w.GetStats())
             .Returns(new WeatherServiceStats { ApiCallCount = 1, IsHealthy = true, LastUpdated = DateTime.UtcNow });
 
@@ -297,7 +284,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_ReturnsViewResult()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell();
@@ -310,7 +297,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_ChaosAbove11_ClampedTo11()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell(99);
@@ -324,7 +311,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_ChaosBelow1_ClampedTo1()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell(-5);
@@ -338,7 +325,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_SetsModelWithItems()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell();
@@ -353,7 +340,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_CallsStyleGenerator()
     {
         // Arrange
-        var (controller, _, _, styleMock, _) = CreateControllerWithMocks();
+        var (controller, _, _, styleMock) = CreateControllerWithMocks();
 
         // Act
         controller.InlineCssHell();
@@ -368,7 +355,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_ChaosAbove5_EnablesChaosFlag()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell(8);
@@ -383,7 +370,7 @@ public class HomeControllerAntiPatternTests
     public void InlineCssHell_ChaosAtOrBelow5_DisablesChaosFlag()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
 
         // Act
         var result = controller.InlineCssHell(3);
@@ -402,7 +389,7 @@ public class HomeControllerAntiPatternTests
     public void ViewLogicCalculator_ReturnsViewResult()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
@@ -419,7 +406,7 @@ public class HomeControllerAntiPatternTests
     public void ViewLogicCalculator_SetsViewBagData()
     {
         // Arrange
-        var (controller, _, _, _, _) = CreateControllerWithMocks();
+        var (controller, _, _, _) = CreateControllerWithMocks();
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext()
