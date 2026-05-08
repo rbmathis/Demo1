@@ -176,6 +176,16 @@ dotnet test Demo1.sln -c Release
 dotnet run
 ```
 
+### Test Coverage Summary
+
+| Project | Tests | Categories |
+|---------|-------|------------|
+| `Demo1.UnitTests` | ~140 | Controllers (6 files), Services (7 files), Models (1 file), Middleware (4 files), Telemetry (1 file) |
+| `Demo1.IntegrationTests` | ~40 | Controller routes (6 files), Middleware headers (1 file) |
+| `Demo1.PlaywrightTests` | ~12 | Browser-based E2E smoke tests |
+
+**Total: 192 tests** across unit, integration, and E2E layers. See [`docs/testing.md`](docs/testing.md) for full details.
+
 ## Containerization
 
 Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:9.0` for build and runtime. Supports build args for `VERSION` and `REVISION`. Docker Compose available via `docker-compose.yml`.

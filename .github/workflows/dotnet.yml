@@ -60,7 +60,7 @@ jobs:
           fi
 
       - name: Publish
-        run: dotnet publish --no-build --configuration Release --output ./publish
+        run: dotnet publish ./Demo1.csproj --no-build --configuration Release --output ./publish
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

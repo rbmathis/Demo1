@@ -8,6 +8,18 @@
 
 Welcome to the glam corner of .NET 9 where MVC meets main-character energy. This repo is our stage for building production-ready web apps with a confident strut, buttery-smooth tooling, and telemetry that keeps the spotlight exactly where we want it.
 
+## Demo Focus
+
+This repository is also a hands-on demo of autopilot-style agentic delivery with GitHub Copilot. It shows how the same repo can run an AI-driven SDLC in two modes:
+
+- **Local autopilot delivery** via VS Code Copilot Chat and the local controller/agent set documented in [AI-SDLC-LOCAL.md](AI-SDLC-LOCAL.md)
+- **Cloud autopilot delivery** via GitHub Agentic Workflows and the cloud pipeline documented in [AI-SDLC-CLOUD.md](AI-SDLC-CLOUD.md)
+
+If you're here to explore the agentic workflow itself, start with these guides:
+
+- [AI-SDLC-LOCAL.md](AI-SDLC-LOCAL.md) for local, in-editor autopilot execution
+- [AI-SDLC-CLOUD.md](AI-SDLC-CLOUD.md) for cloud-dispatched autopilot orchestration
+
 ## Highlights
 
 - **Turnkey pipelines** – CI keeps the runway green with linting, unit tests, and smoke checks.
@@ -94,9 +106,26 @@ The debugger will launch the application and open it in your default browser.
 
 ## Testing
 
-- `dotnet test` triggers all suites, including the Playwright smoke tests in `Demo1.PlaywrightTests`.
-- On the first run Playwright downloads headless browser binaries automatically; alternatively, install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` from the repository root after a build (ensure your working directory is the solution root).
+The solution includes **192 tests** across three projects:
+
+| Project | Type | What's Covered |
+|---------|------|----------------|
+| `Demo1.UnitTests` | xUnit + Moq | Controllers, services, models, middleware, telemetry |
+| `Demo1.IntegrationTests` | xUnit + WebApplicationFactory | HTTP routes, security headers, API versioning, error handling |
+| `Demo1.PlaywrightTests` | Playwright | Browser-based end-to-end smoke tests |
+
+```bash
+# Run all tests
+dotnet test
+
+# Run a specific project
+dotnet test tests/Demo1.UnitTests
+dotnet test tests/Demo1.IntegrationTests
+```
+
+- On the first run Playwright downloads headless browser binaries automatically; alternatively, install them explicitly by executing `pwsh tests/Demo1.PlaywrightTests/bin/Debug/net9.0/playwright.ps1 install` from the repository root after a build.
 - The GitHub Actions workflow installs the Playwright CLI (`Microsoft.Playwright.CLI`) so CI runs the same headless checks.
+- See [`docs/testing.md`](docs/testing.md) for detailed testing guidelines and conventions.
 
 ## Documentation
 
@@ -152,6 +181,8 @@ Check your CI workflow for the exact coverage collector and reporting steps if y
 ## GitHub Actions & Copilot Integration
 
 This project uses an **AI-SDLC Pipeline** powered by [GitHub Agentic Workflows](https://github.github.com/gh-aw/) that automates the full software development lifecycle from issue to deploy.
+
+For the full delivery models, see [AI-SDLC-LOCAL.md](AI-SDLC-LOCAL.md) for local autopilot runs and [AI-SDLC-CLOUD.md](AI-SDLC-CLOUD.md) for cloud autopilot orchestration.
 
 ### AI-SDLC Pipeline
 
