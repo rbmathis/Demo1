@@ -25,28 +25,30 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
         with:
           script: |
-            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
+            const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
 
-            // Find the open PR linked to this issue
-            const { data: pulls } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              sort: 'updated',
-              direction: 'desc',
-              per_page: 50
-            });
+            const findLinkedPr = async (state) => {
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state,
+                sort: 'updated',
+                direction: 'desc',
+                per_page: 100
+              });
 
-            const linkedPR = pulls.find(pr =>
-              pr.body &&
-              (pr.body.includes(`Closes #${issueNumber}`) ||
-               pr.body.includes(`Fixes #${issueNumber}`) ||
-               pr.body.includes(`closes #${issueNumber}`) ||
-               pr.body.includes(`fixes #${issueNumber}`))
-            );
+              return pulls.find(pr => pr.body && issueRefRegex.test(pr.body));
+            };
+
+            // Prefer an open PR, but allow already-merged PRs for reruns/idempotency.
+            let linkedPR = await findLinkedPr('open');
+            if (!linkedPR) {
+              linkedPR = await findLinkedPr('closed');
+            }
 
             if (!linkedPR) {
-              core.setFailed(`No open PR found linked to issue #${issueNumber}`);
+              core.setFailed(`No PR found linked to issue #${issueNumber}`);
               return;
             }
 
@@ -54,6 +56,11 @@ jobs:
             core.setOutput('pr_number', linkedPR.number);
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
+
+            if (linkedPR.merged_at) {
+              core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
+              return;
+            }
 
             // Verify review status
             const { data: reviews } = await github.rest.pulls.listReviews({
