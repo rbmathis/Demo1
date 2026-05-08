@@ -12,6 +12,7 @@ Welcome to the documentation hub for **Demo1**.
 | Testing guidelines                 | [testing.md](testing.md)             |
 | CI/CD pipeline & caching           | [ci-cd.md](ci-cd.md)                 |
 | API versioning strategy            | [api-versioning.md](api-versioning.md) |
+| Component showcase                 | [component-showcase.md](component-showcase.md) |
 | SDLC Pipeline operations           | [pipeline.md](pipeline.md)           |
 
 ## 🔗 Quick Links
