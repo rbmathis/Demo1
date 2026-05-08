@@ -304,6 +304,7 @@ app.UseMiddleware<ServerTimingMiddleware>();
 app.UseSecurityHeaders();
 app.UseSecurityLabHeaders();
 app.UseStatusCodePagesWithReExecute("/Home/Error{0}");
+app.UseThemePreference();
 app.UseRouting();
 app.UseRateLimiter();
 app.UseRateLimitHeaders();
