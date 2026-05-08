@@ -67,14 +67,14 @@ jobs:
       packages: write
 
     steps:
+      - name: Checkout source (for Docker context)
+        uses: actions/checkout@v4
+
       - name: Download published artifact
         uses: actions/download-artifact@v4
         with:
           name: published-app
           path: ./publish
-
-      - name: Checkout source (for Docker context)
-        uses: actions/checkout@v4
 
       - name: Read version from VERSION file
         id: version

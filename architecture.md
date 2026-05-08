@@ -188,7 +188,7 @@ dotnet run
 
 ## Containerization
 
-Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:9.0` for build and runtime. Supports build args for `VERSION` and `REVISION`. Docker Compose available via `docker-compose.yml`.
+Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:10.0` for build and runtime. Supports build args for `VERSION` and `REVISION`. Docker Compose available via `docker-compose.yml`.
 
 ## CI/CD Pipeline
 
