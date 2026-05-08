@@ -33,7 +33,7 @@ jobs:
 
             // Scan recent PRs while keeping API usage conservative.
             const MAX_PRS_TO_SCAN = 50;
-            // Match closing keywords that reference this issue number (case-insensitive).
+            // Match GitHub auto-closing keywords that reference this issue number (case-insensitive).
             const issueRefRegex = new RegExp(`\\b(closes|fixes|resolves)\\s+#${issueNumber}\\b`, 'i');
 
             const findLinkedPr = async (state) => {
@@ -63,12 +63,12 @@ jobs:
             core.setOutput('pr_title', linkedPR.title);
             core.setOutput('branch', linkedPR.head.ref);
 
-            const isAlreadyMerged = !!linkedPR.merged_at;
-            if (isAlreadyMerged) {
+            const isMerged = !!linkedPR.merged_at;
+            if (isMerged) {
               core.info(`PR #${linkedPR.number} is already merged. Continuing with issue closure.`);
             }
 
-            if (!isAlreadyMerged) {
+            if (!isMerged) {
               // Verify review status
               const { data: reviews } = await github.rest.pulls.listReviews({
                 owner: context.repo.owner,
