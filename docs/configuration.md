@@ -142,10 +142,178 @@ The application includes a custom `SecurityHeadersMiddleware` that adds the foll
 - Configure authentication/authorization via `builder.Services.AddAuthentication()`/`AddAuthorization()`
 - See issue #4 for Azure AD integration plans.
 
-## Logging
+## Logging (Serilog)
 
-- Configured via `appsettings*.json` under `Logging`.
-- Inject `ILogger<T>` into controllers/services.
+Demo1 uses [Serilog](https://serilog.net/) as its structured logging provider, replacing the default ASP.NET Core logger. Serilog provides rich, structured log events with multiple output sinks, contextual enrichment, and fine-grained level control — all configured via `appsettings.json`.
+
+### NuGet Packages
+
+| Package | Purpose |
+|---------|---------|
+| `Serilog.AspNetCore` | Core integration with ASP.NET Core host |
+| `Serilog.Sinks.Console` | Writes structured logs to stdout |
+| `Serilog.Sinks.File` | Writes logs to rolling daily files |
+| `Serilog.Enrichers.Environment` | Adds `MachineName` to log events |
+| `Serilog.Enrichers.Thread` | Adds `ThreadId` to log events |
+
+### Configuration
+
+Serilog reads its settings from the `Serilog` section in `appsettings.json`:
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "System": "Warning",
+        "Demo1": "Debug"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/demo1-.log",
+          "rollingInterval": "Day",
+          "fileSizeLimitBytes": 10485760,
+          "retainedFileCountLimit": 7,
+          "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{MachineName}][{ThreadId}] {SourceContext} — {Message:lj}{NewLine}{Exception}"
+        }
+      }
+    ],
+    "Enrich": ["FromLogContext", "WithMachineName", "WithThreadId"]
+  }
+}
+```
+
+### Sinks
+
+#### Console Sink
+
+The console sink writes to stdout using a compact, human-readable template designed for local development:
+
+```
+[10:13:59 INF] Request finished HTTP/1.1 GET /Home/Index
+```
+
+#### File Sink
+
+The file sink writes to daily rolling log files with machine and thread context for production diagnostics.
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `path` | `logs/demo1-.log` | Output path; date stamp inserted automatically (e.g., `demo1-20260508.log`) |
+| `rollingInterval` | `Day` | Rolls to a new file each calendar day |
+| `fileSizeLimitBytes` | `10485760` (10 MB) | Maximum size per log file before rolling |
+| `retainedFileCountLimit` | `7` | Keeps the most recent 7 log files; older files are deleted automatically |
+
+### Enrichers
+
+Enrichers attach contextual properties to every log event:
+
+| Enricher | Property Added | Description |
+|----------|---------------|-------------|
+| `FromLogContext` | *(varies)* | Includes properties pushed onto `LogContext` (e.g., request-scoped values) |
+| `WithMachineName` | `MachineName` | The hostname of the server emitting the log |
+| `WithThreadId` | `ThreadId` | The managed thread ID that produced the event |
+
+### Per-Namespace Level Overrides
+
+Serilog applies namespace-level minimum log levels to reduce noise from framework internals while keeping application logs verbose:
+
+| Namespace | Minimum Level | Rationale |
+|-----------|--------------|-----------|
+| *(Default)* | `Information` | Baseline for all sources |
+| `Microsoft.AspNetCore` | `Warning` | Suppresses routine ASP.NET Core request plumbing |
+| `Microsoft.EntityFrameworkCore` | `Warning` | Suppresses EF Core SQL and change-tracker chatter |
+| `System` | `Warning` | Suppresses low-level runtime messages |
+| `Demo1` | `Debug` | Enables verbose logging for application code |
+
+### Environment Overrides
+
+`appsettings.Development.json` can override Serilog levels for local development. For example, to increase framework verbosity during debugging:
+
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": {
+        "Microsoft.AspNetCore": "Information"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+Serilog configuration values can be overridden at runtime via environment variables using the standard ASP.NET Core `__` (double-underscore) separator:
+
+```bash
+# Set the default minimum level
+Serilog__MinimumLevel__Default=Debug
+
+# Override a specific namespace
+Serilog__MinimumLevel__Override__Microsoft.AspNetCore=Information
+```
+
+This is useful in containerized or CI/CD environments where you cannot modify `appsettings.json`.
+
+### Request Logging
+
+`UseSerilogRequestLogging()` is called in the middleware pipeline to emit a single structured log event per HTTP request, replacing the multiple events produced by default ASP.NET Core logging:
+
+```
+[10:13:59 INF] HTTP GET /Home/Index responded 200 in 42.3 ms
+```
+
+This provides a concise, performance-friendly summary of every request/response cycle.
+
+### Application Insights Coexistence
+
+Serilog and Application Insights operate side-by-side. All messages written through `ILogger<T>` flow to both Serilog sinks (console, file) and the Application Insights telemetry channel. No additional configuration is needed — the ASP.NET Core logging abstraction routes to all registered providers.
+
+### Usage
+
+Inject `ILogger<T>` into any controller or service using standard dependency injection:
+
+```csharp
+public class HomeController : Controller
+{
+    private readonly ILogger<HomeController> _logger;
+
+    public HomeController(ILogger<HomeController> logger)
+    {
+        _logger = logger;
+    }
+
+    public IActionResult Index()
+    {
+        _logger.LogInformation("Home page requested");
+        return View();
+    }
+}
+```
+
+Use structured logging placeholders (not string interpolation) to preserve queryable properties:
+
+```csharp
+// ✅ Correct — structured property
+_logger.LogInformation("User {UserId} viewed {Page}", userId, pageName);
+
+// ❌ Avoid — loses structure
+_logger.LogInformation($"User {userId} viewed {pageName}");
+```
 
 ## Rate Limiting
 
