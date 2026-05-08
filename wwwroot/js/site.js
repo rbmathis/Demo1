@@ -10,8 +10,15 @@
 (() => {
     'use strict';
 
-    const getStoredTheme = () => localStorage.getItem('theme');
-    const setStoredTheme = theme => localStorage.setItem('theme', theme);
+    // Runs unconditionally — safe no-op when DarkMode flag is off
+    // (no cookie exists for users; toggle UI is hidden by the feature gate)
+    const getStoredTheme = () => {
+        const match = document.cookie.match('(?:^|;)\\s*theme-preference=([^;]*)');
+        return match ? decodeURIComponent(match[1]) : null;
+    };
+    const setStoredTheme = theme => {
+        document.cookie = `theme-preference=${theme}; max-age=31536000; path=/; SameSite=Strict`;
+    };
 
     const getSystemPreferredTheme = () => {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';

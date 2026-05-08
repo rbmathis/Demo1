@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="@(Context.Items["ThemePreference"] as string ?? "light")">
 
 <head>
     <meta charset="utf-8" />
@@ -9,6 +9,7 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/_.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
