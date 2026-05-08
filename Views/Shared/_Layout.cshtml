@@ -82,6 +82,13 @@
                             <a class="nav-link text-dark" asp-controller="ComponentShowcase"
                                 asp-action="Index">🧩 Components</a>
                         </li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="FeatureFlag"
+                                    asp-action="Index">🚩 Flag Admin</a>
+                            </li>
+                        }
                         <!-- 🎪 ANTI-PATTERN CIRCUS DROPDOWN 🎪 -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-danger" href="#" id="antiPatternDropdown"

@@ -1,0 +1,110 @@
+@model Demo1.Models.FeatureFlagDashboardViewModel
+@{
+    ViewData["Title"] = "Feature Flag Dashboard";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h3 mb-0">🚩 Feature Flag Dashboard</h1>
+    <form asp-controller="AdminAuth" asp-action="Logout" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-outline-secondary btn-sm">Sign out</button>
+    </form>
+</div>
+
+@if (TempData["Success"] is string successMsg)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMsg
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] is string errorMsg)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMsg
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!Model.IsAzureAppConfigurationAvailable)
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>⚠ Read-only mode</strong> — Azure App Configuration is not configured.
+        Flags are read from <code>appsettings.json</code> and cannot be toggled from this dashboard.
+        Set <code>AZUREAPPCONFIGURATION__ENDPOINT</code> or <code>AZUREAPPCONFIGURATION__CONNECTIONSTRING</code>
+        to enable live flag management.
+    </div>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        <strong>ℹ Refresh timing</strong> — flag changes propagate to all app instances within
+        <strong>@Model.RefreshIntervalSeconds seconds</strong> (the configured Azure App Configuration refresh interval).
+        @if (!string.IsNullOrEmpty(Model.Label))
+        {
+            <span>Active label: <code>@Model.Label</code>.</span>
+        }
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <div class="row fw-semibold small text-uppercase">
+            <div class="col-4">Flag name</div>
+            <div class="col-2 text-center">State</div>
+            <div class="col-3">Source</div>
+            <div class="col-3 text-end">Actions</div>
+        </div>
+    </div>
+    <ul class="list-group list-group-flush">
+        @foreach (var flag in Model.Flags)
+        {
+            <li class="list-group-item">
+                <div class="row align-items-center">
+                    <div class="col-4">
+                        <code class="fs-6">@flag.Name</code>
+                        @if (!string.IsNullOrEmpty(flag.Label))
+                        {
+                            <span class="badge bg-secondary ms-2 small">@flag.Label</span>
+                        }
+                    </div>
+                    <div class="col-2 text-center">
+                        @if (flag.IsEnabled)
+                        {
+                            <span class="badge bg-success">Enabled</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Disabled</span>
+                        }
+                    </div>
+                    <div class="col-3 text-muted small">@flag.Source</div>
+                    <div class="col-3 text-end">
+                        @if (Model.IsAzureAppConfigurationAvailable)
+                        {
+                            <form asp-controller="FeatureFlag" asp-action="Toggle" method="post"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="flagName" value="@flag.Name" />
+                                <input type="hidden" name="enabled" value="@(!flag.IsEnabled)" />
+                                <button type="submit"
+                                        class="btn btn-sm @(flag.IsEnabled ? "btn-outline-danger" : "btn-outline-success")">
+                                    @(flag.IsEnabled ? "Disable" : "Enable")
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted small fst-italic">read-only</span>
+                        }
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<p class="text-muted small mt-3">
+    Logged in as <strong>@User.Identity?.Name</strong> ·
+    Changes are audit-logged and take effect after the Azure App Configuration refresh interval.
+</p>
