@@ -35,6 +35,7 @@ jobs:
                 state,
                 sort: 'updated',
                 direction: 'desc',
+                // Scan a larger recent window to avoid missing linked PRs in busy repos.
                 per_page: 100
               });
 
@@ -42,10 +43,7 @@ jobs:
             };
 
             // Prefer an open PR, but allow already-merged PRs for reruns/idempotency.
-            let linkedPR = await findLinkedPr('open');
-            if (!linkedPR) {
-              linkedPR = await findLinkedPr('closed');
-            }
+            const linkedPR = (await findLinkedPr('open')) ?? (await findLinkedPr('closed'));
 
             if (!linkedPR) {
               core.setFailed(`No PR found linked to issue #${issueNumber}`);
