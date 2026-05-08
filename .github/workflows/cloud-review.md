@@ -114,6 +114,19 @@ You are the code review agent for an AI-SDLC pipeline. When dispatched with an i
 - Tests cover happy path and error cases
 - No flaky test patterns
 
+### Rollout Compliance (Blocking — when applicable)
+
+When the triage comment includes `rollout-required` or `rollout-optional`:
+- Rollout checklist is present and complete in the plan comment
+- Flag defaults to off in code and configuration
+- Tests exist for both flag-off (old behavior) and flag-on (new behavior)
+- Side effects are suppressed when the flag is off (unless explicitly justified)
+- Temporary flags have a cleanup issue reference
+- Logging/telemetry identifies which execution path ran
+- If `rollout-optional` shipped ungated, the plan includes explicit justification
+
+Block approval for any rollout compliance failure. See `docs/feature-flag-rollout-contract.md`.
+
 ## Issue Status Comment Format
 
 Post this comment on issue #${{ github.event.inputs.issue_number }}:

@@ -164,12 +164,62 @@ Intentionally bad code for teaching purposes. Each page demonstrates a common mi
 
 Managed via Azure App Configuration (when configured) or local `appsettings.json`:
 
-| Flag | Purpose |
-|------|---------|
-| `Feature1` | Example toggle |
-| `DarkMode` | Dark mode UI toggle |
-| `ContactForm` | Contact form visibility |
-| `BetaFeatures` | Master toggle for beta features |
+| Flag | Purpose | Type |
+|------|---------|------|
+| `Feature1` | Example toggle | Permanent |
+| `DarkMode` | Dark mode UI toggle | Permanent |
+| `ContactForm` | Contact form visibility | Permanent |
+| `BetaFeatures` | Master toggle for beta features | Permanent |
+
+See `Features/FeatureFlags.cs` for the constant definitions and XML doc conventions.
+
+### Feature Flag Rollout Model
+
+New user-visible, API-affecting, or data-path changes ship **dark by default** behind a feature flag. Activation is always human-controlled — the pipeline never enables flags automatically.
+
+**Rollout classes** (assigned by triage):
+
+| Class | Meaning |
+|-------|---------|
+| `rollout-required` | User-visible behavior, API changes, side effects, database-affecting work |
+| `rollout-optional` | Low-risk/user-invisible, but plan agent must record a deliberate flagging verdict |
+| `rollout-exempt` | Docs-only, test-only, internal refactors, build/CI cleanup, emergency security fixes |
+
+**Temporary vs permanent flags:** Temporary rollout flags include owner, cleanup milestone, and cleanup issue reference in `FeatureFlags.cs`. Permanent product flags are explicitly called out in the plan.
+
+**Canonical docs:**
+- Rollout contract: [`docs/feature-flag-rollout-contract.md`](docs/feature-flag-rollout-contract.md)
+- Runtime guide: [`docs/feature-flag-runtime-guide.md`](docs/feature-flag-runtime-guide.md)
+
+### Database Migration Model
+
+Schema changes use **explicit EF Core migrations** with expand/backfill/switch/contract sequencing. The web app is not the primary schema migrator.
+
+| Environment | Migration Runner |
+|-------------|-----------------|
+| Local dev | `db.Database.Migrate()` at startup (Development/Testing env only) |
+| Integration tests | `Demo1WebApplicationFactory` applies `Migrate()` in fixture setup |
+| CI/CD | `dotnet ef database update` or migration bundle before deployment |
+| Production | Human-initiated via deployment pipeline |
+
+```bash
+# Generate a new migration
+dotnet ef migrations add MigrationName --context AchievementDbContext --output-dir Data/Migrations
+
+# Apply migrations externally
+dotnet ef database update --context AchievementDbContext
+```
+
+### Flag-Off / Flag-On Example
+
+Using `DarkMode` as the example flag:
+
+| State | Behavior |
+|-------|----------|
+| **Flag off (default)** | Standard light theme renders; `<feature name="DarkMode">` blocks in `_Layout.cshtml` are hidden; no dark-mode CSS loads |
+| **Flag on** | Dark-mode CSS loads; UI elements inside `<feature name="DarkMode">` blocks become visible; `[FeatureGate(FeatureFlags.DarkMode)]` endpoints return 200 instead of 404 |
+
+The `[FeatureGate]` attribute, `IFeatureManager` checks, and Razor `<feature>` tag helpers are the three gating mechanisms. See the runtime guide for patterns.
 
 ## External Integrations
 

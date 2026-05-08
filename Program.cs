@@ -232,11 +232,15 @@ builder.Services.AddSingleton<ITelemetryInitializer>(new CustomTelemetryInitiali
 
 var app = builder.Build();
 
-// ✅ Achievement System: Ensure database is created with seed data
-using (var scope = app.Services.CreateScope())
+// ✅ Achievement System: Apply pending database migrations
+// Canonical model: run `dotnet ef database update` externally before app startup.
+// This in-app call is a local development convenience; production and CI/CD should
+// use the external migration step. See docs/feature-flag-runtime-guide.md.
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AchievementDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 var enableSwagger = app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger");

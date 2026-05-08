@@ -154,3 +154,4 @@ At the start of every autopilot run, ensure the plain `local` label is present o
 - **Report progress** — the user should see what's happening at each stage
 - **Respect failures** — if something breaks, report it clearly rather than retrying infinitely
 - **The issue is the source of truth** — each stage reads previous stage output from issue comments
+- **Rollout-aware delivery** — triage classifies rollout status (`rollout-required` / `rollout-optional` / `rollout-exempt`), plan embeds the rollout checklist when required, implement ships dark, review validates dual-path coverage, docs emits activation instructions, and deliver backstops cleanup issues. See `docs/feature-flag-rollout-contract.md` for the contract.

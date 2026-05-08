@@ -15,6 +15,7 @@ engine: copilot
 
 imports:
   - .github/agents/docs.agent.md
+  - .github/agents/feature-flags.agent.md
 
 permissions:
   contents: read
@@ -117,3 +118,14 @@ Post this on issue #${{ github.event.inputs.issue_number }}:
 - Always dispatch `cloud-finish` after completing (even if docs were minimal)
 - Keep XML docs concise — don't over-document obvious getters/setters
 - Keep PR discovery aligned with `cloud-finish.yml`: use issue timeline linkage first, keyword scans second
+
+## Rollout Documentation
+
+When the plan comment includes a rollout checklist with a flagged verdict, follow the imported `feature-flags` specialist guidance to produce:
+
+- **Flag-off verification:** steps to verify old behavior with the flag off (the default)
+- **Flag-on verification:** steps to verify new behavior with the flag on
+- **Cleanup issue reference:** record the cleanup issue number for temporary flags
+- **Activation packet** for the human release operator (`rbmathis`) with: App Configuration key, label/environment, intended value, prerequisites, validation steps, and rollback steps
+
+Neither `cloud-docs` nor `cloud-finish` enables flags. Activation is human-controlled via Azure App Configuration. See `docs/feature-flag-rollout-contract.md`.

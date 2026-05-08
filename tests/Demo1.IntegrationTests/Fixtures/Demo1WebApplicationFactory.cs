@@ -2,6 +2,7 @@ using Demo1.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Demo1.IntegrationTests.Fixtures;
@@ -10,6 +11,7 @@ namespace Demo1.IntegrationTests.Fixtures;
 /// Custom WebApplicationFactory for integration testing the Demo1 application.
 /// Sets the environment to "Testing" to avoid HTTPS redirect issues during tests.
 /// Replaces the SQLite database with an in-memory database for test isolation.
+/// Uses EF Core migrations (not EnsureCreated) to match the production migration path.
 /// </summary>
 public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -28,6 +30,15 @@ public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
         _keepAliveConnection = new SqliteConnection(SharedInMemoryConnectionString);
         _keepAliveConnection.Open();
 
+        // Apply migrations on the keep-alive connection to initialize schema
+        var migrateOptions = new DbContextOptionsBuilder<AchievementDbContext>()
+            .UseSqlite(_keepAliveConnection)
+            .Options;
+        using (var migrateContext = new AchievementDbContext(migrateOptions))
+        {
+            migrateContext.Database.Migrate();
+        }
+
         builder.ConfigureServices(services =>
         {
             // Remove ALL AchievementDbContext-related service descriptors
@@ -45,6 +56,39 @@ public class Demo1WebApplicationFactory : WebApplicationFactory<Program>
             // Use shared-cache in-memory SQLite so each DbContext gets its own connection
             services.AddDbContext<AchievementDbContext>(options =>
                 options.UseSqlite(SharedInMemoryConnectionString));
+        });
+    }
+
+    /// <summary>
+    /// Creates a new factory with the specified feature flags enabled or disabled.
+    /// Use this to test both flag-off (default) and flag-on behavior paths.
+    /// </summary>
+    /// <param name="flags">
+    /// Dictionary of feature flag names to their enabled state.
+    /// Example: <c>new Dictionary&lt;string, bool&gt; { ["DarkMode"] = true }</c>
+    /// </param>
+    /// <returns>A configured <see cref="WebApplicationFactory{TEntryPoint}"/> with the specified flags.</returns>
+    /// <example>
+    /// <code>
+    /// using var flaggedFactory = factory.WithFeatureFlags(new Dictionary&lt;string, bool&gt;
+    /// {
+    ///     [FeatureFlags.DarkMode] = true,
+    ///     [FeatureFlags.ContactForm] = false
+    /// });
+    /// var client = flaggedFactory.CreateClient();
+    /// </code>
+    /// </example>
+    public WebApplicationFactory<Program> WithFeatureFlags(Dictionary<string, bool> flags)
+    {
+        return WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureAppConfiguration((_, config) =>
+            {
+                var overrides = flags.ToDictionary(
+                    kvp => $"FeatureManagement:{kvp.Key}",
+                    kvp => kvp.Value.ToString().ToLowerInvariant());
+                config.AddInMemoryCollection(overrides!);
+            });
         });
     }
 

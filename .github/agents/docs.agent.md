@@ -48,6 +48,28 @@ This is the most important output. After all doc updates are committed, post a c
 - Any relevant config or setup needed before verifying
 - What "pass" looks like (what they should see/get)
 
+### 4. Rollout verification (when applicable)
+
+When the plan comment includes a rollout checklist with a flagged verdict, the verification walkthrough must also include:
+
+- **Flag-off verification:** steps to verify old behavior works with the flag off (the default)
+- **Flag-on verification:** steps to verify new behavior works with the flag on
+- **Side-effect check:** confirmation that no new side effects execute when the flag is off
+- **Cleanup issue reference:** record the cleanup issue number for temporary flags
+
+For cloud-deployed changes, emit an **activation packet** for the human release operator:
+
+| Field | Value |
+|-------|-------|
+| **App Configuration key** | The feature flag key in Azure App Configuration |
+| **Label / environment** | Target label or environment scope |
+| **Intended value** | The value to set (typically `true`) |
+| **Prerequisites** | Required migrations, deployments, or validations before enabling |
+| **Validation steps** | How to verify the flag is working after activation |
+| **Rollback steps** | How to disable the flag and what to verify after rollback |
+
+See `docs/feature-flag-rollout-contract.md` for the full rollout contract.
+
 **Comment format:**
 
 Your issue comment heading MUST be "## 📚 Docs & Verification — Issue #{number}". Write in your friendly, helpful documentation personality. No rigid template — let your voice come through naturally.
