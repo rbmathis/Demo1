@@ -188,7 +188,21 @@ dotnet run
 
 ## Containerization
 
-Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:10.0` for build and runtime. Supports build args for `VERSION` and `REVISION`. Docker Compose available via `docker-compose.yml`.
+Multi-stage Dockerfile with three stages:
+
+| Stage | Base Image | Purpose |
+|-------|-----------|---------|
+| `build` | `mcr.microsoft.com/dotnet/sdk:10.0` | Restore, publish |
+| `dev` | `mcr.microsoft.com/dotnet/sdk:10.0` | Hot-reload via `dotnet watch` (opt-in) |
+| `runtime` | `mcr.microsoft.com/dotnet/aspnet:10.0` | Production image |
+
+Supports build args `VERSION` and `REVISION`. Docker Compose (`docker-compose.yml`) includes:
+
+- `demo1` — standard service on port `5555`
+- `demo1-dev` — hot-reload profile (`--profile dev`) on port `5556` with source bind-mount
+- `redis` — Redis 7 for distributed caching
+
+CI image builds always run; push to GHCR is gated by the `GHCR_TOKEN` secret (see `deploy.yml`).
 
 ## CI/CD Pipeline
 
